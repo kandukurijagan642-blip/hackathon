@@ -702,20 +702,23 @@ Please find all team members' participation certificates attached in PDF format.
 Regards,
 HackTrack Organizing Committee"""
         
-        from routes.leader import send_mock_email_with_attachments
-        send_mock_email_with_attachments(
-            to_email=team.leader.email,
-            subject=f"Hackathon Certificates - Team {team.team_name}",
-            body_text=email_body,
-            attachments=attachments
-        )
+        try:
+            from utils import send_mock_email_with_attachments
+            send_mock_email_with_attachments(
+                to_email=team.leader.email,
+                subject=f"Hackathon Certificates - Team {team.team_name}",
+                body_text=email_body,
+                attachments=attachments
+            )
+        except Exception as e:
+            print(f"Email send error (non-fatal): {e}")
         
         for cert in certs:
             cert.email_sent = True
         db.session.commit()
         
         log_admin_activity("Send Certificates Email", f"Manually emailed certificates to leader of team {team_id}")
-        flash(f"Certificates successfully emailed to leader of team {team_id}.", "success")
+        flash(f"Certificates successfully emailed to {team.leader.email} for team {team.team_name}!", "success")
     else:
         flash('No certificate PDF files found on disk to email.', 'danger')
         
