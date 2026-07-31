@@ -197,26 +197,45 @@
         </div>
 
     {% elif submission %}
-        <!-- CASE 2: Submission entered & locked (Certificates not yet released) -> Clean locked confirmation card -->
-        <div class="card p-4 text-center">
-            <div class="mb-3 text-warning">
-                <i class="bi bi-lock-fill display-4"></i>
+        <!-- CASE 2: Submission entered & locked (Certificates not yet released) -> Submitted Details Summary -->
+        <div class="card p-4">
+            <div class="text-center mb-3">
+                <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-2" style="width: 54px; height: 54px; font-size: 1.6rem;">
+                    <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <h4 class="mb-1 text-white fw-bold">Submitted Team Details</h4>
+                <p class="text-secondary small mb-0">Your team & project information is locked and registered.</p>
             </div>
-            <h4 class="mb-2 text-white">Details Submitted & Locked</h4>
-            <p class="text-secondary small mb-4">
-                Your team project details have been successfully submitted and locked. Further edits are disabled.
-            </p>
 
-            <div class="p-3 mb-4 rounded text-start" style="background-color: #121b2d; border: 1px solid var(--card-border);">
-                <div class="mb-2"><span class="text-secondary small">Team Name:</span> <strong class="text-white">{{ team.team_name }}</strong> <code class="text-muted">({{ team.team_id }})</code></div>
-                <div class="mb-2"><span class="text-secondary small">Team Leader:</span> <span class="text-white">{{ team.leader.name if team.leader else 'N/A' }}</span></div>
-                <div class="mb-2"><span class="text-secondary small">Project Title:</span> <span class="text-white">{{ submission.project_title }}</span></div>
-                <div class="mb-2"><span class="text-secondary small">Domain:</span> <span class="badge bg-info">{{ submission.domain }}</span></div>
-                <div><span class="text-secondary small">Problem Statement:</span> <p class="text-secondary small mb-0 mt-1" style="white-space: pre-wrap;">{{ submission.problem_statement }}</p></div>
+            <div class="p-3 mb-4 rounded" style="background-color: #121b2d; border: 1px solid var(--card-border);">
+                <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                    <div class="text-secondary small fw-semibold">TEAM NAME</div>
+                    <div class="text-white fw-bold fs-5 mt-1">{{ team.team_name }} <span class="badge bg-secondary font-monospace" style="font-size: 0.75rem;">{{ team.team_id }}</span></div>
+                </div>
+                
+                <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                    <div class="text-secondary small fw-semibold">TEAM LEADER</div>
+                    <div class="text-white fw-semibold mt-1"><i class="bi bi-person-badge me-1 text-info"></i> {{ team.leader.name if team.leader else 'N/A' }}</div>
+                </div>
+                
+                <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                    <div class="text-secondary small fw-semibold">PROJECT TITLE</div>
+                    <div class="text-white fw-semibold mt-1">{{ submission.project_title }}</div>
+                </div>
+                
+                <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                    <div class="text-secondary small fw-semibold">PROJECT DOMAIN</div>
+                    <div class="mt-1"><span class="badge bg-info text-dark font-monospace" style="font-size: 0.85rem; padding: 6px 12px;">{{ submission.domain }}</span></div>
+                </div>
+                
+                <div>
+                    <div class="text-secondary small fw-semibold">PROBLEM STATEMENT</div>
+                    <p class="text-light small mb-0 mt-1" style="white-space: pre-wrap; line-height: 1.6; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">{{ submission.problem_statement }}</p>
+                </div>
             </div>
 
             <div class="alert alert-info py-2 px-3 small text-center mb-0" style="background-color: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.2); color: var(--accent-primary);">
-                <i class="bi bi-info-circle-fill me-1"></i> Certificates will appear here once officially released by event organizers.
+                <i class="bi bi-shield-lock-fill me-1"></i> Certificates will be viewable and downloadable here once released by event organizers.
             </div>
         </div>
 
