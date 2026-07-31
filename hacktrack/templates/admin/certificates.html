@@ -457,19 +457,5 @@ function copyToClipboard(text, elementId) {
         console.error('Could not copy text: ', err);
     });
 }
-
-function triggerZipDownload(teamId) {
-    const downloadUrl = "{{ url_for('admin.download_team_certificates_zip', team_id='PLACEHOLDER') }}".replace('PLACEHOLDER', teamId);
-    const iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = downloadUrl;
-    document.body.appendChild(iframe);
-    
-    setTimeout(() => {
-        if (iframe.parentNode) {
-            document.body.removeChild(iframe);
-        }
-    }, 3000);
-}
 </script>
 {% endblock %}
