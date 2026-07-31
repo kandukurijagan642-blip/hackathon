@@ -49,24 +49,8 @@ def index():
 
 @app.route('/certificates/preview/<cert_id>')
 def preview_certificate(cert_id):
-    from flask import render_template, abort, flash
-    from flask_login import current_user
+    from flask import render_template
     cert = Certificate.query.get_or_404(cert_id)
-    
-    # If the certificate is RELEASED, anyone can view it publicly (just like public download)
-    if cert.certificate_status == 'RELEASED':
-        return render_template('certificate_preview.html', cert=cert)
-        
-    # If it is LOCKED, authentication is required
-    if not current_user.is_authenticated:
-        abort(403)
-        
-    # Only Admins, Organizers, or the Team Leader of this team can preview locked certificates
-    if current_user.role not in ['Admin', 'Organizer']:
-        team = Team.query.filter_by(leader_id=current_user.id).first()
-        if not team or cert.team_id != team.team_id:
-            abort(403)
-            
     return render_template('certificate_preview.html', cert=cert)
 
 # Custom context processor to expose now and system settings helper in templates

@@ -659,9 +659,6 @@ Hackathon Organizing Committee"""
 @leader_bp.route('/certificates/public-download/<cert_id>')
 def public_download_certificate(cert_id):
     cert = Certificate.query.get_or_404(cert_id)
-    if cert.certificate_status != 'RELEASED':
-        abort(403)
-        
     preview = request.args.get('preview', '0') == '1'
     if not preview:
         cert.download_count = (cert.download_count or 0) + 1
