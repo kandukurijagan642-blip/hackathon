@@ -368,10 +368,7 @@ def seed_database():
                     host_url=base_url
                 )
                 
-                # Auto generate LOCKED certificates in the background immediately
-                from certificate_automation import auto_generate_team_certificates
-                auto_generate_team_certificates(team)
-                
+
             print("Database seeding completed. Admin, Organizer, Judges, and 10 default Teams seeded successfully.")
     except Exception as e:
         db.session.rollback()
@@ -415,21 +412,31 @@ with app.app_context():
         except Exception as ex:
             print(f"Retry seeding error: {ex}")
 
-    # Regenerate all QR codes using live base URL (fixes Render ephemeral filesystem)
+    # Regenerate QR codes using live base URL — only if file missing or base URL changed
     try:
         from utils import generate_team_qr
         base_url = os.environ.get('APP_BASE_URL', 'http://localhost:5000').rstrip('/')
+        stored_base_url = SystemSetting.get_setting('last_qr_base_url', '')
+        url_changed = stored_base_url != base_url
         all_teams = Team.query.all()
+        regenerated = 0
         for t in all_teams:
-            leader_user = User.query.get(t.leader_id)
-            generate_team_qr(
-                team_id=t.team_id,
-                team_name=t.team_name,
-                leader_name=leader_user.name if leader_user else 'Leader',
-                host_url=base_url
-            )
-        if all_teams:
-            print(f"QR codes regenerated for {len(all_teams)} teams using base URL: {base_url}")
+            qr_file = os.path.join(app.root_path, 'static', 'qrcodes', f'team_{t.team_id}_qr.png')
+            if not os.path.exists(qr_file) or url_changed:
+                leader_user = User.query.get(t.leader_id)
+                generate_team_qr(
+                    team_id=t.team_id,
+                    team_name=t.team_name,
+                    leader_name=leader_user.name if leader_user else 'Leader',
+                    host_url=base_url
+                )
+                regenerated += 1
+        if regenerated > 0:
+            SystemSetting.set_setting('last_qr_base_url', base_url)
+            db.session.commit()
+            print(f"QR codes generated for {regenerated}/{len(all_teams)} teams using: {base_url}")
+        else:
+            print(f"All {len(all_teams)} QR codes are up to date.")
     except Exception as e:
         print(f"QR regeneration error: {e}")
 

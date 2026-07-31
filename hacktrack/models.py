@@ -171,23 +171,34 @@ class SystemSetting(db.Model):
     setting_key = db.Column(db.String(50), unique=True, nullable=False)
     setting_value = db.Column(db.String(255), nullable=False)
     
+    _cache = {}  # In-memory cache to avoid repeated DB queries
+    
     @classmethod
     def get_setting(cls, key, default=None):
+        if key in cls._cache:
+            return cls._cache[key]
         try:
             setting = cls.query.filter_by(setting_key=key).first()
-            return setting.setting_value if setting else default
+            val = setting.setting_value if setting else default
+            if val is not None:
+                cls._cache[key] = val
+            return val
         except Exception:
             return default
 
     @classmethod
     def set_setting(cls, key, value):
-        setting = cls.query.filter_by(setting_key=key).first()
-        if not setting:
-            setting = cls(setting_key=key, setting_value=str(value))
-            db.session.add(setting)
-        else:
-            setting.setting_value = str(value)
-        db.session.commit()
+        try:
+            setting = cls.query.filter_by(setting_key=key).first()
+            if not setting:
+                setting = cls(setting_key=key, setting_value=str(value))
+                db.session.add(setting)
+            else:
+                setting.setting_value = str(value)
+            db.session.commit()
+            cls._cache[key] = str(value)  # Update cache
+        except Exception as e:
+            print(f"SystemSetting set error: {e}")
 
 
 class Certificate(db.Model):
