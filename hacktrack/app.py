@@ -360,11 +360,12 @@ def seed_database():
                     db.session.commit()
                 
                 # 6. Generate QR Code image file
+                base_url = os.environ.get('APP_BASE_URL', 'http://localhost:5000').rstrip('/')
                 generate_team_qr(
                     team_id=team.team_id,
                     team_name=team.team_name,
                     leader_name=leader_user.name,
-                    host_url="http://localhost:5000"
+                    host_url=base_url
                 )
                 
                 # Auto generate LOCKED certificates in the background immediately
@@ -413,6 +414,24 @@ with app.app_context():
                 seed_database()
         except Exception as ex:
             print(f"Retry seeding error: {ex}")
+
+    # Regenerate all QR codes using live base URL (fixes Render ephemeral filesystem)
+    try:
+        from utils import generate_team_qr
+        base_url = os.environ.get('APP_BASE_URL', 'http://localhost:5000').rstrip('/')
+        all_teams = Team.query.all()
+        for t in all_teams:
+            leader_user = User.query.get(t.leader_id)
+            generate_team_qr(
+                team_id=t.team_id,
+                team_name=t.team_name,
+                leader_name=leader_user.name if leader_user else 'Leader',
+                host_url=base_url
+            )
+        if all_teams:
+            print(f"QR codes regenerated for {len(all_teams)} teams using base URL: {base_url}")
+    except Exception as e:
+        print(f"QR regeneration error: {e}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

@@ -29,6 +29,28 @@ def check_admin():
         return False
     return True
 
+@admin_bp.route('/regenerate-qr')
+@login_required
+def regenerate_qr():
+    if not check_admin(): return redirect(url_for('auth.login'))
+    from utils import generate_team_qr
+    import os
+    base_url = request.host_url.rstrip('/')
+    teams = Team.query.all()
+    count = 0
+    for t in teams:
+        leader_user = User.query.get(t.leader_id)
+        generate_team_qr(
+            team_id=t.team_id,
+            team_name=t.team_name,
+            leader_name=leader_user.name if leader_user else 'Leader',
+            host_url=base_url
+        )
+        count += 1
+    log_admin_activity("Regenerate QR Codes", f"Regenerated {count} QR codes using base URL: {base_url}")
+    flash(f'Successfully regenerated QR codes for {count} teams using URL: {base_url}', 'success')
+    return redirect(url_for('admin.dashboard'))
+
 @admin_bp.route('/dashboard')
 @login_required
 def dashboard():

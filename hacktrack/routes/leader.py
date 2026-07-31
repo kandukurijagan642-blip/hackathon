@@ -325,11 +325,11 @@ def quick_edit(team_id):
                     pass
                 
                 flash('Team certificates generated successfully!', 'success')
-            return redirect(url_for('leader.quick_edit', team_id=team_id))
+            return redirect(url_for('leader.quick_edit', team_id=team.team_id))
             
         if submission:
             flash('Your project details have already been submitted and locked. Editing is no longer permitted.', 'danger')
-            return redirect(url_for('leader.quick_edit', team_id=team_id))
+            return redirect(url_for('leader.quick_edit', team_id=team.team_id))
             
         project_title = request.form.get('project_title', '').strip()
         problem_statement = request.form.get('problem_statement', '').strip()
@@ -350,7 +350,7 @@ def quick_edit(team_id):
             
         # Create submission details (One-time submit lock)
         submission = ProblemSubmission(
-            team_id=team_id,
+            team_id=team.team_id,
             project_title=project_title,
             problem_statement=problem_statement,
             domain=domain,
@@ -373,9 +373,9 @@ def quick_edit(team_id):
             print(f"Log fail: {e}")
             
         flash('Team details and project submission updated successfully!', 'success')
-        return redirect(url_for('leader.quick_edit', team_id=team_id))
+        return redirect(url_for('leader.quick_edit', team_id=team.team_id))
         
-    certs = Certificate.query.filter_by(team_id=team_id).all()
+    certs = Certificate.query.filter_by(team_id=team.team_id).all()
     certs_by_member = {c.member_id: c for c in certs if c.member_id is not None}
     leader_cert = next((c for c in certs if c.member_id is None), None)
     
