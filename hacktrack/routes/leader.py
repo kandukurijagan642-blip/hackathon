@@ -373,7 +373,7 @@ def quick_edit(team_id):
     certs_by_member = {c.member_id: c for c in certs if c.member_id is not None}
     leader_cert = next((c for c in certs if c.member_id is None), None)
     
-    released = len(certs) > 0 and any(c.certificate_status == 'RELEASED' for c in certs)
+    released = certificates_active and len(certs) > 0 and any(c.certificate_status == 'RELEASED' for c in certs)
         
     return render_template(
         'leader/quick_edit.html',
