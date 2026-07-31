@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+{% block page_title %}Team Certificates{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <!-- Header Summary Card -->
+    <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h4 class="mb-1 text-primary">{{ team.team_name }}</h4>
+                <p class="text-secondary small mb-0">
+                    <span class="fw-bold">Project Title:</span> {{ team.problem_submission.project_title if team.problem_submission else 'Awaiting Abstract Submission' }}
+                </p>
+                <p class="text-secondary small mb-0">
+                    <span class="fw-bold">Team Leader:</span> {{ current_user.name }} ({{ current_user.email }})
+                </p>
+            </div>
+            <div class="text-md-end">
+                <span class="small text-muted d-block mb-1">Certificate Status</span>
+                {% if released %}
+                    <span class="badge bg-success fs-6"><i class="bi bi-patch-check-fill"></i> Released & Available</span>
+                {% else %}
+                    <span class="badge bg-danger fs-6"><i class="bi bi-lock-fill"></i> Locked / Not Released Yet</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions Section -->
+    <div class="row g-4">
+        {% if not released %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm p-5 bg-secondary text-center">
+                    <i class="bi bi-lock-fill display-3 text-warning mb-3 d-block"></i>
+                    <h4 class="text-light mb-2">Certificates Locked</h4>
+                    <p class="text-secondary mb-0">Certificates have not been released by the organizer yet.</p>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-lg-4 col-md-5">
+                <div class="card border-0 shadow-sm p-4 bg-secondary h-100">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-gear-fill"></i> Certificate Console</h5>
+                    <p class="text-secondary small mb-4">
+                        Download all official certificates for your team compiled as a single ZIP package, or send them to your email address.
+                    </p>
+                    
+                    {% if not certs_generated %}
+                        <div class="alert alert-warning small mb-3">
+                            No certificates have been generated for this team.
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('leader.download_all_certificates') }}" class="btn btn-outline-primary w-100 py-3 mb-3 fw-bold">
+                            <i class="bi bi-file-zip"></i> Download All Certificates (ZIP)
+                        </a>
+                        
+                        <form action="{{ url_for('leader.send_certificates_email') }}" method="POST">
+                            <button type="submit" class="btn btn-success w-100 py-3">
+                                <i class="bi bi-envelope-at-fill"></i> Send Certificates to Email
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="col-lg-8 col-md-7">
+                <div class="card border-0 shadow-sm p-4 bg-secondary h-100">
+                    <h5 class="mb-4 text-primary"><i class="bi bi-people-fill"></i> Team Roster & Certificates</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Reg No.</th>
+                                    <th>Role</th>
+                                    <th>Certificate ID</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Leader Row -->
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-light">{{ current_user.name }}</div>
+                                        <div class="text-secondary small">{{ current_user.email }}</div>
+                                    </td>
+                                    <td><code>{{ team.team_id }}-LDR</code></td>
+                                    <td><span class="badge bg-info">Leader</span></td>
+                                    <td>
+                                        {% if leader_cert %}
+                                            <code class="text-success">{{ leader_cert.certificate_id }}</code>
+                                        {% else %}
+                                            <span class="text-muted small">Not Generated</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        {% if leader_cert %}
+                                             <div class="btn-group btn-group-sm">
+                                                  <a href="{{ url_for('preview_certificate', cert_id=leader_cert.certificate_id) }}" target="_blank" class="btn btn-outline-info" title="Preview Certificate">
+                                                      <i class="bi bi-eye"></i>
+                                                  </a>
+                                                 <a href="{{ url_for('leader.download_team_certificate', cert_id=leader_cert.certificate_id) }}" class="btn btn-outline-primary" title="Download">
+                                                     <i class="bi bi-download"></i>
+                                                 </a>
+                                                 <button type="button" class="btn btn-outline-secondary" id="shareBtn-{{ leader_cert.certificate_id }}" onclick="copyToClipboard('{{ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=leader_cert.certificate_id) }}', 'shareBtn-{{ leader_cert.certificate_id }}')" title="Copy Certificate Link">
+                                                     <i class="bi bi-link-45deg"></i> Share
+                                                 </button>
+                                             </div>
+                                        {% else %}
+                                            <span class="text-muted small">—</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                
+                                <!-- Members Rows -->
+                                {% for member in team.members %}
+                                    {% set m_cert = certs_by_member.get(member.member_id) %}
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-light">{{ member.student_name }}</div>
+                                            <div class="text-secondary small">{{ member.email }}</div>
+                                        </td>
+                                        <td><code>{{ member.registration_number }}</code></td>
+                                        <td><span class="badge bg-secondary">Member</span></td>
+                                        <td>
+                                            {% if m_cert %}
+                                                <code class="text-success">{{ m_cert.certificate_id }}</code>
+                                            {% else %}
+                                                <span class="text-muted small">Not Generated</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if m_cert %}
+                                                 <div class="btn-group btn-group-sm">
+                                                      <a href="{{ url_for('preview_certificate', cert_id=m_cert.certificate_id) }}" target="_blank" class="btn btn-outline-info" title="Preview Certificate">
+                                                          <i class="bi bi-eye"></i>
+                                                      </a>
+                                                     <a href="{{ url_for('leader.download_team_certificate', cert_id=m_cert.certificate_id) }}" class="btn btn-outline-primary" title="Download">
+                                                         <i class="bi bi-download"></i>
+                                                     </a>
+                                                     <button type="button" class="btn btn-outline-secondary" id="shareBtn-{{ m_cert.certificate_id }}" onclick="copyToClipboard('{{ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=m_cert.certificate_id) }}', 'shareBtn-{{ m_cert.certificate_id }}')" title="Copy Certificate Link">
+                                                         <i class="bi bi-link-45deg"></i> Share
+                                                     </button>
+                                                 </div>
+                                            {% else %}
+                                                <span class="text-muted small">—</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(text, elementId) {
+    navigator.clipboard.writeText(text).then(function() {
+        const btn = document.getElementById(elementId);
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        setTimeout(function() {
+            btn.innerHTML = originalContent;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 2000);
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+</script>
+{% endblock %}

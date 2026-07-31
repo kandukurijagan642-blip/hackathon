@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block page_title %}Register Team{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary max-width-800 mx-auto">
+        <h5 class="mb-4 text-primary"><i class="bi bi-person-plus-fill"></i> Register New Hackathon Team</h5>
+        
+        <form action="{{ url_for('organizer.register_team') }}" method="POST">
+            <!-- 1. Team Metadata Section -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="team_name" class="form-label">Team Name *</label>
+                    <input type="text" class="form-control" id="team_name" name="team_name" required placeholder="e.g. Code Gladiators">
+                </div>
+                <div class="col-md-6">
+                    <label for="domain" class="form-label">Project Domain *</label>
+                    <input type="text" class="form-control" id="domain" name="domain" required placeholder="e.g. AI/ML, FinTech, Web3">
+                </div>
+                
+                <div class="col-12">
+                    <label for="project_title" class="form-label">Project Title *</label>
+                    <input type="text" class="form-control" id="project_title" name="project_title" required placeholder="e.g. Smart Traffic Analytics">
+                </div>
+                
+                <div class="col-12">
+                    <label for="problem_statement" class="form-label">Problem Statement *</label>
+                    <textarea class="form-control" id="problem_statement" name="problem_statement" rows="3" required placeholder="Describe the problem being solved..."></textarea>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="college" class="form-label">College *</label>
+                    <input type="text" class="form-control" id="college" name="college" required placeholder="e.g. Stanford University">
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="department" class="form-label">Department *</label>
+                    <input type="text" class="form-control" id="department" name="department" required placeholder="e.g. Computer Science & Eng.">
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- 2. Team Leader Section -->
+            <h5 class="mb-3 text-primary"><i class="bi bi-person-badge-fill"></i> Team Leader Details</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <label for="leader_name" class="form-label">Leader Name *</label>
+                    <input type="text" class="form-control" id="leader_name" name="leader_name" required placeholder="Full Name">
+                </div>
+                <div class="col-md-4">
+                    <label for="leader_email" class="form-label">Leader Email *</label>
+                    <input type="email" class="form-control" id="leader_email" name="leader_email" required placeholder="leader@domain.com">
+                </div>
+                <div class="col-md-4">
+                    <label for="leader_phone" class="form-label">Leader Phone *</label>
+                    <input type="tel" class="form-control" id="leader_phone" name="leader_phone" required placeholder="+1 234 567 8900">
+                </div>
+            </div>
+            
+            <hr class="my-4">
+            
+            <!-- 3. Team Members Section -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0 text-primary"><i class="bi bi-people-fill"></i> Team Member Details</h5>
+            </div>
+            
+            <div id="members-container" class="mb-4">
+                <!-- 2nd Team Member -->
+                <div class="card border p-3 mb-3 bg-primary-subtle border-primary-subtle">
+                    <h6 class="mb-2 text-primary"><i class="bi bi-person-fill"></i> 2nd Team Member Details *</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" name="member_name[]" required placeholder="Name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Reg. Number</label>
+                            <input type="text" class="form-control form-control-sm" name="member_reg[]" required placeholder="Reg Number">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Email Address</label>
+                            <input type="email" class="form-control form-control-sm" name="member_email[]" required placeholder="email@domain.com">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Phone Number</label>
+                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" required placeholder="Phone Number">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3rd Team Member -->
+                <div class="card border p-3 mb-3 bg-primary-subtle border-primary-subtle">
+                    <h6 class="mb-2 text-primary"><i class="bi bi-person-fill"></i> 3rd Team Member Details *</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" name="member_name[]" required placeholder="Name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Reg. Number</label>
+                            <input type="text" class="form-control form-control-sm" name="member_reg[]" required placeholder="Reg Number">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Email Address</label>
+                            <input type="email" class="form-control form-control-sm" name="member_email[]" required placeholder="email@domain.com">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Phone Number</label>
+                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" required placeholder="Phone Number">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4th Team Member -->
+                <div class="card border p-3 mb-3 bg-primary-subtle border-primary-subtle">
+                    <h6 class="mb-2 text-primary"><i class="bi bi-person-fill"></i> 4th Team Member Details *</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label small">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" name="member_name[]" required placeholder="Name">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Reg. Number</label>
+                            <input type="text" class="form-control form-control-sm" name="member_reg[]" required placeholder="Reg Number">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Email Address</label>
+                            <input type="email" class="form-control form-control-sm" name="member_email[]" required placeholder="email@domain.com">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small">Phone Number</label>
+                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" required placeholder="Phone Number">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <a href="{{ url_for('organizer.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary btn-primary-custom px-4">Register Team</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

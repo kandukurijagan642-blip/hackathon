@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block page_title %}Leaderboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <!-- Ranks Header Actions -->
+    <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h5 class="mb-1 text-primary"><i class="bi bi-trophy-fill"></i> Final Winner Declaration</h5>
+                <p class="text-secondary small mb-0">Compute the rankings based on current evaluations. This will freeze and lock results into the podium records.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <form action="{{ url_for('admin.declare_winners') }}" method="POST" onsubmit="return confirm('This will calculate final standings and overwrite any previous winner declarations. Proceed?');">
+                    <button type="submit" class="btn btn-warning btn-sm fw-semibold text-dark">
+                        <i class="bi bi-flag-fill"></i> Declare Winners & Lock Rankings
+                    </button>
+                </form>
+                <a href="{{ url_for('admin.export_reports', format_type='excel', report_type='final') }}" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-file-spreadsheet"></i> Export Excel
+                </a>
+                <a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='final') }}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-file-pdf"></i> Export PDF
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Leaderboard Table -->
+    <div class="card border-0 shadow-sm p-4 bg-secondary">
+        <h5 class="mb-3 text-primary"><i class="bi bi-list-ol"></i> Standings</h5>
+        <div class="table-responsive-custom">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">Rank</th>
+                        <th>Team Name</th>
+                        <th>Leader</th>
+                        <th>College</th>
+                        <th class="text-center">Round 1 (Avg)</th>
+                        <th class="text-center">Round 2 (Avg)</th>
+                        <th class="text-center">Round 3 (Avg)</th>
+                        <th class="text-end">Grand Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in leaderboard %}
+                        <tr class="{% if item.rank == 1 %}table-warning fw-bold{% elif item.rank == 2 %}table-secondary{% elif item.rank == 3 %}table-light{% endif %}">
+                            <td class="text-center">
+                                {% if item.rank == 1 %}
+                                    <span class="fs-5 text-warning"><i class="bi bi-award-fill"></i> 1</span>
+                                {% elif item.rank == 2 %}
+                                    <span class="fs-6 text-muted"><i class="bi bi-award-fill"></i> 2</span>
+                                {% elif item.rank == 3 %}
+                                    <span class="fs-6 text-bronze" style="color: #cd7f32;"><i class="bi bi-award-fill"></i> 3</span>
+                                {% else %}
+                                    {{ item.rank }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ item.team.team_name }}</strong>
+                                <div class="text-muted small" style="font-size: 10px;">{{ item.team.project_title }}</div>
+                            </td>
+                            <td>{{ item.leader_name }}</td>
+                            <td>{{ item.team.college }}</td>
+                            <td class="text-center">{{ item.round1 }}</td>
+                            <td class="text-center">{{ item.round2 }}</td>
+                            <td class="text-center">{{ item.round3 }}</td>
+                            <td class="text-end text-primary fw-bold">{{ item.grand_total }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">No evaluations submitted yet. Standings are empty.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

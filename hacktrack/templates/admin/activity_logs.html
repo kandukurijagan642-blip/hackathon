@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block page_title %}System Audit Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary">
+        <h5 class="mb-4 text-primary"><i class="bi bi-shield-slash-fill"></i> System-Wide Audit Trails</h5>
+        <div class="table-responsive-custom">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>User</th>
+                        <th>Role</th>
+                        <th>Action Performed</th>
+                        <th>IP Address</th>
+                        <th>Audit Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td class="text-muted small">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td><strong>{{ log.user.name if log.user else 'System / Deleted' }}</strong></td>
+                            <td><span class="badge bg-secondary">{{ log.user.role if log.user else 'System' }}</span></td>
+                            <td><span class="text-primary fw-medium">{{ log.action }}</span></td>
+                            <td><code>{{ log.ip_address or 'N/A' }}</code></td>
+                            <td class="small">{{ log.details or '' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted">No activity logs recorded.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

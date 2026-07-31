@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block page_title %}Certificate System Control{% endblock %}
+
+{% block content %}
+<style>
+    .dropdown-menu-dark-custom {
+        background-color: #1e293b !important;
+        border: 1px solid #334155 !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5) !important;
+        padding: 6px 0 !important;
+        z-index: 1050;
+    }
+    .dropdown-menu-dark-custom .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        color: #38bdf8 !important;
+    }
+</style>
+<div class="container-fluid fade-in-up">
+    <!-- Configuration Row -->
+    <div class="row g-4 mb-4">
+        <!-- Enable/Disable Console -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card border-0 shadow-sm p-4 bg-secondary h-100">
+                <h5 class="mb-3 text-primary"><i class="bi bi-cpu-fill"></i> System Toggle</h5>
+                <p class="text-secondary small mb-4">
+                    Enable or disable the certificate generation module for all Team Leaders.
+                </p>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-light">Status:</span>
+                    {% if certs_enabled %}
+                        <span class="badge bg-success fs-6"><i class="bi bi-check-circle-fill"></i> Enabled</span>
+                    {% else %}
+                        <span class="badge bg-danger fs-6"><i class="bi bi-x-circle-fill"></i> Disabled</span>
+                    {% endif %}
+                </div>
+                <form action="{{ url_for('admin.toggle_certificates') }}" method="POST">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        {% if certs_enabled %}
+                            <i class="bi bi-lock-fill"></i> Disable Generation
+                        {% else %}
+                            <i class="bi bi-unlock-fill"></i> Enable Generation
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Asset Upload Console -->
+        <div class="col-md-6 col-lg-5">
+            <div class="card border-0 shadow-sm p-4 bg-secondary h-100">
+                <h5 class="mb-3 text-primary"><i class="bi bi-file-earmark-image"></i> Dynamic Layout Assets</h5>
+                <p class="text-secondary small mb-3">
+                    Upload official organization assets to brand the ReportLab certificate dynamically.
+                </p>
+                <form action="{{ url_for('admin.upload_certificate_assets') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-2">
+                        <label class="form-label text-muted small fw-bold mb-1">College/Symposium Logo (.png)</label>
+                        <input class="form-control form-control-sm" type="file" name="logo_file" accept=".png">
+                        {% if logo_path %}
+                            <span class="text-success small d-block mt-1"><i class="bi bi-check"></i> Logo loaded successfully</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold mb-1">Organizer Signature (.png)</label>
+                        <input class="form-control form-control-sm" type="file" name="signature_file" accept=".png">
+                        {% if sig_path %}
+                            <span class="text-success small d-block mt-1"><i class="bi bi-check"></i> Signature loaded successfully</span>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-primary-custom btn-sm w-100">
+                        <i class="bi bi-upload"></i> Save & Apply Assets
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Batch Controls -->
+        <div class="col-md-12 col-lg-3">
+            <div class="card border-0 shadow-sm p-4 bg-secondary h-100">
+                <h5 class="mb-3 text-primary"><i class="bi bi-layers-fill"></i> Batch Controls</h5>
+                <p class="text-secondary small mb-4">
+                    Perform batch maintenance actions across the entire active registry database.
+                </p>
+                <form action="{{ url_for('admin.release_all_certificates') }}" method="POST" class="mb-3" onsubmit="return confirm('Are you sure you want to approve, release, and publish certificates for all teams system-wide?');">
+                    <button type="submit" class="btn btn-success w-100 btn-sm fw-bold mb-3">
+                        <i class="bi bi-patch-check-fill"></i> Approve & Release All
+                    </button>
+                </form>
+                <form action="{{ url_for('admin.regenerate_all_certificates') }}" method="POST" class="mb-3">
+                    <button type="submit" class="btn btn-outline-warning w-100 btn-sm" onclick="return confirm('Are you sure you want to regenerate all certificate PDF templates?');">
+                        <i class="bi bi-arrow-repeat"></i> Regenerate PDFs
+                    </button>
+                </form>
+                <a href="{{ url_for('admin.export_certificates_csv') }}" class="btn btn-outline-info w-100 btn-sm">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export Registry (CSV)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="certTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="teams-tab" data-bs-toggle="tab" data-bs-target="#teams-pane" type="button" role="tab" aria-controls="teams-pane" aria-selected="true">
+                <i class="bi bi-people-fill"></i> Team Management
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="ledger-tab" data-bs-toggle="tab" data-bs-target="#ledger-pane" type="button" role="tab" aria-controls="ledger-pane" aria-selected="false">
+                <i class="bi bi-journal-text"></i> Certificate Ledger
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="certTabContent">
+        <!-- Teams View Pane -->
+        <div class="tab-pane fade show active" id="teams-pane" role="tabpanel" aria-labelledby="teams-tab" tabindex="0">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary"><i class="bi bi-shield-check"></i> Team Release & Lock Actions</h5>
+                    <span class="badge bg-primary">{{ teams|length }} Teams Registered</span>
+                </div>
+
+                <div class="table-responsive-custom">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Team Name</th>
+                                <th>College</th>
+                                <th class="text-center">Members</th>
+                                <th class="text-center">Certificates</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for team in teams %}
+                                {% set team_certs = team.certificates %}
+                                {% set generated = team_certs|length > 0 %}
+                                {% set is_released = generated and team_certs[0].certificate_status == 'RELEASED' %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ team.team_name }}</strong>
+                                        <div class="small text-muted">ID: <code>{{ team.team_id }}</code></div>
+                                    </td>
+                                    <td>{{ team.college }}</td>
+                                    <td class="text-center">{{ team.members|length + 1 }}</td>
+                                    <td class="text-center">
+                                        {% if generated %}
+                                            <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ team_certs|length }} Created</span>
+                                        {% else %}
+                                            <span class="badge bg-warning"><i class="bi bi-hourglass"></i> Pending</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if is_released %}
+                                            <span class="badge bg-success">RELEASED</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">LOCKED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end gap-2">
+                                            {% if generated %}
+                                                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#certDetailsModal-{{ team.team_id }}">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                                {% if not is_released %}
+                                                    <form action="{{ url_for('admin.release_team_certificates', team_id=team.team_id) }}" method="POST" style="display:inline;">
+                                                        <button type="submit" class="btn btn-sm btn-success">
+                                                            <i class="bi bi-unlock"></i> Release
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <form action="{{ url_for('admin.lock_team_certificates', team_id=team.team_id) }}" method="POST" style="display:inline;">
+                                                        <button type="submit" class="btn btn-sm btn-danger">
+                                                            <i class="bi bi-lock"></i> Lock Again
+                                                        </button>
+                                                    </form>
+                                                    <form action="{{ url_for('admin.release_team_certificates', team_id=team.team_id) }}" method="POST" style="display:inline;">
+                                                        <button type="submit" class="btn btn-sm btn-outline-success">
+                                                            <i class="bi bi-send"></i> Resend
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                                <a href="{{ url_for('admin.download_team_certificates_zip', team_id=team.team_id) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-file-zip"></i> ZIP
+                                                </a>
+                                                {% set mail_subject = "Hackathon Certificates - Team " ~ team.team_name %}
+                                                {% set ns = namespace(body="Hello " ~ team.leader.name ~ ",\n\nYour team's certificates have been released and are ready!\n\nTeam ID: " ~ team.team_id ~ "\nCollege: " ~ team.college ~ "\n\nDirect links to preview/download PDF certificates:\n") %}
+                                                {% for cert in team_certs %}
+                                                    {% set ns.body = ns.body ~ "- " ~ cert.student_name ~ ": " ~ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=cert.certificate_id) ~ "\n" %}
+                                                {% endfor %}
+                                                {% set ns.body = ns.body ~ "\nBest regards,\nHackTrack Organizing Committee" %}
+                                                {% set mail_body = ns.body %}
+                                                {% set cert_ids = [] %}
+                                                {% for cert in team_certs %}
+                                                    {% set _ = cert_ids.append(cert.certificate_id) %}
+                                                {% endfor %}
+                                                {% set compose_to = team.leader.email ~ '.com' if '@' in team.leader.email and '.' not in team.leader.email.split('@')[1] else team.leader.email %}
+                                                <div class="dropdown d-inline-block">
+                                                    <button class="btn btn-sm btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="bi bi-envelope"></i> Send Mail
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom">
+                                                        <li>
+                                                            <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST" style="margin: 0;">
+                                                                <button type="submit" class="dropdown-item text-light" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
+                                                                    <i class="bi bi-send-fill text-success" style="margin-right: 8px;"></i> Send Immediately (Backend)
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
+                                                        <li>
+                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ cert_ids|tojson }}, 'https://mail.google.com/mail/?view=cm&fs=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ cert_ids|tojson }}, 'https://outlook.live.com/owa/?path=/mail/action/compose&to={{ compose_to|urlencode }}&subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-light" href="mailto:{{ compose_to }}?subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                <i class="bi bi-envelope-open text-info" style="margin-right: 8px;"></i> Open in Local Mail Client
+                                                            </a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            {% else %}
+                                                <form action="{{ url_for('admin.release_team_certificates', team_id=team.team_id) }}" method="POST" style="display:inline;">
+                                                    <button type="submit" class="btn btn-sm btn-primary">
+                                                        <i class="bi bi-plus-circle"></i> Generate & Release
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ledger View Pane -->
+        <div class="tab-pane fade" id="ledger-pane" role="tabpanel" aria-labelledby="ledger-tab" tabindex="0">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-4 text-primary"><i class="bi bi-journal-text"></i> Certificate Registry Ledger</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 text-light">
+                        <thead>
+                            <tr>
+                                <th>Certificate ID</th>
+                                <th>Student Name</th>
+                                <th>Reg No.</th>
+                                <th>Team Name</th>
+                                <th>Category</th>
+                                <th>Downloads</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cert in certs %}
+                                <tr>
+                                    <td><code>{{ cert.certificate_id }}</code></td>
+                                    <td><strong class="text-light">{{ cert.student_name }}</strong></td>
+                                    <td><code>{{ cert.registration_number }}</code></td>
+                                    <td>{{ cert.team_name }}</td>
+                                    <td><span class="badge bg-primary">{{ cert.certificate_type }}</span></td>
+                                    <td><span class="badge bg-secondary">{{ cert.download_count or 0 }}</span></td>
+                                    <td>
+                                        {% if cert.certificate_status == 'RELEASED' %}
+                                            <span class="badge bg-success">RELEASED</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">LOCKED</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('admin.download_certificate', cert_id=cert.certificate_id, preview=1) }}" target="_blank" class="btn btn-xs btn-outline-info">
+                                            <i class="bi bi-eye"></i> View PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted py-4">
+                                        No certificates found in the active database registry.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Certificates Modals Container (placed outside transformed containers to prevent z-index backdrop bugs) -->
+    {% for team in teams %}
+        {% set team_certs = team.certificates %}
+        {% if team_certs %}
+        <div class="modal fade" id="certDetailsModal-{{ team.team_id }}" tabindex="-1" aria-labelledby="certDetailsModalLabel-{{ team.team_id }}" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered text-start">
+                <div class="modal-content" style="background-color: #1e293b !important; color: #ffffff !important; border: 1px solid #334155; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);">
+                    <div class="modal-header" style="background-color: #0f172a !important; border-bottom: 1px solid #334155; padding: 18px 24px;">
+                        <h5 class="modal-title" id="certDetailsModalLabel-{{ team.team_id }}" style="color: #38bdf8 !important; font-weight: 700; margin: 0; font-size: 17px; white-space: nowrap;">
+                            <i class="bi bi-journal-check"></i> Team Certificates Ledger: {{ team.team_name }}
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-0" style="background-color: #1e293b !important;">
+                        <div class="table-responsive">
+                            <table class="table align-middle text-light mb-0" style="background-color: #1e293b !important; border-collapse: collapse; border: 0 !important; width: 100%;">
+                                <thead>
+                                    <tr style="background-color: #0f172a !important; border-bottom: 1px solid #334155; color: #94a3b8 !important; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px;">
+                                        <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; white-space: nowrap !important;">Student Name</th>
+                                        <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: center; white-space: nowrap !important;">Reg Number</th>
+                                        <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: center; white-space: nowrap !important;">Certificate ID</th>
+                                        <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: center; white-space: nowrap !important;">Downloads</th>
+                                        <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: right; white-space: nowrap !important;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="background-color: #1e293b !important;">
+                                    {% for cert in team_certs %}
+                                        <tr style="background-color: #1e293b !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 14px;">
+                                            <td style="padding: 16px 24px; background-color: #1e293b !important; color: #ffffff !important; border: 0 !important; white-space: nowrap !important;">
+                                                <span style="font-weight: 600; color: #ffffff !important; font-size: 15px;">{{ cert.student_name }}</span>
+                                            </td>
+                                            <td style="padding: 16px 24px; background-color: #1e293b !important; border: 0 !important; text-align: center; white-space: nowrap !important;">
+                                                <code style="background-color: rgba(56, 189, 248, 0.15) !important; color: #38bdf8 !important; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(56, 189, 248, 0.3) !important; font-weight: 600; display: inline-block; white-space: nowrap !important;">{{ cert.registration_number }}</code>
+                                            </td>
+                                            <td style="padding: 16px 24px; background-color: #1e293b !important; border: 0 !important; text-align: center; white-space: nowrap !important;">
+                                                <code style="background-color: rgba(244, 114, 182, 0.15) !important; color: #f472b6 !important; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(244, 114, 182, 0.3) !important; font-weight: 600; display: inline-block; white-space: nowrap !important;">{{ cert.certificate_id }}</code>
+                                            </td>
+                                            <td style="padding: 16px 24px; background-color: #1e293b !important; border: 0 !important; text-align: center; white-space: nowrap !important;">
+                                                <span class="badge" style="background-color: rgba(255, 255, 255, 0.08) !important; color: #ffffff !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; font-weight: 600; padding: 6px 12px; font-size: 13px; border-radius: 6px; white-space: nowrap !important; display: inline-block;">{{ cert.download_count or 0 }}</span>
+                                            </td>
+                                            <td style="padding: 16px 24px; background-color: #1e293b !important; border: 0 !important; text-align: right; white-space: nowrap !important;">
+                                                <div class="d-inline-flex gap-2" style="white-space: nowrap !important;">
+                                                    <a href="{{ url_for('preview_certificate', cert_id=cert.certificate_id) }}" target="_blank" class="btn btn-sm btn-outline-info" style="border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap !important;">
+                                                        <i class="bi bi-eye"></i> Preview
+                                                    </a>
+                                                    <a href="{{ url_for('admin.download_certificate', cert_id=cert.certificate_id) }}" class="btn btn-sm btn-success" style="border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; background-color: #10b981 !important; border-color: #10b981 !important; color: #ffffff !important; white-space: nowrap !important;">
+                                                        <i class="bi bi-download"></i> Download
+                                                    </a>
+                                                    {% set cert_preview_url = request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=cert.certificate_id) %}
+                                                    <div class="dropdown d-inline-block">
+                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" id="shareBtn-{{ cert.certificate_id }}" style="border-radius: 6px; padding: 6px 14px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; color: #ffffff; border-color: #475569;">
+                                                            <i class="bi bi-share"></i> Share
+                                                        </button>
+                                                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom">
+                                                            <li>
+                                                                <button class="dropdown-item text-light" onclick="copyToClipboard('{{ cert_preview_url }}', 'shareBtn-{{ cert.certificate_id }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
+                                                                    <i class="bi bi-clipboard text-warning" style="margin-right: 8px;"></i> Copy Link
+                                                                </button>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item text-light" href="https://api.whatsapp.com/send?text=Check%20out%20my%20official%20HackTrack%20participation%20certificate%20here%3A%20{{ cert_preview_url|urlencode }}" target="_blank" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                    <i class="bi bi-whatsapp text-success" style="margin-right: 8px;"></i> Share to WhatsApp
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item text-light" href="https://t.me/share/url?url={{ cert_preview_url|urlencode }}&text=Check%20out%20my%20official%20HackTrack%20participation%20certificate%21" target="_blank" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                    <i class="bi bi-telegram text-info" style="margin-right: 8px;"></i> Share to Telegram
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer" style="background-color: #0f172a !important; border-top: 1px solid #334155; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="text-muted small">
+                            Leader Email: <code style="color: #38bdf8;">{{ team.leader.email }}</code>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <div class="dropdown">
+                                <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; color: #0f172a;">
+                                    <i class="bi bi-envelope"></i> Send Team PDFs via Email
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.5);">
+                                    <li>
+                                        <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST" style="margin: 0;">
+                                            <button type="submit" class="dropdown-item text-light" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
+                                                <i class="bi bi-send-fill text-success" style="margin-right: 8px;"></i> Send Immediately (Backend)
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
+                                    <li>
+                                        <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ cert_ids|tojson }}, 'https://mail.google.com/mail/?view=cm&fs=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                            <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ cert_ids|tojson }}, 'https://outlook.live.com/owa/?path=/mail/action/compose&to={{ compose_to|urlencode }}&subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                            <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; background-color: #334155; border-color: #334155; color: #ffffff;">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyToClipboard(text, elementId) {
+    navigator.clipboard.writeText(text).then(function() {
+        const btn = document.getElementById(elementId);
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        setTimeout(function() {
+            btn.innerHTML = originalContent;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 2000);
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+
+function downloadAndCompose(teamId, composeUrl) {
+    // 1. Trigger the download of the ZIP file
+    const downloadUrl = "{{ url_for('admin.download_team_certificates_zip', team_id='PLACEHOLDER') }}".replace('PLACEHOLDER', teamId);
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    iframe.src = downloadUrl;
+    document.body.appendChild(iframe);
+    
+    // Remove the iframe after a short delay
+    setTimeout(() => {
+        document.body.removeChild(iframe);
+    }, 2000);
+    
+    // 2. Open the compose URL in a new window/tab
+    window.open(composeUrl, '_blank');
+}
+</script>
+{% endblock %}

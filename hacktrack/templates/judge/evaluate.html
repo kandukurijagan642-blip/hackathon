@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block page_title %}Evaluation - Round {{ round_num }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="row g-4 justify-content-center">
+        <!-- Main Form Column -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0 text-primary"><i class="bi bi-file-earmark-spreadsheet-fill"></i> Scoring Sheet for Round {{ round_num }}</h5>
+                    <span class="badge bg-secondary">Team: {{ team.team_name }}</span>
+                </div>
+                
+                <div class="p-3 mb-4 rounded bg-primary-subtle text-secondary small">
+                    <strong>Project Title:</strong> {{ team.problem_submission.project_title if team.problem_submission else '—' }} <br>
+                    <strong>Domain:</strong> {{ team.problem_submission.domain if team.problem_submission else '—' }} | <strong>College:</strong> {{ team.college }} <br>
+                    <strong>Problem Statement:</strong> {{ team.problem_submission.problem_statement if team.problem_submission else '—' }}
+                </div>
+                
+                <form action="{{ url_for('judge.evaluate', round_num=round_num, team_id=team.team_id) }}" method="POST">
+                    
+                    {% if round_num == 1 %}
+                        <!-- ROUND 1 SCORING FIELDS -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="innovation" class="form-label fw-medium">Innovation (Max 25)</label>
+                                <input type="number" class="form-control" id="innovation" name="innovation" min="0" max="25" value="{{ marks.innovation if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="presentation" class="form-label fw-medium">Presentation Skills (Max 25)</label>
+                                <input type="number" class="form-control" id="presentation" name="presentation" min="0" max="25" value="{{ marks.presentation if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="feasibility" class="form-label fw-medium">Feasibility (Max 25)</label>
+                                <input type="number" class="form-control" id="feasibility" name="feasibility" min="0" max="25" value="{{ marks.feasibility if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="confidence" class="form-label fw-medium">Confidence (Max 25)</label>
+                                <input type="number" class="form-control" id="confidence" name="confidence" min="0" max="25" value="{{ marks.confidence if marks else 0 }}" required>
+                            </div>
+                        </div>
+                    
+                    {% elif round_num == 2 %}
+                        <!-- ROUND 2 SCORING FIELDS -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="prototype" class="form-label fw-medium">Prototype / Mockup (Max 30)</label>
+                                <input type="number" class="form-control" id="prototype" name="prototype" min="0" max="30" value="{{ marks.prototype if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="technical_implementation" class="form-label fw-medium">Technical Implementation (Max 30)</label>
+                                <input type="number" class="form-control" id="technical_implementation" name="technical_implementation" min="0" max="30" value="{{ marks.technical_implementation if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="uiux" class="form-label fw-medium">UI / UX Design (Max 20)</label>
+                                <input type="number" class="form-control" id="uiux" name="uiux" min="0" max="20" value="{{ marks.uiux if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="question_answer" class="form-label fw-medium">Q&A / Defence (Max 20)</label>
+                                <input type="number" class="form-control" id="question_answer" name="question_answer" min="0" max="20" value="{{ marks.question_answer if marks else 0 }}" required>
+                            </div>
+                        </div>
+                        
+                    {% elif round_num == 3 %}
+                        <!-- ROUND 3 SCORING FIELDS -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="working_demo" class="form-label fw-medium">Working Demo Effectiveness (Max 40)</label>
+                                <input type="number" class="form-control" id="working_demo" name="working_demo" min="0" max="40" value="{{ marks.working_demo if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="business_model" class="form-label fw-medium">Business Model / Monetization (Max 20)</label>
+                                <input type="number" class="form-control" id="business_model" name="business_model" min="0" max="20" value="{{ marks.business_model if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="scalability" class="form-label fw-medium">Scalability / Future Scope (Max 20)</label>
+                                <input type="number" class="form-control" id="scalability" name="scalability" min="0" max="20" value="{{ marks.scalability if marks else 0 }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="presentation_r3" class="form-label fw-medium">Pitch / Presentation (Max 20)</label>
+                                <!-- ID is presentation_r3, name is presentation to map to round3_marks.presentation column -->
+                                <input type="number" class="form-control" id="presentation_r3" name="presentation" min="0" max="20" value="{{ marks.presentation if marks else 0 }}" required>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-4">
+                        <label for="comments" class="form-label fw-medium">Jury Feedback / Comments</label>
+                        <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Provide constructive feedback for the team...">{{ marks.comments if marks else '' }}</textarea>
+                    </div>
+                    
+                    <!-- Hidden field to post calculated total to backend, just in case -->
+                    <input type="hidden" name="total_marks" id="total-marks-input" value="{{ marks.total_marks if marks else 0 }}">
+                    
+                    <!-- Submission actions -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('judge.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" name="action" value="draft" class="btn btn-warning text-dark fw-medium">
+                            <i class="bi bi-file-earmark-plus"></i> Save Draft
+                        </button>
+                        <button type="submit" name="action" value="final" class="btn btn-primary btn-primary-custom" onsubmit="return confirm('Final submission cannot be edited once saved. Are you sure you want to lock this evaluation?');">
+                            <i class="bi bi-lock-fill"></i> Submit Final & Lock
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Score Card Summary Sticky Panel -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 bg-secondary sticky-top" style="top: 90px; z-index: 10;">
+                <h5 class="mb-3 text-primary"><i class="bi bi-calculator"></i> Evaluation Summary</h5>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-secondary font-weight-500">Grading Target:</span>
+                    <span class="badge bg-primary">Round {{ round_num }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-secondary font-weight-500">Maximum Possible:</span>
+                    <span class="text-primary font-weight-700">100 Marks</span>
+                </div>
+                
+                <div class="text-center p-4 bg-primary-subtle rounded border border-primary-subtle">
+                    <div class="text-muted small uppercase tracking-wider mb-1">AGGREGATED MARKS</div>
+                    <div class="display-3 font-weight-800 text-primary" id="total-marks-display">
+                        {{ marks.total_marks if marks else 0 }}
+                    </div>
+                    <div class="text-muted small">out of 100</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

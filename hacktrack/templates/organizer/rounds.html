@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block page_title %}Evaluation Rounds Control{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary max-width-600 mx-auto">
+        <h5 class="mb-4 text-primary"><i class="bi bi-shield-check"></i> Jury Evaluation Rounds Control</h5>
+        <p class="text-secondary small mb-4">
+            Enable or disable specific rounds of evaluations below. Judges will only be able to view and score teams in rounds that have been unlocked by the organizer.
+        </p>
+
+        <!-- Problem Statement Status (FYI) -->
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+            <div>
+                <h6 class="mb-0">Problem Statements Registration</h6>
+                <span class="text-secondary small">Release statement submission to team leaders</span>
+            </div>
+            <div>
+                {% set prob_status = get_setting('problem_released', 'False') %}
+                <form action="{{ url_for('organizer.toggle_setting', key='problem_released') }}" method="POST">
+                    {% if prob_status == 'True' %}
+                        <button type="submit" class="btn btn-sm btn-success">
+                            <i class="bi bi-unlock-fill"></i> Released (Lock)
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-lock-fill"></i> Release Statement
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Evaluation Rounds Section -->
+        <div class="mb-3">
+            <h6 class="mb-3 text-secondary"><i class="bi bi-clipboard2-check"></i> Unlock/Lock Evaluation Sessions</h6>
+            
+            <!-- Round 1 -->
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-dark-card rounded">
+                <div>
+                    <strong class="text-light">Round 1 (Innovation & Pitch)</strong>
+                    <div class="text-muted small">Access for judges to enter pitch & ideation scores</div>
+                </div>
+                <div class="form-check form-switch fs-4">
+                    <input class="form-check-input ajax-toggle-switch" type="checkbox" role="switch" id="round1_switch" data-key="round1_enabled" {% if get_setting('round1_enabled', 'False') == 'True' %}checked{% endif %}>
+                </div>
+            </div>
+
+            <!-- Round 2 -->
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-dark-card rounded">
+                <div>
+                    <strong class="text-light">Round 2 (Prototype & Implementation)</strong>
+                    <div class="text-muted small">Access for judges to enter core build & tech scores</div>
+                </div>
+                <div class="form-check form-switch fs-4">
+                    <input class="form-check-input ajax-toggle-switch" type="checkbox" role="switch" id="round2_switch" data-key="round2_enabled" {% if get_setting('round2_enabled', 'False') == 'True' %}checked{% endif %}>
+                </div>
+            </div>
+
+            <!-- Round 3 -->
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-dark-card rounded">
+                <div>
+                    <strong class="text-light">Round 3 (Working Demo & Scale)</strong>
+                    <div class="text-muted small">Access for judges to enter final demo & scale scores</div>
+                </div>
+                <div class="form-check form-switch fs-4">
+                    <input class="form-check-input ajax-toggle-switch" type="checkbox" role="switch" id="round3_switch" data-key="round3_enabled" {% if get_setting('round3_enabled', 'False') == 'True' %}checked{% endif %}>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-end mt-4">
+            <a href="{{ url_for('organizer.dashboard') }}" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-dark-card {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+}
+body.dark-mode .bg-dark-card {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

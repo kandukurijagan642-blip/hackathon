@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block page_title %}Team Leader Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    {% if not team %}
+        <div class="alert alert-danger">No team configuration linked to this user account. Please contact an organizer.</div>
+    {% else %}
+        
+        <!-- Welcome banner -->
+        <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h4 class="text-primary mb-1">Team: {{ team.team_name }}</h4>
+                    <p class="text-secondary small mb-0">Custom Team ID: <code>{{ team.team_id }}</code></p>
+                </div>
+                <div>
+                    {% if not problem_released %}
+                        <span class="badge bg-danger p-2"><i class="bi bi-lock-fill"></i> Problem Submission: Locked</span>
+                    {% else %}
+                        {% if not submission %}
+                            <a href="{{ url_for('leader.submit_problem') }}" class="btn btn-warning btn-sm text-dark fw-bold animate-pulse">
+                                <i class="bi bi-unlock-fill"></i> Submit Problem Statement
+                            </a>
+                        {% else %}
+                            <span class="badge bg-success p-2"><i class="bi bi-patch-check-fill"></i> Submission Successful</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Phase Alerts -->
+        {% if not problem_released %}
+            <div class="alert alert-warning mb-4"><i class="bi bi-exclamation-triangle-fill"></i> <strong>The problem statement has not been released yet.</strong> Please wait for the event organizers to release the challenges.</div>
+        {% else %}
+            {% if not submission %}
+                <div class="alert alert-info mb-4"><i class="bi bi-info-circle-fill"></i> Phase 2 is open! Click the button above to submit your project title, abstract, domain, and tech stack.</div>
+            {% endif %}
+        {% endif %}
+        
+        <div class="row g-4 mb-4">
+            <!-- Left Info Panel -->
+            <div class="col-lg-8">
+                <!-- Project Submission Details -->
+                <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-file-earmark-code-fill"></i> Project & Submission Details</h5>
+                    
+                    {% if submission %}
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <span class="text-muted small">Project Title</span>
+                                <p class="fw-semibold text-secondary mb-0">{{ submission.project_title }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted small">Domain</span>
+                                <p class="fw-semibold text-secondary mb-0">{{ submission.domain }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted small">Submission Timestamp</span>
+                                <p class="fw-semibold text-secondary mb-0">{{ submission.submission_time.strftime('%Y-%m-%d %H:%M:%S') }} UTC</p>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted small">Problem Statement</span>
+                                <p class="text-secondary small mb-0">{{ submission.problem_statement }}</p>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted small">Abstract</span>
+                                <p class="text-secondary small mb-0">{{ submission.abstract }}</p>
+                            </div>
+                            <div class="col-12">
+                                <span class="text-muted small">Technology Stack</span>
+                                <p class="text-secondary small mb-0"><code>{{ submission.technology_stack }}</code></p>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-folder-x display-4 mb-3 d-block"></i>
+                            {% if not problem_released %}
+                                Project details will be available for entry once the Organizer releases the problem statement.
+                            {% else %}
+                                No project details submitted yet. Please complete your problem statement submission.
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Team Specs -->
+                <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-info-circle-fill"></i> Institutional Details</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <span class="text-muted small">College Name</span>
+                            <p class="fw-semibold text-secondary mb-0">{{ team.college }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small">Department</span>
+                            <p class="fw-semibold text-secondary mb-0">{{ team.department }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <span class="text-muted small">Attendance Status</span>
+                            <p class="mb-0">
+                                {% if attendance_status == 'Present' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Present</span>
+                                    {% if checkin_time %}
+                                        <span class="text-muted small">({{ checkin_time.strftime('%H:%M:%S') }})</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle-fill"></i> Absent / Pending QR Scan</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Evaluation & Feedback -->
+                <div class="card border-0 shadow-sm p-4 bg-secondary">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-chat-left-quote-fill"></i> Evaluations & Jury Feedback</h5>
+                    <div class="table-responsive-custom">
+                        <table class="table table-custom mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Evaluation Round</th>
+                                    <th class="text-center">Average Score</th>
+                                    <th>Jury Comments & Suggestions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Round 1 (Innovation & Pitch)</td>
+                                    <td class="text-center fw-bold text-primary">{{ r1_avg }} / 100</td>
+                                    <td class="small">
+                                        {% for comment in feedback.round1 %}
+                                            <div class="border-bottom pb-1 mb-1">- {{ comment }}</div>
+                                        {% else %}
+                                            <span class="text-muted">No comments posted yet.</span>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Round 2 (Prototype & Implementation)</td>
+                                    <td class="text-center fw-bold text-primary">{{ r2_avg }} / 100</td>
+                                    <td class="small">
+                                        {% for comment in feedback.round2 %}
+                                            <div class="border-bottom pb-1 mb-1">- {{ comment }}</div>
+                                        {% else %}
+                                            <span class="text-muted">No comments posted yet.</span>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Round 3 (Working Demo & scale)</td>
+                                    <td class="text-center fw-bold text-primary">{{ r3_avg }} / 100</td>
+                                    <td class="small">
+                                        {% for comment in feedback.round3 %}
+                                            <div class="border-bottom pb-1 mb-1">- {{ comment }}</div>
+                                        {% else %}
+                                            <span class="text-muted">No comments posted yet.</span>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Sidebar Panel -->
+            <div class="col-lg-4">
+                <!-- Rank Widget -->
+                {% if rank %}
+                <div class="card border-0 shadow-sm p-4 bg-secondary mb-4 text-center">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-trophy-fill"></i> Standings</h5>
+                    <div class="display-3 fw-bold text-warning mb-2">#{{ rank }}</div>
+                    <p class="text-secondary small mb-0">Grand Total Score: <strong>{{ grand_total }}</strong></p>
+                </div>
+                {% endif %}
+                
+                <!-- QR check-in display -->
+                <div class="card border-0 shadow-sm p-4 bg-secondary mb-4 text-center">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-qr-code"></i> Attendance QR Code</h5>
+                    <div class="d-flex justify-content-center mb-3">
+                        <img src="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" alt="Team QR Code" class="border rounded p-1" style="width: 160px; height: 160px;">
+                    </div>
+                    <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" download class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-download"></i> Download QR Code
+                    </a>
+                </div>
+                
+                <!-- Workflow Status -->
+                <div class="card border-0 shadow-sm p-4 bg-secondary">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-info-circle"></i> Workflow Status</h5>
+                    <ul class="list-group list-group-flush mb-0" style="background: transparent;">
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 px-0 py-2">
+                            <span class="text-secondary small">Registration Status</span>
+                            <span class="badge bg-success">Completed</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 px-0 py-2">
+                            <span class="text-secondary small">Project Details</span>
+                            {% if submission %}
+                                <span class="badge bg-success">Submitted</span>
+                            {% else %}
+                                <span class="badge bg-warning">Pending</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 px-0 py-2">
+                            <span class="text-secondary small">Attendance</span>
+                            {% if attendance_status == 'Present' %}
+                                <span class="badge bg-success">Present</span>
+                            {% else %}
+                                <span class="badge bg-danger">Pending Scan</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 px-0 py-2">
+                            <span class="text-secondary small">Evaluation</span>
+                            {% if rank %}
+                                <span class="badge bg-success">Completed</span>
+                            {% else %}
+                                <span class="badge bg-warning">Waiting</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-0 px-0 py-2">
+                            <span class="text-secondary small">Certificates</span>
+                            {% if certificates_active %}
+                                <span class="badge bg-success">Available</span>
+                            {% else %}
+                                <span class="badge bg-danger">Not Available Yet</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                    {% if not certificates_active %}
+                        <div class="alert alert-warning small mb-0 mt-3 py-2 px-3">
+                            <i class="bi bi-exclamation-circle-fill"></i> Certificates will become available after the organizers publish them.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-success small mb-0 mt-3 py-2 px-3">
+                            <i class="bi bi-patch-check-fill"></i> Certificates are published! Go to the <strong>Certificates</strong> tab in the sidebar to download.
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if certificates_active %}
+                <div class="card border-0 shadow-sm p-4 bg-secondary mt-4">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-patch-check-fill"></i> Certificate Console</h5>
+                    {% if not certs_generated %}
+                        <p class="text-secondary small mb-3">Your certificates are ready. Click the button below to generate certificates for all team members.</p>
+                        <form action="{{ url_for('leader.generate_certificates') }}" method="POST">
+                            <button type="submit" class="btn btn-primary btn-primary-custom w-100 py-2">
+                                <i class="bi bi-file-earmark-pdf"></i> Generate Team Certificates
+                            </button>
+                        </form>
+                    {% else %}
+                        <p class="text-secondary small mb-3">Certificates generated! Download them as a ZIP archive or send them to your email.</p>
+                        <div class="d-flex flex-column gap-2">
+                            <a href="{{ url_for('leader.download_all_certificates') }}" class="btn btn-outline-primary btn-sm w-100 py-2 text-center text-decoration-none">
+                                <i class="bi bi-file-zip"></i> Download All (ZIP)
+                            </a>
+                            <form action="{{ url_for('leader.send_certificates_email') }}" method="POST">
+                                <button type="submit" class="btn btn-success btn-sm w-100 py-2">
+                                    <i class="bi bi-envelope-at"></i> Email Certificates
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Member Registry List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm p-4 bg-secondary">
+                    <h5 class="mb-3 text-primary"><i class="bi bi-people-fill"></i> Team Roster</h5>
+                    <div class="table-responsive-custom">
+                        <table class="table table-custom mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Reg. Number</th>
+                                    <th>Email Address</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>{{ current_user.name }}</strong></td>
+                                    <td><span class="badge bg-primary">Team Leader</span></td>
+                                    <td>—</td>
+                                    <td>{{ current_user.email }}</td>
+                                    <td>—</td>
+                                </tr>
+                                {% for member in team.members %}
+                                    <tr>
+                                        <td>{{ member.student_name }}</td>
+                                        <td><span class="badge bg-secondary">Member</span></td>
+                                        <td><code>{{ member.registration_number }}</code></td>
+                                        <td>{{ member.email }}</td>
+                                        <td>{{ member.phone }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    {% endif %}
+</div>
+{% endblock %}

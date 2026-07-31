@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block page_title %}QR Attendance Scanner{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-3 text-primary text-center"><i class="bi bi-qr-code-scan"></i> Scan Team QR Code</h5>
+                <p class="text-secondary small text-center mb-4">Aim the camera at the team's printed or digital QR code. The system will mark check-in automatically.</p>
+                
+                <!-- Display messages from scan result -->
+                <div id="scan-result-msg" class="mb-3"></div>
+                
+                <!-- QR Camera view -->
+                <div class="d-flex justify-content-center mb-4">
+                    <div id="qr-reader" style="width: 100%; max-width: 480px; background-color: var(--bg-primary);"></div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <!-- Fallback / Simulator Panel -->
+                <h6 class="text-primary text-center mb-3"><i class="bi bi-cpu"></i> Check-in Simulator / Manual Check-in</h6>
+                <div class="d-flex justify-content-center">
+                    <div class="input-group" style="max-width: 400px;">
+                        <input type="number" class="form-control" id="sim-team-id" placeholder="Enter Team ID manually...">
+                        <button class="btn btn-outline-warning" type="button" id="sim-checkin-btn">Mark Attendance</button>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('organizer.dashboard') }}" class="btn btn-outline-secondary btn-sm">Return to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- HTML5 QR Code Library from CDN -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const resultMsg = document.getElementById('scan-result-msg');
+        
+        // Setup scan handler
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Scan result: ${decodedText}`);
+            
+            // Stop scanner to prevent multiple triggers
+            html5QrcodeScanner.clear().then(_ => {
+                resultMsg.innerHTML = '<div class="alert alert-info">Processing check-in...</div>';
+                
+                // Extract Team ID supporting both direct URLs and legacy format
+                let teamId = decodedText.trim();
+                if (decodedText.indexOf('quick-edit/') !== -1) {
+                    let parts = decodedText.split('/');
+                    teamId = parts[parts.length - 1].trim();
+                } else if (decodedText.indexOf(' | ') !== -1) {
+                    let parts = decodedText.split(' | ');
+                    teamId = parts[0].trim();
+                }
+                
+                // Construct checkin & redirect urls
+                let checkinUrl = "{{ url_for('organizer.checkin_team', team_id='PLACEHOLDER') }}".replace('PLACEHOLDER', teamId) + "?ajax=1";
+                let quickEditUrl = "{{ url_for('leader.quick_edit', team_id='PLACEHOLDER') }}".replace('PLACEHOLDER', teamId);
+                
+                fetch(checkinUrl, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    resultMsg.innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> Check-in success! Redirecting to team form...</div>`;
+                    setTimeout(() => {
+                        window.location.href = quickEditUrl;
+                    }, 1000);
+                })
+                .catch(err => {
+                    console.error("Fetch error", err);
+                    window.location.href = quickEditUrl;
+                });
+            }).catch(error => {
+                console.error("Failed to clear scanner", error);
+            });
+        }
+        
+        let html5QrcodeScanner;
+        
+        function startScanner() {
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "qr-reader", 
+                { fps: 10, qrbox: {width: 250, height: 250} },
+                /* verbose= */ false
+            );
+            html5QrcodeScanner.render(onScanSuccess);
+        }
+        
+        // Start scanner initially
+        startScanner();
+        
+        // Manual simulation handler
+        const simBtn = document.getElementById('sim-checkin-btn');
+        const simInput = document.getElementById('sim-team-id');
+        
+        simBtn.addEventListener('click', function() {
+            const teamId = simInput.value.strip ? simInput.value.strip() : simInput.value;
+            if (!teamId) {
+                alert('Please enter a valid Team ID.');
+                return;
+            }
+            
+            const url = `{{ url_for('organizer.checkin_team', team_id=9999) }}`.replace('9999', teamId) + "?ajax=1";
+            
+            resultMsg.innerHTML = '<div class="alert alert-info">Processing check-in...</div>';
+            
+            fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    resultMsg.innerHTML = `<div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> ${data.message}</div>`;
+                } else {
+                    resultMsg.innerHTML = `<div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> ${data.message}</div>`;
+                }
+            })
+            .catch(err => {
+                resultMsg.innerHTML = `<div class="alert alert-danger">Network error marking checkin.</div>`;
+            });
+        });
+    });
+</script>
+{% endblock %}

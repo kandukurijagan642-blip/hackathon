@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block page_title %}Problem Submission{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary max-width-700 mx-auto">
+        <h5 class="mb-4 text-primary"><i class="bi bi-file-earmark-plus-fill"></i> Submit Project Details (Phase 2)</h5>
+        
+        {% if submission %}
+            <div class="alert alert-success"><i class="bi bi-check-circle-fill"></i> Submission Successful. Your project details have been recorded and locked.</div>
+            <div class="d-flex flex-column gap-2 text-secondary">
+                <div><strong>Project Title:</strong> {{ submission.project_title }}</div>
+                <div><strong>Domain:</strong> {{ submission.domain }}</div>
+                <div><strong>Problem Statement:</strong> {{ submission.problem_statement }}</div>
+                <div><strong>Abstract:</strong> {{ submission.abstract }}</div>
+                <div><strong>Technology Stack:</strong> <code>{{ submission.technology_stack }}</code></div>
+            </div>
+            <div class="mt-4 text-center">
+                <a href="{{ url_for('leader.dashboard') }}" class="btn btn-primary btn-primary-custom btn-sm">Return to Dashboard</a>
+            </div>
+        {% else %}
+            <p class="text-secondary small mb-4">Please submit your team's project specifications. Once submitted, editing will be permanently disabled.</p>
+            
+            <form action="{{ url_for('leader.submit_problem') }}" method="POST">
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label for="project_title" class="form-label">Project Title *</label>
+                        <input type="text" class="form-control" id="project_title" name="project_title" required placeholder="e.g. Decentralized Health Ledger">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="domain" class="form-label">Project Domain *</label>
+                        <input type="text" class="form-control" id="domain" name="domain" required placeholder="e.g. Healthcare & Web3">
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="problem_statement" class="form-label">Selected Problem Statement *</label>
+                        <textarea class="form-control" id="problem_statement" name="problem_statement" rows="3" required placeholder="Describe the specific problem context you chose to solve..."></textarea>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="abstract" class="form-label">Abstract / Project Summary *</label>
+                        <textarea class="form-control" id="abstract" name="abstract" rows="4" required placeholder="Outline your solution flow, key innovations, and methodologies..."></textarea>
+                    </div>
+                    
+                    <div class="col-12">
+                        <label for="technology_stack" class="form-label">Technology Stack *</label>
+                        <input type="text" class="form-control" id="technology_stack" name="technology_stack" required placeholder="e.g. Python, Flask, React, MySQL, Docker">
+                    </div>
+                    
+                    <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+                        <a href="{{ url_for('leader.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary btn-primary-custom px-4" onclick="return confirm('You cannot modify these details after submitting. Proceed?');">
+                            Submit Project
+                        </button>
+                    </div>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

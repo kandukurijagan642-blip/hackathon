@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block page_title %}Edit Team - Organizer{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary max-width-700 mx-auto">
+        <h5 class="mb-4 text-primary"><i class="bi bi-pencil-square"></i> Edit Team Profile</h5>
+        
+        <form action="{{ url_for('organizer.edit_team', team_id=team.team_id) }}" method="POST">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="team_name" class="form-label">Team Name</label>
+                    <input type="text" class="form-control" id="team_name" name="team_name" value="{{ team.team_name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="domain" class="form-label">Project Domain</label>
+                    <input type="text" class="form-control" id="domain" name="domain" value="{{ team.problem_submission.domain if team.problem_submission else '' }}">
+                </div>
+                
+                <div class="col-12">
+                    <label for="project_title" class="form-label">Project Title</label>
+                    <input type="text" class="form-control" id="project_title" name="project_title" value="{{ team.problem_submission.project_title if team.problem_submission else '' }}">
+                </div>
+                
+                <div class="col-12">
+                    <label for="problem_statement" class="form-label">Problem Statement</label>
+                    <textarea class="form-control" id="problem_statement" name="problem_statement" rows="3">{{ team.problem_submission.problem_statement if team.problem_submission else '' }}</textarea>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="college" class="form-label">College</label>
+                    <input type="text" class="form-control" id="college" name="college" value="{{ team.college }}" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="department" class="form-label">Department</label>
+                    <input type="text" class="form-control" id="department" name="department" value="{{ team.department }}" required>
+                </div>
+                
+                <hr class="my-4">
+                <h6 class="text-primary mt-0"><i class="bi bi-person-fill"></i> Leader Details</h6>
+                
+                <div class="col-md-6">
+                    <label for="leader_name" class="form-label">Leader Name</label>
+                    <input type="text" class="form-control" id="leader_name" name="leader_name" value="{{ team.leader.name if team.leader else '' }}" required>
+                </div>
+                
+                <div class="col-md-6">
+                    <label for="leader_email" class="form-label">Leader Email</label>
+                    <input type="email" class="form-control" id="leader_email" name="leader_email" value="{{ team.leader.email if team.leader else '' }}" required>
+                </div>
+                
+                <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+                    <a href="{{ url_for('organizer.view_teams') }}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-primary-custom">Save Changes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

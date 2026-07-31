@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block page_title %}Manage User Accounts{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="row g-4">
+        <!-- Add User Form -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-4 text-primary"><i class="bi bi-person-plus-fill"></i> Add Organizer / Judge</h5>
+                
+                <form action="{{ url_for('admin.manage_users') }}" method="POST">
+                    <input type="hidden" name="action" value="add_user">
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required placeholder="e.g. Dr. John Doe">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required placeholder="name@example.com">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required placeholder="••••••••">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role" class="form-label">System Role</label>
+                        <select class="form-select" id="role" name="role" required onchange="toggleSpecialization()">
+                            <option value="Organizer">Organizer</option>
+                            <option value="Judge">Judge</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4 d-none" id="spec-group">
+                        <label for="specialization" class="form-label">Judge Specialization</label>
+                        <input type="text" class="form-control" id="specialization" name="specialization" placeholder="e.g. AI/ML, Cybersecurity, UIUX">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100 btn-primary-custom">
+                        Create User
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- User Lists -->
+        <div class="col-lg-8">
+            <!-- Organizers Table -->
+            <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+                <h5 class="mb-3 text-primary"><i class="bi bi-person-gear"></i> Event Organizers</h5>
+                <div class="table-responsive-custom">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Created At</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for org in organizers %}
+                                <tr>
+                                    <td><strong>{{ org.name }}</strong></td>
+                                    <td>{{ org.email }}</td>
+                                    <td>{{ org.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td class="text-end">
+                                        <form action="{{ url_for('admin.manage_users') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this organizer account?');" style="display:inline;">
+                                            <input type="hidden" name="action" value="delete_user">
+                                            <input type="hidden" name="user_id" value="{{ org.id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" {% if org.id == current_user.id %}disabled{% endif %}>
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-3 text-muted">No organizers registered yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Judges Table -->
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-3 text-primary"><i class="bi bi-award-fill"></i> Panel of Judges</h5>
+                <div class="table-responsive-custom">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Specialization</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for jg in judges %}
+                                <tr>
+                                    <td><strong>{{ jg.name }}</strong></td>
+                                    <td>{{ jg.email }}</td>
+                                    <td><span class="badge bg-primary">{{ jg.judge_profile.specialization if jg.judge_profile else 'General' }}</span></td>
+                                    <td class="text-end">
+                                        <form action="{{ url_for('admin.manage_users') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this judge account?');" style="display:inline;">
+                                            <input type="hidden" name="action" value="delete_user">
+                                            <input type="hidden" name="user_id" value="{{ jg.id }}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-3 text-muted">No judges registered yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleSpecialization() {
+        const role = document.getElementById('role').value;
+        const specGroup = document.getElementById('spec-group');
+        if (role === 'Judge') {
+            specGroup.classList.remove('d-none');
+            document.getElementById('specialization').setAttribute('required', 'true');
+        } else {
+            specGroup.classList.add('d-none');
+            document.getElementById('specialization').removeAttribute('required');
+        }
+    }
+</script>
+{% endblock %}

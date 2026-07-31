@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block page_title %}Certificate Verification{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary max-width-600 mx-auto text-center">
+        {% if status == "Valid" %}
+            <div class="text-success fs-1 mb-3">
+                <i class="bi bi-patch-check-fill"></i>
+            </div>
+            <h4 class="text-success mb-4">Certificate Verified Successfully</h4>
+            
+            <div class="table-responsive text-start border rounded p-3 bg-dark-card">
+                <table class="table table-borderless mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Certificate ID:</td>
+                            <td class="text-light py-1"><code>{{ cert.certificate_id }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Recipient Name:</td>
+                            <td class="text-light py-1">{{ cert.student_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Registration No:</td>
+                            <td class="text-light py-1">{{ cert.registration_number }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Team:</td>
+                            <td class="text-light py-1">{{ cert.team.team_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Project Title:</td>
+                            <td class="text-light py-1">{{ cert.team.problem_submission.project_title if cert.team.problem_submission else '—' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Certificate Type:</td>
+                            <td class="text-light py-1"><span class="badge bg-primary">{{ cert.certificate_type }}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Event:</td>
+                            <td class="text-light py-1">HackTrack Portal Hackathon 2026</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold text-muted small py-1">Verification Status:</td>
+                            <td class="text-success fw-bold py-1">VALID</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-danger fs-1 mb-3">
+                <i class="bi bi-shield-x"></i>
+            </div>
+            <h4 class="text-danger mb-3">Verification Failed</h4>
+            <p class="text-secondary small">
+                The requested certificate is either invalid or does not exist in our registry. Please check the URL details.
+            </p>
+            <div class="alert alert-danger mb-0 py-2 small fw-bold">
+                Verification Status: INVALID
+            </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-primary-custom btn-sm">Go to Portal</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-dark-card {
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+}
+body.dark-mode .bg-dark-card {
+    background-color: rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

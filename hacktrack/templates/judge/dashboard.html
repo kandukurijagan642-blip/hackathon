@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block page_title %}Judge Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <!-- Judge Panel Welcome Card -->
+    <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+        <h5 class="mb-2 text-primary"><i class="bi bi-award-fill"></i> Panel of Judges</h5>
+        <p class="text-secondary small mb-0">Select a team and open the scoring sheet for the current evaluation round. Note that rounds must be enabled by event organizers before you can submit marks. Once finalized, marks are locked.</p>
+    </div>
+    
+    <!-- Teams List and Evaluation Matrix -->
+    <div class="card border-0 shadow-sm p-4 bg-secondary">
+        <h5 class="mb-3 text-primary"><i class="bi bi-list-task"></i> Teams Matrix & Evaluations</h5>
+        <div class="table-responsive-custom">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Team ID</th>
+                        <th>Team Name</th>
+                        <th>Project Title</th>
+                        <th class="text-center">Round 1 (Pitch)</th>
+                        <th class="text-center">Round 2 (Build)</th>
+                        <th class="text-center">Round 3 (Demo)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in evaluated_teams %}
+                        <tr>
+                            <td><code>{{ item.team.team_id }}</code></td>
+                            <td>
+                                <strong>{{ item.team.team_name }}</strong>
+                                <div class="text-muted small">{{ item.team.college }}</div>
+                            </td>
+                            <td>
+                                {% if item.is_submitted %}
+                                    <div>{{ item.team.problem_submission.project_title }}</div>
+                                    <span class="badge bg-secondary text-light small" style="font-size: 10px;">{{ item.team.problem_submission.domain }}</span>
+                                {% else %}
+                                    <span class="text-muted small"><i class="bi bi-hourglass-split"></i> Awaiting Abstract Submission</span>
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Round 1 evaluation column -->
+                            <td class="text-center" style="{% if not r1_active %}opacity: 0.55;{% endif %}">
+                                {% if not r1_active %}
+                                    <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Disabled</span>
+                                {% elif not item.is_submitted %}
+                                    <span class="badge bg-secondary">Awaiting Project</span>
+                                {% else %}
+                                    {% if item.r1_status == 'Finalized' %}
+                                        <span class="badge bg-success mb-1"><i class="bi bi-lock-fill"></i> Locked ({{ item.r1_score }})</span>
+                                    {% elif item.r1_status == 'Draft' %}
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="badge bg-warning text-dark mb-1">Draft ({{ item.r1_score }})</span>
+                                            <a href="{{ url_for('judge.evaluate', round_num=1, team_id=item.team.team_id) }}" class="btn btn-xs btn-primary-custom py-0.5 px-2" style="font-size:10px;">Edit</a>
+                                        </div>
+                                    {% else %}
+                                        <a href="{{ url_for('judge.evaluate', round_num=1, team_id=item.team.team_id) }}" class="btn btn-sm btn-outline-primary py-1 px-3">
+                                            <i class="bi bi-plus-circle"></i> Grade
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Round 2 evaluation column -->
+                            <td class="text-center" style="{% if not r2_active %}opacity: 0.55;{% endif %}">
+                                {% if not r2_active %}
+                                    <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Disabled</span>
+                                {% elif not item.is_submitted %}
+                                    <span class="badge bg-secondary">Awaiting Project</span>
+                                {% else %}
+                                    {% if item.r2_status == 'Finalized' %}
+                                        <span class="badge bg-success mb-1"><i class="bi bi-lock-fill"></i> Locked ({{ item.r2_score }})</span>
+                                    {% elif item.r2_status == 'Draft' %}
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="badge bg-warning text-dark mb-1">Draft ({{ item.r2_score }})</span>
+                                            <a href="{{ url_for('judge.evaluate', round_num=2, team_id=item.team.team_id) }}" class="btn btn-xs btn-primary-custom py-0.5 px-2" style="font-size:10px;">Edit</a>
+                                        </div>
+                                    {% else %}
+                                        <a href="{{ url_for('judge.evaluate', round_num=2, team_id=item.team.team_id) }}" class="btn btn-sm btn-outline-primary py-1 px-3">
+                                            <i class="bi bi-plus-circle"></i> Grade
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            
+                            <!-- Round 3 evaluation column -->
+                            <td class="text-center" style="{% if not r3_active %}opacity: 0.55;{% endif %}">
+                                {% if not r3_active %}
+                                    <span class="badge bg-secondary"><i class="bi bi-lock-fill"></i> Disabled</span>
+                                {% elif not item.is_submitted %}
+                                    <span class="badge bg-secondary">Awaiting Project</span>
+                                {% else %}
+                                    {% if item.r3_status == 'Finalized' %}
+                                        <span class="badge bg-success mb-1"><i class="bi bi-lock-fill"></i> Locked ({{ item.r3_score }})</span>
+                                    {% elif item.r3_status == 'Draft' %}
+                                        <div class="d-flex flex-column align-items-center">
+                                            <span class="badge bg-warning text-dark mb-1">Draft ({{ item.r3_score }})</span>
+                                            <a href="{{ url_for('judge.evaluate', round_num=3, team_id=item.team.team_id) }}" class="btn btn-xs btn-primary-custom py-0.5 px-2" style="font-size:10px;">Edit</a>
+                                        </div>
+                                    {% else %}
+                                        <a href="{{ url_for('judge.evaluate', round_num=3, team_id=item.team.team_id) }}" class="btn btn-sm btn-outline-primary py-1 px-3">
+                                            <i class="bi bi-plus-circle"></i> Grade
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No teams registered.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

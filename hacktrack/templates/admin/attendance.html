@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block page_title %}Attendance Logs{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 text-primary"><i class="bi bi-calendar-check-fill"></i> Live Attendance Log</h5>
+            <div>
+                <a href="{{ url_for('admin.export_reports', format_type='excel', report_type='attendance') }}" class="btn btn-sm btn-outline-success me-2">
+                    <i class="bi bi-file-spreadsheet"></i> Export Excel
+                </a>
+                <a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='attendance') }}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-file-pdf"></i> Export PDF
+                </a>
+            </div>
+        </div>
+        
+        <div class="table-responsive-custom">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Team ID</th>
+                        <th>Team Name</th>
+                        <th>College</th>
+                        <th>Department</th>
+                        <th>Status</th>
+                        <th>Check-in Timestamp</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in teams %}
+                        <tr>
+                            <td>#{{ team.team_id }}</td>
+                            <td><strong>{{ team.team_name }}</strong></td>
+                            <td>{{ team.college }}</td>
+                            <td>{{ team.department }}</td>
+                            <td>
+                                {% set att = team.attendance[0] if team.attendance else None %}
+                                {% if att and att.status == 'Present' %}
+                                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Present</span>
+                                {% else %}
+                                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Absent</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% set att = team.attendance[0] if team.attendance else None %}
+                                {{ att.checkin_time.strftime('%Y-%m-%d %H:%M:%S') if att and att.checkin_time else '—' }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted">No teams registered.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

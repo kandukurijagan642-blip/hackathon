@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block page_title %}Organizer Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <!-- Stat Cards Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card primary">
+                <div class="card-icon"><i class="bi bi-file-earmark-code-fill"></i></div>
+                <div class="card-title">Registered Teams</div>
+                <div class="card-value">{{ total_teams }}</div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card success">
+                <div class="card-icon"><i class="bi bi-calendar-check-fill"></i></div>
+                <div class="card-title">Checked In (Present)</div>
+                <div class="card-value">{{ checked_in }}</div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card warning border-warning">
+                <div class="card-icon text-warning" style="background-color: rgba(245, 158, 11, 0.1);"><i class="bi bi-clock-history"></i></div>
+                <div class="card-title">Pending Check-in</div>
+                <div class="card-value">{{ pending }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <!-- System Control Panel -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
+                <h5 class="mb-4 text-primary"><i class="bi bi-gear-wide-connected"></i> Hackathon Workflow Control</h5>
+                
+                <!-- Problem Statement Release Control -->
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                    <div>
+                        <h6 class="mb-0">Problem Statements Phase</h6>
+                        <span class="text-secondary small">Release statement submission to leaders</span>
+                    </div>
+                    <div>
+                        {% set prob_status = get_setting('problem_released', 'False') %}
+                        <form action="{{ url_for('organizer.toggle_setting', key='problem_released') }}" method="POST">
+                            {% if prob_status == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="bi bi-unlock-fill"></i> Released (Lock)
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-lock-fill"></i> Release Statement
+                                </button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Evaluation Rounds Controls -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-secondary"><i class="bi bi-clipboard2-check"></i> Active Jury Evaluation Rounds</h6>
+                    
+                    <!-- Round 1 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Round 1 (Innovation & Pitch)</span>
+                        <form action="{{ url_for('organizer.toggle_setting', key='round1_enabled') }}" method="POST">
+                            {% if get_setting('round1_enabled', 'False') == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                    <!-- Round 2 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Round 2 (Prototype & Implementation)</span>
+                        <form action="{{ url_for('organizer.toggle_setting', key='round2_enabled') }}" method="POST">
+                            {% if get_setting('round2_enabled', 'False') == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                    <!-- Round 3 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Round 3 (Working Demo & Scale)</span>
+                        <form action="{{ url_for('organizer.toggle_setting', key='round3_enabled') }}" method="POST">
+                            {% if get_setting('round3_enabled', 'False') == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Quick Navigation Links -->
+                <div class="d-flex flex-column gap-2 mb-3">
+                    <a href="{{ url_for('organizer.register_team') }}" class="btn btn-primary btn-primary-custom w-100 py-2">
+                        <i class="bi bi-plus-circle"></i> Register New Team
+                    </a>
+                    <a href="{{ url_for('organizer.scan_qr') }}" class="btn btn-outline-success w-100 py-2">
+                        <i class="bi bi-qr-code-scan"></i> Open QR Attendance Scanner
+                    </a>
+                </div>
+                
+                <hr>
+                
+                <!-- CSV Import -->
+                <h6 class="mb-2 text-primary"><i class="bi bi-file-earmark-arrow-up"></i> Bulk Team CSV Import</h6>
+                <form action="{{ url_for('organizer.csv_import') }}" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input class="form-control form-control-sm" type="file" id="csv_file" name="csv_file" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary btn-xs w-100">
+                        <i class="bi bi-upload"></i> Upload & Import
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Recent Registrations -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary"><i class="bi bi-clock-history"></i> Recent Registrations</h5>
+                    <a href="{{ url_for('organizer.view_teams') }}" class="small text-decoration-none">View All</a>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle table-sm border-0">
+                        <thead>
+                            <tr class="text-muted small border-bottom">
+                                <th>Team ID</th>
+                                <th>Team Name</th>
+                                <th>Leader</th>
+                                <th>College</th>
+                                <th class="text-end">QR Code</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for team in recent_teams %}
+                                <tr class="border-bottom">
+                                    <td><code>{{ team.team_id }}</code></td>
+                                    <td class="py-2"><strong>{{ team.team_name }}</strong></td>
+                                    <td>{{ team.leader.name if team.leader else 'N/A' }}</td>
+                                    <td>{{ team.college }}</td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" target="_blank" class="btn btn-xs btn-outline-secondary p-1" style="font-size:10px;">
+                                            <i class="bi bi-qr-code"></i> View QR
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-3 text-muted">No teams registered yet.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

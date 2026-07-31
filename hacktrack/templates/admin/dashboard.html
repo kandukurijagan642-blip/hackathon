@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block page_title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <!-- Stat Cards Row -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card primary">
+                <div class="card-icon"><i class="bi bi-file-earmark-code-fill"></i></div>
+                <div class="card-title">Total Teams</div>
+                <div class="card-value">{{ total_teams }}</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card success">
+                <div class="card-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="card-title">Total Participants</div>
+                <div class="card-value">{{ total_students }}</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card info">
+                <div class="card-icon"><i class="bi bi-calendar-check-fill"></i></div>
+                <div class="card-title">Attendance Rate</div>
+                <div class="card-value">{{ attendance_rate }}%</div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card accent">
+                <div class="card-icon"><i class="bi bi-trophy-fill"></i></div>
+                <div class="card-title">Round Grading Status (1/2/3)</div>
+                <div class="card-value">{{ r1_graded }} / {{ r2_graded }} / {{ r3_graded }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row g-4 mb-4">
+        <!-- Chart Section -->
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-4 text-primary"><i class="bi bi-pie-chart-fill"></i> Team Domains</h5>
+                {% if domain_labels %}
+                    <div style="max-height: 250px; position: relative;" class="d-flex justify-content-center">
+                        <canvas id="domainChart" style="max-width: 250px; max-height: 250px;"></canvas>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted my-5">No domains data available yet. Add teams to see analytics.</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Quick Reports Export Section -->
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-3 text-primary"><i class="bi bi-file-earmark-arrow-down-fill"></i> Exports & Reports</h5>
+                <p class="text-secondary small">Download sheets or PDF summaries of evaluation stages.</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle table-borderless">
+                        <thead>
+                            <tr class="text-muted border-bottom small">
+                                <th>Report Name</th>
+                                <th class="text-end">Excel</th>
+                                <th class="text-end">PDF</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="py-2 fw-medium text-secondary">Attendance</td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='excel', report_type='attendance') }}" class="btn btn-xs btn-outline-success"><i class="bi bi-file-spreadsheet"></i></a></td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='attendance') }}" class="btn btn-xs btn-outline-danger"><i class="bi bi-file-pdf"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 fw-medium text-secondary">Round 1 Marks</td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='excel', report_type='round1') }}" class="btn btn-xs btn-outline-success"><i class="bi bi-file-spreadsheet"></i></a></td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='round1') }}" class="btn btn-xs btn-outline-danger"><i class="bi bi-file-pdf"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 fw-medium text-secondary">Round 2 Marks</td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='excel', report_type='round2') }}" class="btn btn-xs btn-outline-success"><i class="bi bi-file-spreadsheet"></i></a></td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='round2') }}" class="btn btn-xs btn-outline-danger"><i class="bi bi-file-pdf"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 fw-medium text-secondary">Round 3 Marks</td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='excel', report_type='round3') }}" class="btn btn-xs btn-outline-success"><i class="bi bi-file-spreadsheet"></i></a></td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='round3') }}" class="btn btn-xs btn-outline-danger"><i class="bi bi-file-pdf"></i></a></td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 fw-medium text-secondary">Leaderboard</td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='excel', report_type='final') }}" class="btn btn-xs btn-outline-success"><i class="bi bi-file-spreadsheet"></i></a></td>
+                                <td class="text-end"><a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='final') }}" class="btn btn-xs btn-outline-danger"><i class="bi bi-file-pdf"></i></a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Control Panel -->
+        <div class="col-lg-4">
+            <div class="card h-100 border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-4 text-primary"><i class="bi bi-gear-wide-connected"></i> Hackathon Workflow Control</h5>
+                
+                <!-- Problem Statement Release Control -->
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                    <div>
+                        <h6 class="mb-0">Problem Statements Phase</h6>
+                        <span class="text-secondary small">Release submission to leaders</span>
+                    </div>
+                    <div>
+                        {% set prob_status = get_setting('problem_released', 'False') %}
+                        <form action="{{ url_for('organizer.toggle_setting', key='problem_released') }}" method="POST">
+                            {% if prob_status == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="bi bi-unlock-fill"></i> Released
+                                </button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-lock-fill"></i> Release Statement
+                                </button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Evaluation Rounds Controls -->
+                <div class="mb-4">
+                    <h6 class="mb-3 text-secondary"><i class="bi bi-clipboard2-check"></i> Active Jury Evaluation Rounds</h6>
+                    
+                    <!-- Round 1 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Round 1 (Innovation & Pitch)</span>
+                        <form action="{{ url_for('organizer.toggle_setting', key='round1_enabled') }}" method="POST">
+                            {% if get_setting('round1_enabled', 'False') == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                    <!-- Round 2 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Round 2 (Prototype & Imp)</span>
+                        <form action="{{ url_for('organizer.toggle_setting', key='round2_enabled') }}" method="POST">
+                            {% if get_setting('round2_enabled', 'False') == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
+                            {% endif %}
+                        </form>
+                    </div>
+
+                    <!-- Round 3 -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="small">Round 3 (Working Demo & Scale)</span>
+                        <form action="{{ url_for('organizer.toggle_setting', key='round3_enabled') }}" method="POST">
+                            {% if get_setting('round3_enabled', 'False') == 'True' %}
+                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
+                            {% else %}
+                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Timeline Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <h5 class="mb-4 text-primary"><i class="bi bi-shield-lock-fill"></i> Live System Audit Log</h5>
+                <div class="activity-timeline">
+                    {% for log in recent_logs %}
+                        <div class="activity-timeline-item {% if log.user.role == 'Admin' %}admin{% elif log.user.role == 'Organizer' %}organizer{% elif log.user.role == 'Judge' %}judge{% endif %}">
+                            <div class="d-flex justify-content-between">
+                                <strong class="text-primary">{{ log.action }}</strong>
+                                <span class="text-muted small">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                            </div>
+                            <p class="text-secondary small mb-0">{{ log.details or '' }}</p>
+                            <span class="text-muted small">By: {{ log.user.name }} ({{ log.user.role }}) | IP: {{ log.ip_address or 'N/A' }}</span>
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-3">No activity logs recorded yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if domain_labels %}
+        const ctx = document.getElementById('domainChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ domain_labels|tojson }},
+                datasets: [{
+                    data: {{ domain_counts|tojson }},
+                    backgroundColor: [
+                        '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#06b6d4', '#8b5cf6', '#ec4899'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: document.body.classList.contains('dark-mode') ? '#cbd5e1' : '#475569',
+                            font: {
+                                family: 'Inter'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

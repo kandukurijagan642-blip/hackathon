@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Preview - {{ cert.certificate_id }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .cert-container {
+            width: 900px;
+            height: 630px;
+            background-color: #ffffff;
+            color: #1f2937;
+            padding: 40px;
+            box-sizing: border-box;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        /* Outer maroon border */
+        .border-outer {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border: 6px solid #8b0000;
+            pointer-events: none;
+        }
+        /* Inner gold border */
+        .border-inner {
+            position: absolute;
+            top: 22px;
+            left: 22px;
+            right: 22px;
+            bottom: 22px;
+            border: 2px solid #d4af37;
+            pointer-events: none;
+        }
+        /* Corners */
+        .corner {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            pointer-events: none;
+        }
+        .corner-tl {
+            top: 22px;
+            left: 22px;
+            border-width: 38px 38px 0 0;
+            border-color: #d4af37 transparent transparent transparent;
+        }
+        .corner-tr {
+            top: 22px;
+            right: 22px;
+            border-width: 0 38px 38px 0;
+            border-color: transparent #d4af37 transparent transparent;
+        }
+        .corner-bl {
+            bottom: 22px;
+            left: 22px;
+            border-width: 38px 0 0 38px;
+            border-color: transparent transparent transparent #d4af37;
+        }
+        .corner-br {
+            bottom: 22px;
+            right: 22px;
+            border-width: 0 0 38px 38px;
+            border-color: transparent transparent #d4af37 transparent;
+        }
+        
+        .header {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .college-title {
+            color: #002855;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+        .accreditation {
+            color: #0056b3;
+            font-size: 11px;
+            font-weight: bold;
+            margin-top: 5px;
+            letter-spacing: 0.5px;
+        }
+        .cert-title {
+            text-align: center;
+            margin-top: 35px;
+        }
+        .cert-title h1 {
+            color: #1f2937;
+            font-size: 36px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+        .cert-title h2 {
+            color: #d4af37;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px 0 0 0;
+            letter-spacing: 1.5px;
+        }
+        .present-text {
+            text-align: center;
+            color: #4b5563;
+            font-style: italic;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+        .student-name {
+            text-align: center;
+            color: #111827;
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 15px;
+            border-bottom: 1px solid #d1d5db;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-bottom: 5px;
+        }
+        .body-text {
+            text-align: center;
+            color: #374151;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 20px;
+            padding: 0 60px;
+        }
+        
+        .footer-section {
+            position: absolute;
+            bottom: 45px;
+            left: 55px;
+            right: 55px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .meta-info {
+            font-size: 10px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+        .qr-section {
+            text-align: center;
+        }
+        .qr-image {
+            width: 70px;
+            height: 70px;
+        }
+        .qr-text {
+            font-size: 7px;
+            font-weight: bold;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+        .signature-section {
+            display: flex;
+            gap: 40px;
+        }
+        .sig-col {
+            text-align: center;
+            width: 140px;
+        }
+        .sig-line {
+            border-top: 1px solid #9ca3af;
+            margin-top: 35px;
+            padding-top: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        .sig-title {
+            font-size: 9px;
+            font-style: italic;
+            color: #4b5563;
+            margin-top: 2px;
+        }
+        .sig-placeholder {
+            font-family: 'Courier New', Courier, monospace;
+            font-style: italic;
+            font-size: 14px;
+            color: #1d4ed8;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .actions-bar {
+            margin-top: 25px;
+            display: flex;
+            gap: 15px;
+        }
+        .btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #1d4ed8;
+        }
+        .btn-secondary {
+            background-color: #475569;
+        }
+        .btn-secondary:hover {
+            background-color: #334155;
+        }
+        
+        @media (max-width: 940px) {
+            .cert-container {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 11 / 8.5;
+                padding: 4%;
+            }
+            .border-outer {
+                top: 2%; left: 2%; right: 2%; bottom: 2%;
+            }
+            .border-inner {
+                top: 3%; left: 3%; right: 3%; bottom: 3%;
+            }
+            .college-title { font-size: 3vw; }
+            .cert-title h1 { font-size: 4vw; }
+            .student-name { font-size: 3vw; }
+            .body-text { font-size: 1.5vw; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cert-container">
+        <div class="border-outer"></div>
+        <div class="border-inner"></div>
+        <div class="corner corner-tl"></div>
+        <div class="corner corner-tr"></div>
+        <div class="corner corner-bl"></div>
+        <div class="corner corner-br"></div>
+        
+        <div class="header">
+            <h1 class="college-title">SIMATS ENGINEERING</h1>
+            <div class="accreditation">NBA Tier 1  |  IET-UK  |  ABET Accreditation</div>
+        </div>
+        
+        <div class="cert-title">
+            <h1>CERTIFICATE</h1>
+            <h2>OF {{ cert.certificate_type.upper() }}</h2>
+        </div>
+        
+        <div class="present-text">This is proudly presented to</div>
+        <div class="student-name">{{ cert.student_name }}</div>
+        
+        <div class="body-text">
+            active member of Team "<strong>{{ cert.team_name }}</strong>" in recognition of their dynamic participation
+            and successful implementation of the project: "<strong>{{ cert.team.problem_submission.project_title if cert.team.problem_submission else 'Hackathon Project' }}</strong>"
+            during the HackTrack Hackathon Management & Evaluation Portal 2026.
+        </div>
+        
+        <div class="footer-section">
+            <div class="meta-info">
+                <div>Date of Issue: {{ cert.generated_time.strftime('%B %d, %Y') }}</div>
+                <div style="margin-top: 4px;">Certificate ID: {{ cert.certificate_id }}</div>
+            </div>
+            
+            <div class="qr-section">
+                <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ request.host_url.rstrip('/') }}/verify-certificate/{{ cert.verification_token }}" alt="QR Code">
+                <div class="qr-text">SCAN TO VERIFY</div>
+            </div>
+            
+            <div class="signature-section">
+                <div class="sig-col">
+                    <div class="sig-placeholder">S.K. Singh</div>
+                    <div class="sig-line">HoD / Event Coordinator</div>
+                </div>
+                <div class="sig-col">
+                    <div class="sig-placeholder">B. Ramesh</div>
+                    <div class="sig-line">Principal</div>
+                    <div class="sig-title">Dr. B. Ramesh</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="actions-bar">
+        {% if current_user.role in ['Admin', 'Organizer'] %}
+            <a href="{{ url_for('admin.download_certificate', cert_id=cert.certificate_id) }}" class="btn">
+                <i class="bi bi-download"></i> Download PDF
+            </a>
+            <a href="{{ url_for('admin.certificates') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Console
+            </a>
+        {% else %}
+            <a href="{{ url_for('leader.download_team_certificate', cert_id=cert.certificate_id) }}" class="btn">
+                <i class="bi bi-download"></i> Download PDF
+            </a>
+            <a href="{{ url_for('leader.certificates') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Console
+            </a>
+        {% endif %}
+    </div>
+
+</body>
+</html>

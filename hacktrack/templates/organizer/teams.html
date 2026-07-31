@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block page_title %}Registered Teams{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="card border-0 shadow-sm p-4 bg-secondary">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0 text-primary"><i class="bi bi-card-list"></i> Teams Registry</h5>
+            <a href="{{ url_for('organizer.register_team') }}" class="btn btn-primary btn-sm btn-primary-custom">
+                <i class="bi bi-plus-circle"></i> Register Team
+            </a>
+        </div>
+        
+        <div class="table-responsive-custom">
+            <table class="table table-custom">
+                <thead>
+                    <tr>
+                        <th>Team ID</th>
+                        <th>Team Name</th>
+                        <th>Project Title & Domain</th>
+                        <th>College & Dept</th>
+                        <th>Leader Contacts</th>
+                        <th>QR Checkin Code</th>
+                        <th class="text-end">Manual Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in teams %}
+                        <tr>
+                            <td>#{{ team.team_id }}</td>
+                            <td>
+                                <strong>{{ team.team_name }}</strong>
+                                <div class="small">
+                                    {% if team.members|length >= 3 %}
+                                        <span class="text-success"><i class="bi bi-check-circle-fill"></i> Roster: 4/4 Complete</span>
+                                    {% else %}
+                                        <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> Roster: {{ team.members|length + 1 }}/4</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if team.problem_submission %}
+                                    <div class="fw-semibold text-light">{{ team.problem_submission.project_title }}</div>
+                                    <span class="badge bg-info text-dark small" style="font-size:10px;">{{ team.problem_submission.domain }}</span>
+                                    <div class="text-secondary small mt-1" style="font-size: 11px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ team.problem_submission.problem_statement }}">
+                                        <strong>PS:</strong> {{ team.problem_submission.problem_statement }}
+                                    </div>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark small" style="font-size:10px;">Awaiting Submission</span>
+                                    <div class="text-danger small mt-1" style="font-size: 11px;">
+                                        <strong>Remaining:</strong> Problem statement missing
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>{{ team.college }}</div>
+                                <div class="text-muted small">{{ team.department }}</div>
+                            </td>
+                            <td>
+                                <div>{{ team.leader.name if team.leader else 'N/A' }}</div>
+                                <div class="text-muted small">{{ team.leader.email if team.leader else 'N/A' }}</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" alt="QR Code" width="50" height="50" class="border rounded">
+                                    <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" download class="btn btn-sm btn-outline-secondary p-1" style="font-size:10px;">
+                                        <i class="bi bi-download"></i> Save QR
+                                    </a>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                 {% set att = team.attendance[0] if team.attendance else None %}
+                                 <div class="d-flex justify-content-end gap-2 align-items-center">
+                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#detailsModal-{{ team.team_id }}">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                    <a href="{{ url_for('organizer.edit_team', team_id=team.team_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    {% if team.problem_submission %}
+                                     <form action="{{ url_for('organizer.unlock_team_submission', team_id=team.team_id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to unlock this team\'s project submission? This will delete the current submission data so they can enter it again.');">
+                                         <button type="submit" class="btn btn-sm btn-outline-warning">
+                                             <i class="bi bi-unlock"></i> Unlock
+                                         </button>
+                                     </form>
+                                     {% endif %}
+                                    {% if att and att.status == 'Present' %}
+                                        <span class="btn btn-sm btn-success disabled"><i class="bi bi-check-circle"></i> Present</span>
+                                    {% else %}
+                                        <a href="{{ url_for('organizer.checkin_team', team_id=team.team_id) }}" class="btn btn-sm btn-outline-warning">
+                                            <i class="bi bi-calendar-check"></i> Check-in
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Modal for Team Details -->
+                                <div class="modal fade" id="detailsModal-{{ team.team_id }}" tabindex="-1" aria-labelledby="detailsModalLabel-{{ team.team_id }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered text-start">
+                                        <div class="modal-content" style="background-color: #1e293b; color: #f8fafc; border: 1px solid #334155; border-radius: 12px;">
+                                            <div class="modal-header" style="border-bottom: 1px solid #334155;">
+                                                <h5 class="modal-title text-primary" id="detailsModalLabel-{{ team.team_id }}">
+                                                    <i class="bi bi-info-circle-fill"></i> Team Details: {{ team.team_name }}
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body text-light">
+                                                <!-- Institutional Info -->
+                                                <div class="row g-3 mb-4">
+                                                    <div class="col-md-6">
+                                                        <small class="text-secondary d-block">Team ID</small>
+                                                        <strong><code>{{ team.team_id }}</code></strong>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <small class="text-secondary d-block">College / Institute</small>
+                                                        <strong>{{ team.college }}</strong>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <small class="text-secondary d-block">Department</small>
+                                                        <strong>{{ team.department }}</strong>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <small class="text-secondary d-block">Attendance Status</small>
+                                                        <strong>
+                                                            {% if att and att.status == 'Present' %}
+                                                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> Present</span>
+                                                            {% else %}
+                                                                <span class="text-danger"><i class="bi bi-x-circle-fill"></i> Absent</span>
+                                                            {% endif %}
+                                                        </strong>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Member Roster -->
+                                                <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-people-fill"></i> Team Roster</h6>
+                                                <div class="table-responsive mb-4">
+                                                    <table class="table table-sm align-middle text-light border-0" style="font-size: 13px;">
+                                                        <thead>
+                                                            <tr class="text-secondary border-bottom">
+                                                                <th>Name</th>
+                                                                <th>Role</th>
+                                                                <th>Reg. Number</th>
+                                                                <th>Email</th>
+                                                                <th>Phone</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <tr>
+                                                                <td><strong>{{ team.leader.name if team.leader else 'N/A' }}</strong></td>
+                                                                <td><span class="badge bg-primary">Leader</span></td>
+                                                                <td>—</td>
+                                                                <td>{{ team.leader.email if team.leader else 'N/A' }}</td>
+                                                                <td>—</td>
+                                                            </tr>
+                                                            {% for member in team.members %}
+                                                                <tr>
+                                                                    <td>{{ member.student_name }}</td>
+                                                                    <td><span class="badge bg-secondary text-light">Member</span></td>
+                                                                    <td><code>{{ member.registration_number }}</code></td>
+                                                                    <td>{{ member.email }}</td>
+                                                                    <td>{{ member.phone }}</td>
+                                                                </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+
+                                                <!-- Project details -->
+                                                <h6 class="text-primary border-bottom pb-2 mb-3"><i class="bi bi-file-earmark-code-fill"></i> Project & Problem Submission</h6>
+                                                {% if team.problem_submission %}
+                                                    <div class="row g-3">
+                                                        <div class="col-md-8">
+                                                            <small class="text-secondary d-block">Project Title</small>
+                                                            <span class="fw-semibold text-light">{{ team.problem_submission.project_title }}</span>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <small class="text-secondary d-block">Domain</small>
+                                                            <span class="badge bg-info text-dark">{{ team.problem_submission.domain }}</span>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <small class="text-secondary d-block">Selected Problem Statement</small>
+                                                            <p class="text-light small p-2 rounded mb-2" style="border: 1px solid #334155; background-color: #0f172a !important;">{{ team.problem_submission.problem_statement }}</p>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <small class="text-secondary d-block">Abstract / Summary</small>
+                                                            <p class="text-light small p-2 rounded mb-2" style="border: 1px solid #334155; background-color: #0f172a !important;">{{ team.problem_submission.abstract }}</p>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <small class="text-secondary d-block">Technology Stack</small>
+                                                            <code>{{ team.problem_submission.technology_stack }}</code>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="text-center text-muted py-3">
+                                                        <i class="bi bi-folder-x d-block mb-1 display-6"></i>
+                                                        Awaiting Project Details Submission (Phase 2).
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer" style="border-top: 1px solid #334155;">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No teams registered. Click "Register Team" to add one.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

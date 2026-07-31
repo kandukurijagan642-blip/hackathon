@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Team Update - HackTrack</title>
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts Outfit & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-primary: #0F172A;
+            --bg-secondary: #1E293B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --accent-primary: #38BDF8;
+            --accent-primary-hover: #0EA5E9;
+            --card-border: #334155;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .edit-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-control {
+            background-color: #0F172A;
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 10px 14px;
+        }
+
+        .form-control:focus {
+            background-color: #0F172A;
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        .btn-submit {
+            background-color: var(--accent-primary);
+            border: none;
+            color: #0F172A;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 10px 24px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .form-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .logo-title {
+            color: var(--accent-primary);
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="edit-container">
+    <div class="text-center mb-4">
+        <h3 class="logo-title"><i class="bi bi-cpu-fill"></i> HACKTRACK</h3>
+        <p class="text-secondary small">Quick-access Team and Project configuration</p>
+    </div>
+
+    <div class="card p-4">
+        <h5 class="mb-4 text-center text-primary"><i class="bi bi-pencil-square"></i> Update Team details</h5>
+        
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show small py-2 px-3 mb-4" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.75rem 1rem;"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('leader.quick_edit', team_id=team.team_id) }}" method="POST">
+            <div class="row g-3">
+                <div class="col-12">
+                    <label for="team_name" class="form-label">Team Name (Locked)</label>
+                    <input type="text" class="form-control" id="team_name" name="team_name" value="{{ team.team_name }}" readonly style="opacity: 0.65; cursor: not-allowed; background-color: #121b2d;">
+                </div>
+                
+                <div class="col-12">
+                    <label for="project_title" class="form-label">Project Title *</label>
+                    <input type="text" class="form-control" id="project_title" name="project_title" value="{{ submission.project_title if submission else '' }}" required placeholder="Enter project title" {% if submission %}readonly style="opacity: 0.65; cursor: not-allowed; background-color: #121b2d;"{% endif %}>
+                </div>
+                
+                <div class="col-12">
+                    <label for="domain" class="form-label">Project Domain *</label>
+                    <input type="text" class="form-control" id="domain" name="domain" value="{{ submission.domain if submission else '' }}" required placeholder="e.g. Fintech, Healthcare" {% if submission %}readonly style="opacity: 0.65; cursor: not-allowed; background-color: #121b2d;"{% endif %}>
+                </div>
+                
+                <div class="col-12">
+                    <label for="problem_statement" class="form-label">Problem Statement *</label>
+                    <textarea class="form-control" id="problem_statement" name="problem_statement" rows="4" required placeholder="Outline the problem statement you are solving" {% if submission %}readonly style="opacity: 0.65; cursor: not-allowed; background-color: #121b2d;"{% endif %}>{{ submission.problem_statement if submission else '' }}</textarea>
+                </div>
+                
+                <div class="col-12 text-center mt-4">
+                    {% if submission %}
+                        <div class="alert alert-success text-center mb-0 py-2 small fw-bold">
+                            <i class="bi bi-lock-fill"></i> Details Submitted & Locked.
+                        </div>
+                    {% else %}
+                        <button type="submit" class="btn btn-submit w-100 py-2">
+                            <i class="bi bi-cloud-upload-fill"></i> Save Updates
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if certificates_active and released %}
+    <div class="card p-4 mt-4 text-center">
+        <h5 class="mb-3 text-primary"><i class="bi bi-patch-check-fill"></i> Get Your Certificates</h5>
+        
+        {% if not certs_generated %}
+            <p class="text-secondary small mb-4">
+                Your team's certificates are ready. Click the button below to generate certificates for all team members.
+            </p>
+            <form action="{{ url_for('leader.quick_edit', team_id=team.team_id) }}" method="POST">
+                <input type="hidden" name="action" value="generate_certs">
+                <button type="submit" class="btn btn-submit w-100 py-3">
+                    <i class="bi bi-file-earmark-pdf"></i> Generate All Certificates
+                </button>
+            </form>
+        {% else %}
+            <p class="text-secondary small mb-4">
+                Your certificates have been generated! Download them individually or as a complete ZIP package.
+            </p>
+            
+            <a href="{{ url_for('leader.public_download_all_certificates', team_id=team.team_id) }}" class="btn btn-submit w-100 py-3 mb-4 text-center text-decoration-none d-block">
+                <i class="bi bi-file-zip"></i> Download All Certificates (ZIP)
+            </a>
+            
+            <div class="table-responsive text-start">
+                <table class="table table-hover align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: var(--text-primary);">
+                    <thead>
+                        <tr class="text-secondary" style="font-size: 0.85rem; border-bottom: 1px solid var(--card-border);">
+                            <th class="py-2">Name</th>
+                            <th class="py-2">Role</th>
+                            <th class="py-2 text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <!-- Leader Row -->
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td class="py-3">
+                                <div class="fw-bold">{{ team.leader.name if team.leader else 'Team Leader' }}</div>
+                                <code class="text-muted" style="font-size: 0.75rem;">{{ team.team_id }}-LDR</code>
+                            </td>
+                            <td class="py-3"><span class="badge bg-info" style="font-size: 0.7rem;">Leader</span></td>
+                            <td class="py-3 text-end">
+                                {% if leader_cert %}
+                                    <a href="{{ url_for('preview_certificate', cert_id=leader_cert.certificate_id) }}" target="_blank" class="btn btn-sm btn-outline-info py-1 px-2 me-1" style="font-size: 0.8rem;">
+                                        <i class="bi bi-eye"></i> Preview
+                                    </a>
+                                    <a href="{{ url_for('leader.public_download_certificate', cert_id=leader_cert.certificate_id) }}" class="btn btn-sm btn-outline-primary py-1 px-2 me-1" style="font-size: 0.8rem;">
+                                        <i class="bi bi-download"></i> Download
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" id="shareBtn-{{ leader_cert.certificate_id }}" onclick="copyToClipboard('{{ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=leader_cert.certificate_id) }}', 'shareBtn-{{ leader_cert.certificate_id }}')" style="font-size: 0.8rem;" title="Copy Certificate Link">
+                                        <i class="bi bi-link-45deg"></i> Share
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <!-- Members Rows -->
+                        {% for member in team.members %}
+                            {% set m_cert = certs_by_member.get(member.member_id) %}
+                            <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <td class="py-3">
+                                    <div class="fw-bold">{{ member.student_name }}</div>
+                                    <code class="text-muted" style="font-size: 0.75rem;">{{ member.registration_number }}</code>
+                                </td>
+                                <td class="py-3"><span class="badge bg-secondary" style="font-size: 0.7rem;">Member</span></td>
+                                <td class="py-3 text-end">
+                                    {% if m_cert %}
+                                        <a href="{{ url_for('preview_certificate', cert_id=m_cert.certificate_id) }}" target="_blank" class="btn btn-sm btn-outline-info py-1 px-2 me-1" style="font-size: 0.8rem;">
+                                            <i class="bi bi-eye"></i> Preview
+                                        </a>
+                                        <a href="{{ url_for('leader.public_download_certificate', cert_id=m_cert.certificate_id) }}" class="btn btn-sm btn-outline-primary py-1 px-2 me-1" style="font-size: 0.8rem;">
+                                            <i class="bi bi-download"></i> Download
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" id="shareBtn-{{ m_cert.certificate_id }}" onclick="copyToClipboard('{{ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=m_cert.certificate_id) }}', 'shareBtn-{{ m_cert.certificate_id }}')" style="font-size: 0.8rem;" title="Copy Certificate Link">
+                                            <i class="bi bi-link-45deg"></i> Share
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function copyToClipboard(text, elementId) {
+    navigator.clipboard.writeText(text).then(function() {
+        const btn = document.getElementById(elementId);
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+        btn.classList.remove('btn-outline-secondary');
+        btn.classList.add('btn-success');
+        setTimeout(function() {
+            btn.innerHTML = originalContent;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-secondary');
+        }, 2000);
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+}
+</script>
+</body>
+</html>
