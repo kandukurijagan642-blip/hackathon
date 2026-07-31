@@ -326,12 +326,14 @@ def quick_edit(team_id):
             flash('Your project details have already been submitted and locked. Editing is no longer permitted.', 'danger')
             return redirect(url_for('leader.quick_edit', team_id=team_id))
             
+        team_name = request.form.get('team_name', '').strip()
+        leader_name = request.form.get('leader_name', '').strip()
         project_title = request.form.get('project_title', '').strip()
         problem_statement = request.form.get('problem_statement', '').strip()
         domain = request.form.get('domain', '').strip()
         
         if not all([project_title, problem_statement, domain]):
-            flash('All fields are required.', 'warning')
+            flash('Project title, domain, and problem statement are required.', 'warning')
             return render_template(
                 'leader/quick_edit.html',
                 team=team,
@@ -339,8 +341,14 @@ def quick_edit(team_id):
                 certificates_active=certificates_active,
                 certs_generated=False,
                 leader_cert=None,
-                certs_by_member={}
+                certs_by_member={},
+                released=False
             )
+            
+        if team_name:
+            team.team_name = team_name
+        if leader_name and team.leader:
+            team.leader.name = leader_name
             
         # Create submission details (One-time submit lock)
         submission = ProblemSubmission(

@@ -208,7 +208,8 @@
             </p>
 
             <div class="p-3 mb-4 rounded text-start" style="background-color: #121b2d; border: 1px solid var(--card-border);">
-                <div class="mb-2"><span class="text-secondary small">Team:</span> <strong class="text-white">{{ team.team_name }}</strong> ({{ team.team_id }})</div>
+                <div class="mb-2"><span class="text-secondary small">Team Name:</span> <strong class="text-white">{{ team.team_name }}</strong> <code class="text-muted">({{ team.team_id }})</code></div>
+                <div class="mb-2"><span class="text-secondary small">Team Leader:</span> <span class="text-white">{{ team.leader.name if team.leader else 'N/A' }}</span></div>
                 <div class="mb-2"><span class="text-secondary small">Project Title:</span> <span class="text-white">{{ submission.project_title }}</span></div>
                 <div class="mb-2"><span class="text-secondary small">Domain:</span> <span class="badge bg-info">{{ submission.domain }}</span></div>
                 <div><span class="text-secondary small">Problem Statement:</span> <p class="text-secondary small mb-0 mt-1" style="white-space: pre-wrap;">{{ submission.problem_statement }}</p></div>
@@ -220,14 +221,19 @@
         </div>
 
     {% else %}
-        <!-- CASE 3: First time scan -> Form to enter details -->
+        <!-- CASE 3: First time scan -> Public form to enter details -->
         <div class="card p-4">
-            <h5 class="mb-4 text-center text-primary"><i class="bi bi-pencil-square"></i> Enter Team Details</h5>
+            <h5 class="mb-4 text-center text-primary"><i class="bi bi-pencil-square"></i> Enter Team & Project Details</h5>
             <form action="{{ url_for('leader.quick_edit', team_id=team.team_id) }}" method="POST">
                 <div class="row g-3">
                     <div class="col-12">
-                        <label for="team_name" class="form-label">Team Name (Locked)</label>
-                        <input type="text" class="form-control" id="team_name" name="team_name" value="{{ team.team_name }}" readonly style="opacity: 0.65; cursor: not-allowed; background-color: #121b2d;">
+                        <label for="team_name" class="form-label">Team Name *</label>
+                        <input type="text" class="form-control" id="team_name" name="team_name" value="{{ team.team_name }}" required placeholder="Enter team name">
+                    </div>
+
+                    <div class="col-12">
+                        <label for="leader_name" class="form-label">Team Leader Name *</label>
+                        <input type="text" class="form-control" id="leader_name" name="leader_name" value="{{ team.leader.name if team.leader else '' }}" required placeholder="Enter team leader name">
                     </div>
                     
                     <div class="col-12">
