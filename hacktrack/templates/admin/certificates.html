@@ -214,18 +214,18 @@
                                                         </li>
                                                         <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
                                                         <li>
-                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ cert_ids|tojson }}, 'https://mail.google.com/mail/?view=cm&fs=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                            <a class="dropdown-item text-light" href="mailto:{{ compose_to }}?subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                <i class="bi bi-envelope-at-fill text-info" style="margin-right: 8px;"></i> Open in Default Mail App
+                                                            </a>
+                                                        </li>
+                                                        <li>
+                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose('{{ team.team_id }}', 'https://mail.google.com/mail/?view=cm&fs=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
                                                                 <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
                                                             </a>
                                                         </li>
                                                         <li>
-                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ cert_ids|tojson }}, 'https://outlook.live.com/owa/?path=/mail/action/compose&to={{ compose_to|urlencode }}&subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose('{{ team.team_id }}', 'https://outlook.live.com/owa/?path=/mail/action/compose&to={{ compose_to|urlencode }}&subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
                                                                 <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item text-light" href="mailto:{{ compose_to }}?subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                                                <i class="bi bi-envelope-open text-info" style="margin-right: 8px;"></i> Open in Local Mail Client
                                                             </a>
                                                         </li>
                                                     </ul>
@@ -413,12 +413,17 @@
                                     </li>
                                     <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
                                     <li>
-                                        <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ modal_cert_ids|tojson }}, 'https://mail.google.com/mail/?view=cm&fs=1&to={{ modal_compose_to|urlencode }}&su={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                        <a class="dropdown-item text-light" href="mailto:{{ modal_compose_to }}?subject={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}" target="_blank" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                            <i class="bi bi-envelope-at-fill text-info" style="margin-right: 8px;"></i> Open in Default Mail App
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose('{{ team.team_id }}', 'https://mail.google.com/mail/?view=cm&fs=1&to={{ modal_compose_to|urlencode }}&su={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
                                             <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
                                         </a>
                                     </li>
                                     <li>
-                                        <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose({{ modal_cert_ids|tojson }}, 'https://outlook.live.com/owa/?path=/mail/action/compose&to={{ modal_compose_to|urlencode }}&subject={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                        <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose('{{ team.team_id }}', 'https://outlook.live.com/owa/?path=/mail/action/compose&to={{ modal_compose_to|urlencode }}&subject={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
                                             <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
                                         </a>
                                     </li>
@@ -454,20 +459,25 @@ function copyToClipboard(text, elementId) {
 }
 
 function downloadAndCompose(teamId, composeUrl) {
-    // 1. Trigger the download of the ZIP file
+    // 1. Open mail compose window immediately to avoid popup blockers
+    const win = window.open(composeUrl, '_blank');
+    if (!win || win.closed || typeof win.closed === 'undefined') {
+        // Fallback if popup blocked
+        window.location.href = composeUrl;
+    }
+    
+    // 2. Trigger the download of the ZIP file
     const downloadUrl = "{{ url_for('admin.download_team_certificates_zip', team_id='PLACEHOLDER') }}".replace('PLACEHOLDER', teamId);
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
     iframe.src = downloadUrl;
     document.body.appendChild(iframe);
     
-    // Remove the iframe after a short delay
     setTimeout(() => {
-        document.body.removeChild(iframe);
+        if (iframe.parentNode) {
+            document.body.removeChild(iframe);
+        }
     }, 2000);
-    
-    // 2. Open the compose URL in a new window/tab
-    window.open(composeUrl, '_blank');
 }
 </script>
 {% endblock %}
