@@ -659,6 +659,12 @@ Hackathon Organizing Committee"""
 @leader_bp.route('/certificates/public-download/<cert_id>')
 def public_download_certificate(cert_id):
     cert = Certificate.query.get_or_404(cert_id)
+    certs_enabled = SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
+    is_released = (cert.certificate_status == 'RELEASED') and certs_enabled
+    
+    if not is_released and not (current_user.is_authenticated and current_user.role in ['Admin', 'Organizer']):
+        return render_template('certificate_locked.html', cert=cert)
+        
     preview = request.args.get('preview', '0') == '1'
     if not preview:
         cert.download_count = (cert.download_count or 0) + 1

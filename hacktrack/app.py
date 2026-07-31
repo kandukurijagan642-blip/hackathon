@@ -50,7 +50,21 @@ def index():
 @app.route('/certificates/preview/<cert_id>')
 def preview_certificate(cert_id):
     from flask import render_template
+    from flask_login import current_user
     cert = Certificate.query.get_or_404(cert_id)
+    
+    # Check if certificate system is enabled and cert is released
+    certs_enabled = SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
+    is_released = (cert.certificate_status == 'RELEASED') and certs_enabled
+    
+    # Admins & Organizers can preview locked certs for inspection
+    if current_user.is_authenticated and current_user.role in ['Admin', 'Organizer']:
+        return render_template('certificate_preview.html', cert=cert)
+        
+    # If certificates are locked or system disabled, display locked notice
+    if not is_released:
+        return render_template('certificate_locked.html', cert=cert)
+        
     return render_template('certificate_preview.html', cert=cert)
 
 # Custom context processor to expose now and system settings helper in templates
