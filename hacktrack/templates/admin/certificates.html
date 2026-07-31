@@ -213,21 +213,21 @@
                                                             </form>
                                                         </li>
                                                         <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
-                                                        <li>
-                                                            <a class="dropdown-item text-light" href="mailto:{{ compose_to }}?subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                                                <i class="bi bi-envelope-at-fill text-info" style="margin-right: 8px;"></i> Open in Default Mail App
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose('{{ team.team_id }}', 'https://mail.google.com/mail/?view=cm&fs=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                                                <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item text-light" href="javascript:void(0);" onclick="downloadAndCompose('{{ team.team_id }}', 'https://outlook.live.com/owa/?path=/mail/action/compose&to={{ compose_to|urlencode }}&subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                                                <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
-                                                            </a>
-                                                        </li>
+                                                         <li>
+                                                             <a class="dropdown-item text-light" href="mailto:{{ compose_to }}?subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" onclick="triggerZipDownload('{{ team.team_id }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                 <i class="bi bi-envelope-at-fill text-info" style="margin-right: 8px;"></i> Open in Default Mail App
+                                                             </a>
+                                                         </li>
+                                                         <li>
+                                                             <a class="dropdown-item text-light" href="https://mail.google.com/mail/?view=cm&fs=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" onclick="triggerZipDownload('{{ team.team_id }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                 <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
+                                                             </a>
+                                                         </li>
+                                                         <li>
+                                                             <a class="dropdown-item text-light" href="https://outlook.live.com/owa/?path=/mail/action/compose&to={{ compose_to|urlencode }}&subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" onclick="triggerZipDownload('{{ team.team_id }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
+                                                                 <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
+                                                             </a>
+                                                         </li>
                                                     </ul>
                                                 </div>
                                             {% else %}
@@ -458,15 +458,7 @@ function copyToClipboard(text, elementId) {
     });
 }
 
-function downloadAndCompose(teamId, composeUrl) {
-    // 1. Open mail compose window immediately to avoid popup blockers
-    const win = window.open(composeUrl, '_blank');
-    if (!win || win.closed || typeof win.closed === 'undefined') {
-        // Fallback if popup blocked
-        window.location.href = composeUrl;
-    }
-    
-    // 2. Trigger the download of the ZIP file
+function triggerZipDownload(teamId) {
     const downloadUrl = "{{ url_for('admin.download_team_certificates_zip', team_id='PLACEHOLDER') }}".replace('PLACEHOLDER', teamId);
     const iframe = document.createElement('iframe');
     iframe.style.display = 'none';
@@ -477,7 +469,7 @@ function downloadAndCompose(teamId, composeUrl) {
         if (iframe.parentNode) {
             document.body.removeChild(iframe);
         }
-    }, 2000);
+    }, 3000);
 }
 </script>
 {% endblock %}
