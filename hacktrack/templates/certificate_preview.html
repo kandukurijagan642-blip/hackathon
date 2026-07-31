@@ -307,11 +307,6 @@
                             <div style="margin-top: 4px;">Certificate ID: {{ cert.certificate_id }}</div>
                         </div>
                         
-                        <div class="qr-section">
-                            <img class="qr-image" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={{ request.host_url.rstrip('/') }}/verify-certificate/{{ cert.verification_token }}" alt="QR Code">
-                            <div class="qr-text">SCAN TO VERIFY</div>
-                        </div>
-                        
                         <div class="signature-section">
                             <div class="sig-col">
                                 <div class="sig-placeholder">S.K. Singh</div>

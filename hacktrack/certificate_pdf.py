@@ -13,15 +13,6 @@ def generate_pdf_certificate(cert_id, student_name, team_name, project_title, ce
     # Create the folder if it does not exist
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
-    # 1. Generate the verification QR code image
-    qr = qrcode.QRCode(version=1, box_size=3, border=1)
-    qr.add_data(verification_url)
-    qr.make(fit=True)
-    
-    temp_qr_path = output_path + ".qr.png"
-    qr_img = qr.make_image(fill_color="black", back_color="white")
-    qr_img.save(temp_qr_path)
-    
     # 2. Initialize Landscape Page
     c = canvas.Canvas(output_path, pagesize=landscape(letter))
     width, height = landscape(letter)
@@ -165,18 +156,6 @@ def generate_pdf_certificate(cert_id, student_name, team_name, project_title, ce
         c.drawString(width - 210, 85, "S.K. Singh")
         c.drawString(width - 95, 85, "B. Ramesh")
     
-    # Draw dynamic verification QR Code on bottom right
-    c.drawImage(temp_qr_path, width / 2.0 - 35, 45, width=70, height=70)
-    c.setFillColor(colors.HexColor('#9ca3af'))
-    c.setFont("Helvetica-Bold", 7)
-    c.drawCentredString(width / 2.0, 38, "SCAN TO VERIFY")
-    
     # Save the page
     c.showPage()
     c.save()
-    
-    # Cleanup temp QR code image
-    try:
-        os.remove(temp_qr_path)
-    except:
-        pass
