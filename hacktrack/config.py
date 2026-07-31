@@ -1,36 +1,13 @@
 import os
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+# Load environment variables from .env file (only if it exists locally)
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 class Config:
-    # Flask settings
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'default_secret_key_if_none_set')
-    DEBUG = os.environ.get('FLASK_DEBUG', 'True') == 'True'
-    
-    # Database settings
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    if DATABASE_URL:
-        if DATABASE_URL.startswith("postgres://"):
-            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-        else:
-            SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    else:
-        MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
-        MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
-        MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
-        MYSQL_DB = os.environ.get('MYSQL_DB', 'hacktrack_db')
-        
-        # SQLAlchemy URI (using pymysql for pure python mysql connectivity)
-        if MYSQL_PASSWORD:
-            SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}"
-        else:
-            SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}@{MYSQL_HOST}/{MYSQL_DB}"
-        
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # Project Paths
+    # Project Paths (defined first so other settings can use them)
     BASE_DIR = os.path.abspath(os.path.dirname(__file__))
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     EXPORT_FOLDER = os.path.join(BASE_DIR, 'exports')
@@ -39,6 +16,39 @@ class Config:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(EXPORT_FOLDER, exist_ok=True)
     os.makedirs(os.path.join(BASE_DIR, 'static', 'qrcodes'), exist_ok=True)
+    os.makedirs(os.path.join(BASE_DIR, 'static', 'certificates'), exist_ok=True)
+    
+    # Flask settings
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'default_secret_key_if_none_set')
+    DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
+    
+    # Database settings
+    # Priority: DATABASE_URL (Render PostgreSQL) > MYSQL_HOST (local MySQL) > SQLite fallback
+    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
+    MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
+    MYSQL_DB = os.environ.get('MYSQL_DB', 'hacktrack_db')
+    
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    RENDER = os.environ.get('RENDER', False)  # Render sets this automatically
+    
+    if DATABASE_URL:
+        # Render PostgreSQL or any external database
+        if DATABASE_URL.startswith("postgres://"):
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+        else:
+            SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    elif RENDER:
+        # On Render without DATABASE_URL — use SQLite
+        SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'hacktrack.db')
+    else:
+        # Local development — use MySQL
+        if MYSQL_PASSWORD:
+            SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DB}"
+        else:
+            SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}@{MYSQL_HOST}/{MYSQL_DB}"
+        
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Mock Email Settings
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'localhost')

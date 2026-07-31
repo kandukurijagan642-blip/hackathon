@@ -8,7 +8,13 @@ db = SQLAlchemy()
 def create_database_if_not_exists():
     """
     Connects to MySQL server directly and creates the target database if it does not exist.
+    Skips this step entirely for SQLite or PostgreSQL databases.
     """
+    # Only attempt MySQL database creation if actually using MySQL
+    if not Config.SQLALCHEMY_DATABASE_URI.startswith('mysql'):
+        print(f"Using non-MySQL database, skipping MySQL auto-creation.")
+        return
+    
     try:
         # Establish connection to MySQL server without selecting a database
         connection = pymysql.connect(
