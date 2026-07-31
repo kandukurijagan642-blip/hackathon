@@ -215,8 +215,36 @@ def generate_member_certificate(team_name, project_title, student_name, rank_tex
 
 def send_mock_email(to_email, subject, body_text):
     """
-    Mocks sending an email by logging to the console and appending to an email log file.
+    Sends a real email via SMTP if configured, otherwise mocks by logging to file.
     """
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    
+    smtp_user = os.environ.get('SMTP_USER', '')
+    smtp_pass = os.environ.get('SMTP_PASS', '')
+    smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+    smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    
+    if smtp_user and smtp_pass:
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = smtp_user
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body_text, 'plain'))
+            
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+            server.quit()
+            print(f"Email sent to {to_email} with subject '{subject}'")
+            return
+        except Exception as e:
+            print(f"SMTP send failed: {e}, falling back to mock log.")
+    
+    # Fallback: log to file
     log_file = os.path.join(Config.BASE_DIR, 'exports', 'mock_emails.log')
     email_content = f"""
 ===================================================
@@ -237,9 +265,44 @@ SUBJECT: {subject}
 
 def send_mock_email_with_attachments(to_email, subject, body_text, attachments=None):
     """
-    Mocks sending an email with attachments by logging to mock_emails.log
-    and storing attachments details.
+    Sends a real email with PDF attachments via SMTP if configured,
+    otherwise mocks by logging to file.
     """
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.application import MIMEApplication
+    
+    smtp_user = os.environ.get('SMTP_USER', '')
+    smtp_pass = os.environ.get('SMTP_PASS', '')
+    smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
+    smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    
+    if smtp_user and smtp_pass:
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = smtp_user
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body_text, 'plain'))
+            
+            if attachments:
+                for filename, data in attachments:
+                    part = MIMEApplication(data, Name=filename)
+                    part['Content-Disposition'] = f'attachment; filename="{filename}"'
+                    msg.attach(part)
+            
+            server = smtplib.SMTP(smtp_server, smtp_port)
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+            server.quit()
+            print(f"Email with {len(attachments or [])} attachment(s) sent to {to_email}")
+            return
+        except Exception as e:
+            print(f"SMTP send failed: {e}, falling back to mock log.")
+    
+    # Fallback: log to file
     log_file = os.path.join(Config.BASE_DIR, 'exports', 'mock_emails.log')
     attach_str = ""
     if attachments:
@@ -261,3 +324,4 @@ SUBJECT: {subject}
         print(f"Mock email with attachments sent to {to_email}. Recorded in exports/mock_emails.log")
     except Exception as e:
         print(f"Failed to write mock email: {e}")
+
