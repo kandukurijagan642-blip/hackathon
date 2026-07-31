@@ -377,18 +377,40 @@ def seed_database():
 # 6. Initialize database tables and seed
 with app.app_context():
     try:
-        with db.engine.connect() as conn:
-            conn.execute(db.text("SET FOREIGN_KEY_CHECKS = 0;"))
-            db.metadata.create_all(bind=conn)
-            conn.execute(db.text("SET FOREIGN_KEY_CHECKS = 1;"))
-            conn.commit()
+        if db.engine.name == 'mysql':
+            with db.engine.connect() as conn:
+                conn.execute(db.text("SET FOREIGN_KEY_CHECKS = 0;"))
+                db.metadata.create_all(bind=conn)
+                conn.execute(db.text("SET FOREIGN_KEY_CHECKS = 1;"))
+                conn.commit()
+        elif db.engine.name == 'sqlite':
+            with db.engine.connect() as conn:
+                conn.execute(db.text("PRAGMA foreign_keys = OFF;"))
+                db.metadata.create_all(bind=conn)
+                conn.execute(db.text("PRAGMA foreign_keys = ON;"))
+                conn.commit()
+        else:
+            db.create_all()
         print("Database tables verified/created successfully.")
     except Exception as e:
         print(f"Error creating tables: {e}")
+        try:
+            db.create_all()
+        except Exception as ex:
+            print(f"Fallback db.create_all error: {ex}")
         
     # Only seed default accounts if the user registry is empty
-    if not User.query.first():
-        seed_database()
+    try:
+        if not User.query.first():
+            seed_database()
+    except Exception as e:
+        print(f"Seeding check failed: {e}")
+        try:
+            db.create_all()
+            if not User.query.first():
+                seed_database()
+        except Exception as ex:
+            print(f"Retry seeding error: {ex}")
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
