@@ -47,6 +47,10 @@ app.register_blueprint(public_bp)
 def index():
     return redirect(url_for('auth.login'))
 
+@app.route('/quick-edit/<team_id>', methods=['GET', 'POST'])
+def root_quick_edit(team_id):
+    return redirect(url_for('leader.quick_edit', team_id=team_id))
+
 @app.route('/certificates/preview/<cert_id>')
 def preview_certificate(cert_id):
     from flask import render_template

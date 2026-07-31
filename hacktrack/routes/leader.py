@@ -200,9 +200,14 @@ def download_certificate(type, id):
 
 @leader_bp.route('/quick-edit/<team_id>', methods=['GET', 'POST'])
 def quick_edit(team_id):
-    team = Team.query.filter_by(team_id=team_id).first_or_404()
+    clean_id = team_id.strip().upper()
+    team = Team.query.filter_by(team_id=clean_id).first()
+    if not team:
+        team = Team.query.filter(db.func.upper(Team.team_id) == clean_id).first()
+    if not team:
+        return render_template('team_not_found.html', team_id=team_id), 404
         
-    submission = ProblemSubmission.query.filter_by(team_id=team_id).first()
+    submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
     
     # Check if certificates module is active (results published or enabled by admin)
     certificates_active = (
