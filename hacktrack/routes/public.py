@@ -136,3 +136,61 @@ HackTrack Team"""
 def registration_success(team_id):
     team = Team.query.filter_by(team_id=team_id).first_or_404()
     return render_template('public/registration_success.html', team=team)
+
+@public_bp.route('/qr/registration')
+def registration_qr():
+    import qrcode
+    from io import BytesIO
+    from flask import send_file
+    from utils import get_actual_host_url
+    
+    actual_host = get_actual_host_url()
+    payload = f"{actual_host}/register"
+    
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(payload)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    
+    return send_file(buf, mimetype="image/png")
+
+@public_bp.route('/qr/team/<team_id>')
+def team_qr(team_id):
+    import qrcode
+    from io import BytesIO
+    from flask import send_file, abort
+    from utils import get_actual_host_url
+    from models import Team
+    
+    clean_id = team_id.strip().upper()
+    team = Team.query.filter_by(team_id=clean_id).first()
+    if not team:
+        abort(404)
+        
+    actual_host = get_actual_host_url()
+    payload = f"{actual_host}/leader/quick-edit/{team.team_id}"
+    
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(payload)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buf = BytesIO()
+    img.save(buf, format="PNG")
+    buf.seek(0)
+    
+    return send_file(buf, mimetype="image/png")

@@ -67,13 +67,13 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#qrModal-{{ team.team_id }}" title="Click to enlarge QR Code">
-                                    <img src="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" alt="QR Code" width="75" height="75" class="border rounded bg-white p-1" style="cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                                    <img src="{{ url_for('public.team_qr', team_id=team.team_id) }}" alt="QR Code" width="75" height="75" class="border rounded bg-white p-1" style="cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
                                 </a>
                                 <div class="d-flex flex-column gap-1">
                                     <button type="button" class="btn btn-sm btn-outline-info p-1 px-2" style="font-size:11px;" data-bs-toggle="modal" data-bs-target="#qrModal-{{ team.team_id }}">
                                         <i class="bi bi-zoom-in"></i> Enlarge
                                     </button>
-                                    <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" download class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size:11px;">
+                                    <a href="{{ url_for('public.team_qr', team_id=team.team_id) }}" download class="btn btn-sm btn-outline-secondary p-1 px-2" style="font-size:11px;">
                                         <i class="bi bi-download"></i> Save
                                     </a>
                                 </div>
@@ -142,7 +142,7 @@
                     </div>
                     <!-- QR thumbnail -->
                     <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#qrModal-{{ team.team_id }}">
-                        <img src="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" alt="QR" width="60" height="60" class="border rounded bg-white p-1">
+                        <img src="{{ url_for('public.team_qr', team_id=team.team_id) }}" alt="QR" width="60" height="60" class="border rounded bg-white p-1">
                     </a>
                 </div>
 
@@ -220,10 +220,10 @@
                     </div>
                     <div class="modal-body p-3">
                         <div class="bg-white p-2 d-inline-block rounded shadow mb-3">
-                            <img src="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" alt="QR Code" style="width:220px; height:220px; display:block;">
+                            <img src="{{ url_for('public.team_qr', team_id=team.team_id) }}" alt="QR Code" style="width:220px; height:220px; display:block;">
                         </div>
                         <div class="text-secondary small mb-3">ID: <code class="text-info">{{ team.team_id }}</code> &bull; {{ team.leader.name if team.leader else 'N/A' }}</div>
-                        <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" download class="btn btn-primary btn-sm px-4">
+                        <a href="{{ url_for('public.team_qr', team_id=team.team_id) }}" download class="btn btn-primary btn-sm px-4">
                             <i class="bi bi-download me-1"></i> Save QR
                         </a>
                     </div>
