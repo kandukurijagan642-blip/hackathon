@@ -414,10 +414,16 @@ with app.app_context():
 
     # Regenerate QR codes using live base URL — only if file missing or base URL changed
     try:
-        from utils import generate_team_qr
+        from utils import generate_team_qr, generate_registration_qr
         base_url = os.environ.get('APP_BASE_URL', 'http://localhost:5000').rstrip('/')
         stored_base_url = SystemSetting.get_setting('last_qr_base_url', '')
         url_changed = stored_base_url != base_url
+        
+        reg_qr_file = os.path.join(app.root_path, 'static', 'qrcodes', 'registration_qr.png')
+        if not os.path.exists(reg_qr_file) or url_changed:
+            generate_registration_qr(base_url)
+            print(f"Main Registration QR generated/updated using: {base_url}")
+            
         all_teams = Team.query.all()
         regenerated = 0
         for t in all_teams:

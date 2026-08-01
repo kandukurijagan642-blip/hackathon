@@ -1,5 +1,10 @@
-from flask import Blueprint, render_template, abort
-from models import Certificate
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from werkzeug.security import generate_password_hash
+import os
+import secrets
+from database import db
+from models import User, Team, TeamMember, Attendance, ProblemSubmission, SystemSetting, Certificate
+from utils import generate_team_qr, send_mock_email
 
 public_bp = Blueprint('public', __name__)
 
@@ -7,10 +12,127 @@ public_bp = Blueprint('public', __name__)
 def verify_certificate(token):
     # Lookup the certificate using the verification token
     cert = Certificate.query.filter_by(verification_token=token).first()
-    
-    if cert:
-        status = "Valid"
-    else:
-        status = "Invalid"
-        
+    status = "Valid" if cert else "Invalid"
     return render_template('public/verify_certificate.html', cert=cert, status=status)
+
+@public_bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        team_name = request.form.get('team_name', '').strip()
+        college = request.form.get('college', '').strip()
+        department = request.form.get('department', '').strip()
+        
+        # Leader Details
+        leader_name = request.form.get('leader_name', '').strip()
+        leader_email = request.form.get('leader_email', '').strip()
+        leader_phone = request.form.get('leader_phone', '').strip()
+        
+        # Check if team name already exists
+        if Team.query.filter_by(team_name=team_name).first():
+            flash(f'Team name "{team_name}" already exists!', 'danger')
+            return render_template('public/register_team.html')
+            
+        # Check if Leader user email already exists
+        if User.query.filter_by(email=leader_email).first():
+            flash(f'Email "{leader_email}" is already registered!', 'danger')
+            return render_template('public/register_team.html')
+            
+        # 1. Create Leader User Account
+        default_pwd = f"{team_name.replace(' ', '')}@123"
+        hashed_pwd = generate_password_hash(default_pwd)
+        
+        leader_user = User(
+            name=leader_name,
+            email=leader_email,
+            password=hashed_pwd,
+            role='Leader'
+        )
+        db.session.add(leader_user)
+        db.session.commit()
+        
+        # 2. Auto-generate Team ID in HT2026001 format
+        count = Team.query.count() + 1
+        team_id = f"HT2026{count:03d}"
+        
+        # 3. Create Team
+        new_team = Team(
+            team_id=team_id,
+            team_name=team_name,
+            college=college,
+            department=department,
+            leader_id=leader_user.id
+        )
+        db.session.add(new_team)
+        db.session.commit()
+        
+        # 4. Create initial Attendance record (Absent by default)
+        att = Attendance(team_id=new_team.team_id, status='Absent')
+        db.session.add(att)
+        db.session.commit()
+        
+        # 5. Generate QR Code containing link to quick-edit page
+        generate_team_qr(
+            team_id=new_team.team_id,
+            team_name=new_team.team_name,
+            leader_name=leader_user.name,
+            host_url=request.host_url.rstrip('/')
+        )
+        
+        # 6. Add Members
+        member_names = request.form.getlist('member_name[]')
+        member_regs = request.form.getlist('member_reg[]')
+        member_emails = request.form.getlist('member_email[]')
+        member_phones = request.form.getlist('member_phone[]')
+        
+        for name, reg, email, phone in zip(member_names, member_regs, member_emails, member_phones):
+            if name.strip():
+                m = TeamMember(
+                    team_id=new_team.team_id,
+                    student_name=name.strip(),
+                    registration_number=reg.strip(),
+                    email=email.strip(),
+                    phone=phone.strip()
+                )
+                db.session.add(m)
+                
+        db.session.commit()
+
+        # Auto generate LOCKED certificates in the background immediately
+        from certificate_automation import auto_generate_team_certificates
+        auto_generate_team_certificates(new_team)
+        
+        # Send mock welcome email
+        email_body = f"""Hello {leader_name},
+
+Your team '{team_name}' has been registered for the HackTrack Hackathon!
+
+Your Custom Team ID: {team_id}
+
+You can login to the website with:
+- Email: {leader_email}
+- Password: {default_pwd}
+
+Or simply scan/keep your team QR code to access your team page directly without logging in.
+
+Best regards,
+HackTrack Team"""
+        send_mock_email(leader_email, "Welcome to HackTrack - Team Registration Confirmation", email_body)
+        
+        # Log activity
+        try:
+            from models import ActivityLog
+            log = ActivityLog(user_id=leader_user.id, action="Public Team Registry", ip_address=request.remote_addr, details=f"Registered team {team_id} ({team_name})")
+            db.session.add(log)
+            db.session.commit()
+        except Exception as e:
+            print(f"Log error: {e}")
+            
+        flash(f"Congratulations! Team '{team_name}' registered successfully! Your Team ID is {team_id}.", "success")
+        return redirect(url_for('public.registration_success', team_id=team_id))
+        
+    return render_template('public/register_team.html')
+
+@public_bp.route('/registration-success/<team_id>')
+def registration_success(team_id):
+    team = Team.query.filter_by(team_id=team_id).first_or_404()
+    return render_template('public/registration_success.html', team=team)

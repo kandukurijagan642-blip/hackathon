@@ -34,6 +34,24 @@ def generate_team_qr(team_id, team_name, leader_name, host_url="http://localhost
     img.save(qr_filepath)
     return f"qrcodes/{qr_filename}"
 
+def generate_registration_qr(host_url="http://localhost:5000"):
+    qr_payload = f"{host_url.rstrip('/')}/register"
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(qr_payload)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    qr_filename = "registration_qr.png"
+    qr_filepath = os.path.join(Config.BASE_DIR, 'static', 'qrcodes', qr_filename)
+    os.makedirs(os.path.dirname(qr_filepath), exist_ok=True)
+    img.save(qr_filepath)
+    return f"qrcodes/{qr_filename}"
+
 def export_to_excel(data_list, columns, filepath):
     """
     Exports list of dicts to an Excel sheet.
