@@ -114,17 +114,10 @@
                     </div>
                     <div>
                         {% set prob_status = get_setting('problem_released', 'False') %}
-                        <form action="{{ url_for('organizer.toggle_setting', key='problem_released') }}" method="POST">
-                            {% if prob_status == 'True' %}
-                                <button type="submit" class="btn btn-sm btn-success">
-                                    <i class="bi bi-unlock-fill"></i> Released
-                                </button>
-                            {% else %}
-                                <button type="submit" class="btn btn-sm btn-outline-warning">
-                                    <i class="bi bi-lock-fill"></i> Release Statement
-                                </button>
-                            {% endif %}
-                        </form>
+                        <label class="form-switch-ios">
+                            <input type="checkbox" class="ajax-toggle-switch" data-key="problem_released" {% if prob_status == 'True' %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
                     </div>
                 </div>
                 
@@ -135,37 +128,28 @@
                     <!-- Round 1 -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="small">Round 1 (Innovation & Pitch)</span>
-                        <form action="{{ url_for('organizer.toggle_setting', key='round1_enabled') }}" method="POST">
-                            {% if get_setting('round1_enabled', 'False') == 'True' %}
-                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
-                            {% else %}
-                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
-                            {% endif %}
-                        </form>
+                        <label class="form-switch-ios">
+                            <input type="checkbox" class="ajax-toggle-switch" data-key="round1_enabled" {% if get_setting('round1_enabled', 'False') == 'True' %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
                     </div>
 
                     <!-- Round 2 -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="small">Round 2 (Prototype & Imp)</span>
-                        <form action="{{ url_for('organizer.toggle_setting', key='round2_enabled') }}" method="POST">
-                            {% if get_setting('round2_enabled', 'False') == 'True' %}
-                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
-                            {% else %}
-                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
-                            {% endif %}
-                        </form>
+                        <label class="form-switch-ios">
+                            <input type="checkbox" class="ajax-toggle-switch" data-key="round2_enabled" {% if get_setting('round2_enabled', 'False') == 'True' %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
                     </div>
 
                     <!-- Round 3 -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="small">Round 3 (Working Demo & Scale)</span>
-                        <form action="{{ url_for('organizer.toggle_setting', key='round3_enabled') }}" method="POST">
-                            {% if get_setting('round3_enabled', 'False') == 'True' %}
-                                <button type="submit" class="btn btn-sm btn-success px-3" style="font-size: 12px; padding: 2px 8px;">Enabled</button>
-                            {% else %}
-                                <button type="submit" class="btn btn-sm btn-outline-secondary px-3" style="font-size: 12px; padding: 2px 8px;">Disabled</button>
-                            {% endif %}
-                        </form>
+                        <label class="form-switch-ios">
+                            <input type="checkbox" class="ajax-toggle-switch" data-key="round3_enabled" {% if get_setting('round3_enabled', 'False') == 'True' %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
                     </div>
                 </div>
             </div>
