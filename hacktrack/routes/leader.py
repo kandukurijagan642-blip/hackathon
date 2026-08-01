@@ -209,6 +209,8 @@ def quick_edit(team_id):
         
     submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
     
+    problem_released = SystemSetting.get_setting('problem_released', 'False') == 'True'
+    
     # Check if certificates module is active (results published or enabled by admin)
     certificates_active = (
         FinalResult.query.count() > 0 or 
@@ -327,8 +329,8 @@ def quick_edit(team_id):
                 flash('Team certificates generated successfully!', 'success')
             return redirect(url_for('leader.quick_edit', team_id=team.team_id))
             
-        if submission:
-            flash('Your project details have already been submitted and locked. Editing is no longer permitted.', 'danger')
+        if not problem_released:
+            flash('The problem statement submission phase is not active yet.', 'danger')
             return redirect(url_for('leader.quick_edit', team_id=team.team_id))
             
         project_title = request.form.get('project_title', '').strip()
@@ -345,19 +347,25 @@ def quick_edit(team_id):
                 certs_generated=False,
                 leader_cert=None,
                 certs_by_member={},
-                released=False
+                released=False,
+                problem_released=problem_released
             )
             
-        # Create submission details (One-time submit lock)
-        submission = ProblemSubmission(
-            team_id=team.team_id,
-            project_title=project_title,
-            problem_statement=problem_statement,
-            domain=domain,
-            abstract='Abstract Details (Pending)',
-            technology_stack='Tech Stack (Pending)'
-        )
-        db.session.add(submission)
+        # Create or update submission details
+        if submission:
+            submission.project_title = project_title
+            submission.problem_statement = problem_statement
+            submission.domain = domain
+        else:
+            submission = ProblemSubmission(
+                team_id=team.team_id,
+                project_title=project_title,
+                problem_statement=problem_statement,
+                domain=domain,
+                abstract='Abstract Details (Pending)',
+                technology_stack='Tech Stack (Pending)'
+            )
+            db.session.add(submission)
         db.session.commit()
         
         try:
@@ -365,7 +373,7 @@ def quick_edit(team_id):
                 user_id=None,
                 action="Quick Edit Team",
                 ip_address=request.remote_addr,
-                details=f"Anonymous update of team {team_id} details via QR shortcut."
+                details=f"Anonymous update of team {team.team_id} details via QR shortcut."
             )
             db.session.add(log)
             db.session.commit()
@@ -389,7 +397,8 @@ def quick_edit(team_id):
         certs_generated=len(certs) > 0,
         leader_cert=leader_cert,
         certs_by_member=certs_by_member,
-        released=released
+        released=released,
+        problem_released=problem_released
     )
 
 
