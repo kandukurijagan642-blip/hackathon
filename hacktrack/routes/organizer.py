@@ -368,17 +368,32 @@ def manage_rounds():
     return render_template('organizer/rounds.html')
 
 
+@organizer_bp.route('/teams/toggle-lock/<team_id>', methods=['POST'])
 @organizer_bp.route('/teams/unlock/<team_id>', methods=['POST'])
 @login_required
-def unlock_team_submission(team_id):
-    if not check_organizer(): return redirect(url_for('auth.login'))
+def toggle_team_lock(team_id):
+    if current_user.role not in ['Admin', 'Organizer']:
+        flash('Unauthorized access!', 'danger')
+        return redirect(url_for('auth.login'))
+        
     sub = ProblemSubmission.query.filter_by(team_id=team_id).first()
     if sub:
-        db.session.delete(sub)
+        sub.is_locked = not sub.is_locked
         db.session.commit()
-        log_organizer_activity("Unlock Team Submission", f"Unlocked problem submission for team {team_id}")
-        flash(f"Submission for team {team_id} unlocked successfully.", "success")
+        state = "unlocked" if not sub.is_locked else "locked"
+        flash(f"Team {team_id} project details have been successfully {state}.", "success")
+        log_msg = f"Toggled lock state for team {team_id} project submission to {state}"
+        try:
+            log = ActivityLog(user_id=current_user.id, action="Toggle Project Lock", ip_address=request.remote_addr, details=log_msg)
+            db.session.add(log)
+            db.session.commit()
+        except Exception as e:
+            print(f"Log fail: {e}")
     else:
-        flash(f"Team {team_id} has not submitted project details yet.", "warning")
+        flash("No problem statement has been submitted by this team yet.", "warning")
+        
+    ref = request.referrer
+    if ref and ('admin/teams' in ref or 'organizer/teams' in ref):
+        return redirect(ref)
     return redirect(url_for('organizer.view_teams'))
 

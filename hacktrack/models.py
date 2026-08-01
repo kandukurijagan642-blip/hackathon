@@ -75,6 +75,7 @@ class ProblemSubmission(db.Model):
     abstract = db.Column(db.Text, nullable=False)
     technology_stack = db.Column(db.Text, nullable=False)
     submission_time = db.Column(db.DateTime, default=datetime.utcnow)
+    is_locked = db.Column(db.Boolean, default=True, nullable=False)
 
 
 class JudgeProfile(db.Model):

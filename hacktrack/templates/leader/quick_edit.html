@@ -270,55 +270,111 @@
                 </div>
             </div>
         {% else %}
-            <!-- CASE 2B: Problem Statement IS released -> HIDE TEAMMATES, SHOW TEAM NAME & LEADER, ALLOW EDITING PROBLEM STATEMENT -->
-            <div class="card p-3 p-sm-4">
-                <h5 class="mb-4 text-center fw-bold" style="color:var(--accent-primary);">
-                    <i class="bi bi-pencil-square"></i> Project &amp; Problem Statement
-                </h5>
-                
-                <div class="p-3 mb-4 rounded" style="background-color:#121b2d; border:1px solid var(--card-border);">
-                    <div class="row g-2">
-                        <div class="col-6">
-                            <small class="text-secondary d-block" style="font-size:11px; font-weight:600; text-transform:uppercase;">Team Name</small>
-                            <strong class="text-white">{{ team.team_name }}</strong>
+            <!-- CASE 2B: Problem Statement IS released -->
+            {% if submission and submission.is_locked %}
+                <!-- LOCKED SUMMARY CARD -->
+                <div class="card p-3 p-sm-4">
+                    <div class="text-center mb-3">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-2"
+                             style="width:52px; height:52px; font-size:1.5rem;">
+                            <i class="bi bi-check-circle-fill"></i>
                         </div>
-                        <div class="col-6">
-                            <small class="text-secondary d-block" style="font-size:11px; font-weight:600; text-transform:uppercase;">Team Leader</small>
-                            <strong class="text-white">{{ team.leader.name if team.leader else 'N/A' }}</strong>
+                        <h5 class="mb-1 text-white fw-bold">Submitted &amp; Locked</h5>
+                        <p class="text-secondary small mb-0">Your team &amp; project information is registered.</p>
+                    </div>
+
+                    <div class="p-3 mb-3 rounded" style="background-color:#121b2d; border:1px solid var(--card-border);">
+                        <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                            <div class="text-secondary" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Team Name</div>
+                            <div class="text-white fw-bold mt-1" style="font-size:16px;">
+                                {{ team.team_name }}
+                                <span class="badge bg-secondary font-monospace ms-1" style="font-size:11px;">{{ team.team_id }}</span>
+                            </div>
                         </div>
+
+                        <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                            <div class="text-secondary" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Team Leader</div>
+                            <div class="text-white fw-semibold mt-1">
+                                <i class="bi bi-person-badge me-1 text-info"></i>{{ team.leader.name if team.leader else 'N/A' }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                            <div class="text-secondary" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Project Title</div>
+                            <div class="text-white fw-semibold mt-1">{{ submission.project_title }}</div>
+                        </div>
+
+                        <div class="mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                            <div class="text-secondary" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Project Domain</div>
+                            <div class="mt-1">
+                                <span class="badge bg-info text-dark font-monospace" style="font-size:13px; padding:5px 12px;">{{ submission.domain }}</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="text-secondary" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px;">Problem Statement</div>
+                            <p class="text-light small mb-0 mt-1"
+                               style="white-space:pre-wrap; line-height:1.6; background:rgba(0,0,0,0.2); padding:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.05);">{{ submission.problem_statement }}</p>
+                        </div>
+                    </div>
+
+                    <div class="alert py-2 px-3 small text-center mb-0"
+                         style="background-color:rgba(56,189,248,0.08); border-color:rgba(56,189,248,0.2); color:var(--accent-primary);">
+                        <i class="bi bi-shield-lock-fill me-1"></i>
+                        Certificates will appear here once released by event organizers.
                     </div>
                 </div>
-                
-                <form action="{{ url_for('leader.quick_edit', team_id=team.team_id) }}" method="POST">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label for="project_title" class="form-label">Project Title *</label>
-                            <input type="text" class="form-control" id="project_title" name="project_title"
-                                   value="{{ submission.project_title if submission else '' }}"
-                                   required placeholder="Enter your project title">
-                        </div>
-
-                        <div class="col-12">
-                            <label for="domain" class="form-label">Project Domain *</label>
-                            <input type="text" class="form-control" id="domain" name="domain"
-                                   value="{{ submission.domain if submission else '' }}"
-                                   required placeholder="e.g. Fintech, Healthcare, AI">
-                        </div>
-
-                        <div class="col-12">
-                            <label for="problem_statement" class="form-label">Problem Statement *</label>
-                            <textarea class="form-control" id="problem_statement" name="problem_statement"
-                                      rows="4" required placeholder="Outline the problem you are solving">{{ submission.problem_statement if submission else '' }}</textarea>
-                        </div>
-
-                        <div class="col-12 mt-2">
-                            <button type="submit" class="btn btn-submit">
-                                <i class="bi bi-cloud-upload-fill me-1"></i> Save &amp; Lock Project Details
-                            </button>
+            {% else %}
+                <!-- EDITABLE FORM -->
+                <div class="card p-3 p-sm-4">
+                    <h5 class="mb-4 text-center fw-bold" style="color:var(--accent-primary);">
+                        <i class="bi bi-pencil-square"></i> Project &amp; Problem Statement
+                    </h5>
+                    
+                    <div class="p-3 mb-4 rounded" style="background-color:#121b2d; border:1px solid var(--card-border);">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-secondary d-block" style="font-size:11px; font-weight:600; text-transform:uppercase;">Team Name</small>
+                                <strong class="text-white">{{ team.team_name }}</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-secondary d-block" style="font-size:11px; font-weight:600; text-transform:uppercase;">Team Leader</small>
+                                <strong class="text-white">{{ team.leader.name if team.leader else 'N/A' }}</strong>
+                            </div>
                         </div>
                     </div>
-                </form>
-            </div>
+                    
+                    <form action="{{ url_for('leader.quick_edit', team_id=team.team_id) }}" method="POST">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label for="project_title" class="form-label">Project Title *</label>
+                                <input type="text" class="form-control" id="project_title" name="project_title"
+                                       value="{{ submission.project_title if submission else '' }}"
+                                       required placeholder="Enter your project title">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="domain" class="form-label">Project Domain *</label>
+                                <input type="text" class="form-control" id="domain" name="domain"
+                                       value="{{ submission.domain if submission else '' }}"
+                                       required placeholder="e.g. Fintech, Healthcare, AI">
+                            </div>
+
+                            <div class="col-12">
+                                <label for="problem_statement" class="form-label">Problem Statement *</label>
+                                <textarea class="form-control" id="problem_statement" name="problem_statement"
+                                          rows="4" required placeholder="Outline the problem you are solving">{{ submission.problem_statement if submission else '' }}</textarea>
+                            </div>
+
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-submit">
+                                    <i class="bi bi-cloud-upload-fill me-1"></i> Save &amp; Lock Project Details
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
         {% endif %}
     {% endif %}
 </div>

@@ -333,6 +333,10 @@ def quick_edit(team_id):
             flash('The problem statement submission phase is not active yet.', 'danger')
             return redirect(url_for('leader.quick_edit', team_id=team.team_id))
             
+        if submission and submission.is_locked:
+            flash('Your project details are locked. Editing is not permitted.', 'danger')
+            return redirect(url_for('leader.quick_edit', team_id=team.team_id))
+            
         project_title = request.form.get('project_title', '').strip()
         problem_statement = request.form.get('problem_statement', '').strip()
         domain = request.form.get('domain', '').strip()
@@ -356,6 +360,7 @@ def quick_edit(team_id):
             submission.project_title = project_title
             submission.problem_statement = problem_statement
             submission.domain = domain
+            submission.is_locked = True
         else:
             submission = ProblemSubmission(
                 team_id=team.team_id,
@@ -363,7 +368,8 @@ def quick_edit(team_id):
                 problem_statement=problem_statement,
                 domain=domain,
                 abstract='Abstract Details (Pending)',
-                technology_stack='Tech Stack (Pending)'
+                technology_stack='Tech Stack (Pending)',
+                is_locked=True
             )
             db.session.add(submission)
         db.session.commit()
