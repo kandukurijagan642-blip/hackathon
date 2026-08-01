@@ -17,9 +17,7 @@
                 
                 <!-- QR Code Block -->
                 <div class="bg-white p-3 d-inline-block rounded shadow mb-4">
-                    <img src="{{ url_for('public.team_qr', team_id=team.team_id) }}" 
-                         alt="Team QR Code" 
-                         style="width: 240px; height: 240px; display: block; margin: 0 auto;">
+                    <canvas id="team-qr" style="width: 240px; height: 240px; display: block; margin: 0 auto;"></canvas>
                 </div>
                 
                 <!-- Dynamic Pop-up notice if blocker intervenes -->
@@ -28,7 +26,7 @@
                 </div>
 
                 <div class="mb-4">
-                    <a href="{{ url_for('public.team_qr', team_id=team.team_id) }}" 
+                    <a href="#" 
                        id="open-qr-btn"
                        target="_blank" 
                        class="btn btn-success btn-lg px-4 py-2 fw-semibold">
@@ -72,16 +70,25 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const qrUrl = "{{ url_for('public.team_qr', team_id=team.team_id) }}";
+        const qrValue = window.location.origin + '/leader/quick-edit/{{ team.team_id }}';
+        const qr = new QRious({
+            element: document.getElementById('team-qr'),
+            value: qrValue,
+            size: 240
+        });
+        
+        const openBtn = document.getElementById('open-qr-btn');
+        if (openBtn) {
+            openBtn.href = qr.toDataURL();
+        }
         
         // Attempt to auto-open in a new tab immediately
-        const newWindow = window.open(qrUrl, '_blank');
+        const newWindow = window.open(qr.toDataURL(), '_blank');
         
-        // If window.open was blocked by browser's default pop-up blocker
         if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-            // Show alert notice to user
             const notice = document.getElementById('popup-blocker-notice');
             if (notice) {
                 notice.classList.remove('d-none');
