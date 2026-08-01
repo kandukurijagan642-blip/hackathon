@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block page_title %}Registration Successful{% endblock %}
+
+{% block content %}
+<div class="container-fluid fade-in-up">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow p-4 text-center bg-secondary">
+                <!-- Celebration Icon -->
+                <div class="mb-3 text-success">
+                    <i class="bi bi-patch-check-fill" style="font-size: 3.5rem;"></i>
+                </div>
+                
+                <h3 class="text-white fw-bold mb-1">Registration Completed!</h3>
+                <p class="text-secondary small mb-4">Team was created and initialized successfully.</p>
+                
+                <!-- QR Code Block -->
+                <div class="bg-white p-3 d-inline-block rounded shadow mb-4">
+                    <img src="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" 
+                         alt="Team QR Code" 
+                         style="width: 240px; height: 240px; display: block; margin: 0 auto;">
+                </div>
+                
+                <!-- Dynamic Pop-up notice if blocker intervenes -->
+                <div id="popup-blocker-notice" class="alert alert-info py-2 px-3 small mb-4 d-none" style="background-color: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.2); color: var(--accent-primary);">
+                    <i class="bi bi-exclamation-circle-fill me-1"></i> Pop-up blocker active? Click the button below to force open in a new tab.
+                </div>
+
+                <div class="mb-4">
+                    <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" 
+                       id="open-qr-btn"
+                       target="_blank" 
+                       class="btn btn-success btn-lg px-4 py-2 fw-semibold">
+                        <i class="bi bi-box-arrow-up-right me-1"></i> Open QR in New Tab
+                    </a>
+                </div>
+
+                <!-- Team Details Summary -->
+                <div class="p-3 mb-4 rounded text-start" style="background-color: rgba(0,0,0,0.15); border: 1px solid var(--border-color);">
+                    <div class="row g-2 small">
+                        <div class="col-4 text-muted font-monospace">TEAM NAME:</div>
+                        <div class="col-8 text-white fw-bold">{{ team.team_name }}</div>
+                        
+                        <div class="col-4 text-muted font-monospace">TEAM ID:</div>
+                        <div class="col-8 text-info fw-bold"><code>{{ team.team_id }}</code></div>
+                        
+                        <div class="col-4 text-muted font-monospace">LEADER:</div>
+                        <div class="col-8 text-white">{{ team.leader.name if team.leader else 'N/A' }}</div>
+                        
+                        <div class="col-4 text-muted font-monospace">EMAIL:</div>
+                        <div class="col-8 text-white">{{ team.leader.email if team.leader else 'N/A' }}</div>
+                        
+                        <div class="col-4 text-muted font-monospace">COLLEGE:</div>
+                        <div class="col-8 text-white">{{ team.college }}</div>
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="d-flex gap-2 justify-content-center">
+                    <a href="{{ url_for('organizer.view_teams') }}" class="btn btn-outline-secondary btn-sm px-3">
+                        <i class="bi bi-arrow-left"></i> Teams Registry
+                    </a>
+                    <a href="{{ url_for('organizer.register_team') }}" class="btn btn-primary btn-primary-custom btn-sm px-3">
+                        <i class="bi bi-plus-circle"></i> Register Another
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const qrUrl = "{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}";
+        
+        // Attempt to auto-open in a new tab immediately
+        const newWindow = window.open(qrUrl, '_blank');
+        
+        // If window.open was blocked by browser's default pop-up blocker
+        if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+            // Show alert notice to user
+            const notice = document.getElementById('popup-blocker-notice');
+            if (notice) {
+                notice.classList.remove('d-none');
+            }
+        }
+    });
+</script>
+{% endblock %}

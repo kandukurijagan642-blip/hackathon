@@ -179,9 +179,16 @@ HackTrack Organizer Team"""
         
         log_organizer_activity("Register Team", f"Registered team {team_id} ({team_name})")
         flash(f"Team '{team_name}' (ID: {team_id}) registered successfully! Credentials sent to {leader_email}.", "success")
-        return redirect(url_for('organizer.view_teams'))
+        return redirect(url_for('organizer.registration_success', team_id=team_id))
         
     return render_template('organizer/register_team.html')
+
+@organizer_bp.route('/registration-success/<team_id>')
+@login_required
+def registration_success(team_id):
+    if not check_organizer(): return redirect(url_for('auth.login'))
+    team = Team.query.filter_by(team_id=team_id).first_or_404()
+    return render_template('organizer/registration_success.html', team=team)
 
 @organizer_bp.route('/checkin/<team_id>', methods=['GET', 'POST'])
 @login_required
