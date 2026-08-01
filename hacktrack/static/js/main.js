@@ -39,18 +39,44 @@ document.addEventListener('DOMContentLoaded', function () {
     // 2. Mobile Sidebar Toggle
     const navToggle = document.getElementById('nav-toggle');
     const sidebar = document.querySelector('.sidebar');
-    
+    const overlay = document.getElementById('sidebar-overlay');
+
+    function openSidebar() {
+        sidebar.classList.add('active');
+        if (overlay) overlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // prevent body scroll when sidebar open
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('active');
+        if (overlay) overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
     if (navToggle && sidebar) {
         navToggle.addEventListener('click', function (e) {
             e.stopPropagation();
-            sidebar.classList.toggle('active');
-        });
-        
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', function (e) {
-            if (sidebar.classList.contains('active') && !sidebar.contains(e.target) && e.target !== navToggle) {
-                sidebar.classList.remove('active');
+            if (sidebar.classList.contains('active')) {
+                closeSidebar();
+            } else {
+                openSidebar();
             }
+        });
+    }
+
+    // Close sidebar when overlay is tapped
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+    }
+
+    // Close sidebar when a nav link is clicked on mobile
+    if (sidebar) {
+        sidebar.querySelectorAll('.sidebar-menu a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 992) {
+                    closeSidebar();
+                }
+            });
         });
     }
 
