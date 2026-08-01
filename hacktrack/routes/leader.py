@@ -20,6 +20,127 @@ def log_leader_activity(action, details=None):
     except Exception as e:
         print(f"Error logging leader activity: {e}")
 
+def ensure_certificates_ready(team, host_url):
+    from datetime import datetime
+    
+    # Check if certificates module is active (results published or enabled by admin)
+    certificates_active = (
+        FinalResult.query.count() > 0 or 
+        SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
+    )
+    if not certificates_active:
+        return False
+
+    # Fetch existing
+    certs = Certificate.query.filter_by(team_id=team.team_id).all()
+    if not certs:
+        # Auto-generate with status RELEASED
+        cert_type = "Participant"
+        final_res = FinalResult.query.filter_by(team_id=team.team_id).first()
+        if final_res:
+            if final_res.rank == 1:
+                cert_type = "Winner"
+            else:
+                cert_type = "Finalist"
+                
+        sig_path = SystemSetting.get_setting('organizer_signature_path')
+        logo_path = SystemSetting.get_setting('college_logo_path')
+        
+        # Leader
+        leader_user = User.query.get(team.leader_id)
+        leader_name = leader_user.name if leader_user else "Team Leader"
+        cert_count = Certificate.query.count()
+        new_cert_num = cert_count + 1
+        leader_cert_id = f"HC2026-{new_cert_num:06d}"
+        leader_token = secrets.token_urlsafe(16)
+        leader_pdf_filename = f"{leader_cert_id}.pdf"
+        leader_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', leader_pdf_filename)
+        
+        os.makedirs(os.path.dirname(leader_pdf_path), exist_ok=True)
+        verification_url = f"{host_url.rstrip('/')}/verify-certificate/{leader_token}"
+        
+        submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
+        generate_pdf_certificate(
+            cert_id=leader_cert_id,
+            student_name=leader_name,
+            team_name=team.team_name,
+            project_title=submission.project_title if submission else "Hackathon Project",
+            cert_type=cert_type,
+            verification_url=verification_url,
+            output_path=leader_pdf_path,
+            signature_path=sig_path,
+            logo_path=logo_path
+        )
+        
+        leader_cert = Certificate(
+            certificate_id=leader_cert_id,
+            team_id=team.team_id,
+            member_id=None,
+            student_name=leader_name,
+            registration_number=f"{team.team_id}-LDR",
+            college_name=team.college,
+            team_name=team.team_name,
+            certificate_type=cert_type,
+            certificate_path=f"certificates/{leader_pdf_filename}",
+            certificate_status='RELEASED',
+            released_time=datetime.utcnow(),
+            verification_token=leader_token
+        )
+        db.session.add(leader_cert)
+        
+        # Members
+        for member in team.members:
+            cert_count = Certificate.query.count()
+            new_cert_num = cert_count + 1
+            m_cert_id = f"HC2026-{new_cert_num:06d}"
+            m_token = secrets.token_urlsafe(16)
+            m_pdf_filename = f"{m_cert_id}.pdf"
+            m_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', m_pdf_filename)
+            
+            m_verification_url = f"{host_url.rstrip('/')}/verify-certificate/{m_token}"
+            
+            generate_pdf_certificate(
+                cert_id=m_cert_id,
+                student_name=member.student_name,
+                team_name=team.team_name,
+                project_title=submission.project_title if submission else "Hackathon Project",
+                cert_type=cert_type,
+                verification_url=m_verification_url,
+                output_path=m_pdf_path,
+                signature_path=sig_path,
+                logo_path=logo_path
+            )
+            
+            m_cert = Certificate(
+                certificate_id=m_cert_id,
+                team_id=team.team_id,
+                member_id=member.member_id,
+                student_name=member.student_name,
+                registration_number=member.registration_number,
+                college_name=team.college,
+                team_name=team.team_name,
+                certificate_type=cert_type,
+                certificate_path=f"certificates/{m_pdf_filename}",
+                certificate_status='RELEASED',
+                released_time=datetime.utcnow(),
+                verification_token=m_token
+            )
+            db.session.add(m_cert)
+        
+        db.session.commit()
+    else:
+        # Check if they have LOCKED status and update to RELEASED
+        updated = False
+        for cert in certs:
+            if cert.certificate_status == 'LOCKED':
+                cert.certificate_status = 'RELEASED'
+                cert.released_time = datetime.utcnow()
+                updated = True
+        if updated:
+            db.session.commit()
+            
+    return True
+
 @leader_bp.route('/dashboard')
 @login_required
 def dashboard():
@@ -31,6 +152,8 @@ def dashboard():
     if not team:
         flash('No team found for your user account.', 'warning')
         return render_template('leader/dashboard.html', team=None)
+        
+    ensure_certificates_ready(team, request.host_url)
         
     # Attendance status
     att = Attendance.query.filter_by(team_id=team.team_id).first()
@@ -208,6 +331,8 @@ def quick_edit(team_id):
         return render_template('team_not_found.html', team_id=team_id), 404
         
     submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
+    
+    ensure_certificates_ready(team, request.host_url)
     
     problem_released = SystemSetting.get_setting('problem_released', 'False') == 'True'
     
@@ -424,6 +549,8 @@ def certificates():
     if not certificates_active:
         flash('Certificates will be available once the final leaderboard results are published by the organizer.', 'warning')
         return redirect(url_for('leader.dashboard'))
+        
+    ensure_certificates_ready(team, request.host_url)
         
     # Fetch existing generated certificates for this team
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
