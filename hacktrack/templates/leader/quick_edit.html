@@ -366,6 +366,12 @@
                                           rows="4" required placeholder="Outline the problem you are solving">{{ submission.problem_statement if submission else '' }}</textarea>
                             </div>
 
+                            <div class="col-12">
+                                <label for="leader_password" class="form-label">Leader Password *</label>
+                                <input type="password" class="form-control" id="leader_password" name="leader_password"
+                                       required placeholder="Enter Leader password to confirm &amp; lock details">
+                            </div>
+
                             <div class="col-12 mt-2">
                                 <button type="submit" class="btn btn-submit">
                                     <i class="bi bi-cloud-upload-fill me-1"></i> Save &amp; Lock Project Details

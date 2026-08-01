@@ -9,13 +9,32 @@ from reportlab.graphics.shapes import Drawing, Rect, String, Line
 
 from config import Config
 
+def get_actual_host_url(default_val="http://localhost:5000"):
+    try:
+        from flask import request
+        if request:
+            import os
+            env_url = os.environ.get('APP_BASE_URL')
+            if env_url:
+                return env_url.rstrip('/')
+            proto = request.headers.get('X-Forwarded-Proto', request.scheme)
+            host = request.headers.get('X-Forwarded-Host', request.host)
+            return f"{proto}://{host}"
+    except Exception as e:
+        print(f"Error getting request context: {e}")
+    import os
+    env_url = os.environ.get('APP_BASE_URL')
+    if env_url:
+        return env_url.rstrip('/')
+    return default_val
+
 def generate_team_qr(team_id, team_name, leader_name, host_url="http://localhost:5000"):
     """
     Generates a QR code for a team containing: Team ID | Team Name | Leader Name
     and saves it as a PNG file in the static directory.
     """
-    # Payload format: Direct quick-edit URL for login-less access
-    qr_payload = f"{host_url}/leader/quick-edit/{team_id}"
+    actual_host = get_actual_host_url(host_url)
+    qr_payload = f"{actual_host}/leader/quick-edit/{team_id}"
     
     qr = qrcode.QRCode(
         version=1,
@@ -28,14 +47,14 @@ def generate_team_qr(team_id, team_name, leader_name, host_url="http://localhost
     
     img = qr.make_image(fill_color="black", back_color="white")
     
-    # Save path
     qr_filename = f"team_{team_id}_qr.png"
     qr_filepath = os.path.join(Config.BASE_DIR, 'static', 'qrcodes', qr_filename)
     img.save(qr_filepath)
     return f"qrcodes/{qr_filename}"
 
 def generate_registration_qr(host_url="http://localhost:5000"):
-    qr_payload = f"{host_url.rstrip('/')}/register"
+    actual_host = get_actual_host_url(host_url)
+    qr_payload = f"{actual_host}/register"
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
