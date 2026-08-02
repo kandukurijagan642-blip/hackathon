@@ -97,7 +97,7 @@ def register_team():
             return render_template('organizer/register_team.html')
             
         # 1. Create Leader User Account
-        default_pwd = f"{team_name.replace(' ', '')}@123"
+        default_pwd = f"{team_name.replace(' ', '')}@12309"
         hashed_pwd = generate_password_hash(default_pwd)
         
         leader_user = User(
@@ -259,7 +259,7 @@ def csv_import():
                 continue
                 
             leader_name = str(row['leader_name']).strip()
-            default_pwd = f"{team_name.replace(' ', '')}@123"
+            default_pwd = f"{team_name.replace(' ', '')}@12309"
             hashed_pwd = generate_password_hash(default_pwd)
             
             leader_user = User(

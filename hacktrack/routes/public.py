@@ -38,7 +38,7 @@ def register():
             return render_template('public/register_team.html')
             
         # 1. Create Leader User Account
-        default_pwd = f"{team_name.replace(' ', '')}@123"
+        default_pwd = f"{team_name.replace(' ', '')}@12309"
         hashed_pwd = generate_password_hash(default_pwd)
         
         leader_user = User(
