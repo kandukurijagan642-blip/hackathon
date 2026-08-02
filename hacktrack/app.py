@@ -58,8 +58,11 @@ def preview_certificate(cert_id):
     cert = Certificate.query.get_or_404(cert_id)
     
     # Check if certificate system is enabled and cert is released
-    certs_enabled = SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
-    is_released = (cert.certificate_status == 'RELEASED') and certs_enabled
+    certificates_active = (
+        FinalResult.query.count() > 0 or 
+        SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
+    )
+    is_released = (cert.certificate_status == 'RELEASED') and certificates_active
     
     # Admins & Organizers can preview locked certs for inspection
     if current_user.is_authenticated and current_user.role in ['Admin', 'Organizer']:
