@@ -86,8 +86,8 @@ def register_team():
         leader_email = request.form.get('leader_email', '').strip()
         leader_phone = request.form.get('leader_phone', '').strip()
         
-        # Check if team name already exists
-        if Team.query.filter_by(team_name=team_name).first():
+        # Check if team name already exists (case-insensitive)
+        if Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first():
             flash(f'Team name "{team_name}" already exists!', 'danger')
             return render_template('organizer/register_team.html')
             
@@ -251,7 +251,7 @@ def csv_import():
         for _, row in df.iterrows():
             team_name = str(row['team_name']).strip()
             
-            if Team.query.filter_by(team_name=team_name).first():
+            if Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first():
                 continue
                 
             leader_email = str(row['leader_email']).strip()

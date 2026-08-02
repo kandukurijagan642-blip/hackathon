@@ -27,8 +27,8 @@ def register():
         leader_email = request.form.get('leader_email', '').strip()
         leader_phone = request.form.get('leader_phone', '').strip()
         
-        # Check if team name already exists
-        if Team.query.filter_by(team_name=team_name).first():
+        # Check if team name already exists (case-insensitive)
+        if Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first():
             flash(f'Team name "{team_name}" already exists!', 'danger')
             return render_template('public/register_team.html')
             
