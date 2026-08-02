@@ -349,6 +349,16 @@
     </div>
 
     <script>
+        // Trap back button to prevent exposing admin/organizer session
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+            {% if current_user.is_authenticated and current_user.role in ['Admin', 'Organizer'] %}
+                window.location.href = "{{ url_for('auth.logout') }}";
+            {% else %}
+                history.pushState(null, null, document.URL);
+            {% endif %}
+        });
+
         function resizeCert() {
             const scaler = document.getElementById('certScaler');
             const stage = document.querySelector('.cert-stage');

@@ -446,6 +446,13 @@ with app.app_context():
     except Exception as e:
         print(f"QR regeneration error: {e}")
 
+@app.after_request
+def add_security_headers(response):
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=Config.DEBUG)
