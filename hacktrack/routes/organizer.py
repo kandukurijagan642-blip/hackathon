@@ -20,7 +20,7 @@ def log_organizer_activity(action, details=None):
         print(f"Error logging organizer activity: {e}")
 
 def check_organizer():
-    if current_user.role not in ['Admin', 'Organizer']:
+    if not current_user.is_authenticated or current_user.role not in ['Admin', 'Organizer']:
         flash('Unauthorized access!', 'danger')
         return False
     return True

@@ -24,7 +24,7 @@ def log_admin_activity(action, details=None):
         print(f"Error logging admin activity: {e}")
 
 def check_admin():
-    if current_user.role != 'Admin':
+    if not current_user.is_authenticated or current_user.role != 'Admin':
         flash('Unauthorized access!', 'danger')
         return False
     return True
@@ -437,10 +437,6 @@ def view_logs():
     if not check_admin(): return redirect(url_for('auth.login'))
     logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).all()
     return render_template('admin/activity_logs.html', logs=logs)
-
-
-def check_admin():
-    return current_user.role == 'Admin'
 
 
 @admin_bp.route('/certificates')
