@@ -462,25 +462,6 @@ def quick_edit(team_id):
             flash('Your project details are locked. Editing is not permitted.', 'danger')
             return redirect(url_for('leader.quick_edit', team_id=team.team_id))
             
-        # Verify Leader Password to prevent malpractice
-        from werkzeug.security import check_password_hash
-        leader_user = User.query.get(team.leader_id)
-        leader_password = request.form.get('leader_password', '').strip()
-        if not leader_user or not check_password_hash(leader_user.password, leader_password):
-            try:
-                log = ActivityLog(
-                    user_id=None,
-                    action="Malpractice Edit Attempt",
-                    ip_address=request.remote_addr,
-                    details=f"Unauthorized/malpractice project submission edit attempt for team {team.team_id} (wrong password entered)."
-                )
-                db.session.add(log)
-                db.session.commit()
-            except Exception as e:
-                print(f"Log fail: {e}")
-            flash('Security Verification Failed: Incorrect Leader Password! Malpractice check flagged this unauthorized update attempt.', 'danger')
-            return redirect(url_for('leader.quick_edit', team_id=team.team_id))
-            
         project_title = request.form.get('project_title', '').strip()
         problem_statement = request.form.get('problem_statement', '').strip()
         domain = request.form.get('domain', '').strip()
