@@ -27,10 +27,13 @@ def register():
         leader_email = request.form.get('leader_email', '').strip()
         leader_phone = request.form.get('leader_phone', '').strip()
         
-        # Check if team name already exists (case-insensitive)
-        if Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first():
-            flash(f'Team name "{team_name}" already exists!', 'danger')
-            return render_template('public/register_team.html')
+        # Check if team name and leader name already exist (case-insensitive)
+        existing_teams = Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).all()
+        for t in existing_teams:
+            l_user = User.query.get(t.leader_id)
+            if l_user and l_user.name.lower().strip() == leader_name.lower().strip():
+                flash(f'A team named "{team_name}" led by "{leader_name}" already exists!', 'danger')
+                return render_template('public/register_team.html')
             
         # Check if Leader user email already exists
         if User.query.filter_by(email=leader_email).first():

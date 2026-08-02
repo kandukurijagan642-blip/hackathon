@@ -86,10 +86,13 @@ def register_team():
         leader_email = request.form.get('leader_email', '').strip()
         leader_phone = request.form.get('leader_phone', '').strip()
         
-        # Check if team name already exists (case-insensitive)
-        if Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first():
-            flash(f'Team name "{team_name}" already exists!', 'danger')
-            return render_template('organizer/register_team.html')
+        # Check if team name and leader name already exist (case-insensitive)
+        existing_teams = Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).all()
+        for t in existing_teams:
+            l_user = User.query.get(t.leader_id)
+            if l_user and l_user.name.lower().strip() == leader_name.lower().strip():
+                flash(f'A team named "{team_name}" led by "{leader_name}" already exists!', 'danger')
+                return render_template('organizer/register_team.html')
             
         # Check if Leader user email already exists
         if User.query.filter_by(email=leader_email).first():
@@ -250,15 +253,21 @@ def csv_import():
         imported_count = 0
         for _, row in df.iterrows():
             team_name = str(row['team_name']).strip()
+            leader_name = str(row['leader_name']).strip()
             
-            if Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first():
+            existing_teams = Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).all()
+            is_dup = False
+            for t in existing_teams:
+                l_user = User.query.get(t.leader_id)
+                if l_user and l_user.name.lower().strip() == leader_name.lower().strip():
+                    is_dup = True
+                    break
+            if is_dup:
                 continue
                 
             leader_email = str(row['leader_email']).strip()
             if User.query.filter_by(email=leader_email).first():
                 continue
-                
-            leader_name = str(row['leader_name']).strip()
             default_pwd = f"{team_name.replace(' ', '')}@12309"
             hashed_pwd = generate_password_hash(default_pwd)
             
