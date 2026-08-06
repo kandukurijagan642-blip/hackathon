@@ -16,7 +16,7 @@ def log_judge_activity(action, details=None):
         print(f"Error logging judge activity: {e}")
 
 def check_judge():
-    if current_user.role not in ['Admin', 'Judge']:
+    if not current_user.is_authenticated or current_user.role not in ['Admin', 'Judge']:
         flash('Unauthorized access!', 'danger')
         return False
     return True
