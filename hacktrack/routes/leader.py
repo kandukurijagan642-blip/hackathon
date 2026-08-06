@@ -28,117 +28,148 @@ def ensure_certificates_ready(team, host_url):
         FinalResult.query.count() > 0 or 
         SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
     )
-    if not certificates_active:
-        return False
 
     # Fetch existing
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
-    if not certs:
-        # Auto-generate with status RELEASED
-        cert_type = "Participant"
-        final_res = FinalResult.query.filter_by(team_id=team.team_id).first()
-        if final_res:
-            if final_res.rank == 1:
-                cert_type = "Winner"
-            else:
-                cert_type = "Finalist"
+    
+    # If certs already exist, check if any is RELEASED or if module is active
+    if certs:
+        is_already_released = any(c.certificate_status == 'RELEASED' for c in certs)
+        if is_already_released or certificates_active:
+            sig_path = SystemSetting.get_setting('organizer_signature_path')
+            logo_path = SystemSetting.get_setting('college_logo_path')
+            submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
+            
+            updated = False
+            for cert in certs:
+                if cert.certificate_status != 'RELEASED':
+                    cert.certificate_status = 'RELEASED'
+                    if not cert.released_time:
+                        cert.released_time = datetime.utcnow()
+                    updated = True
                 
-        sig_path = SystemSetting.get_setting('organizer_signature_path')
-        logo_path = SystemSetting.get_setting('college_logo_path')
-        
-        # Leader
-        leader_user = User.query.get(team.leader_id)
-        leader_name = leader_user.name if leader_user else "Team Leader"
+                # Check if PDF file on disk exists; if missing (e.g. ephemeral server restart), regenerate it on-the-fly
+                full_pdf_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
+                if not os.path.exists(full_pdf_path):
+                    os.makedirs(os.path.dirname(full_pdf_path), exist_ok=True)
+                    verification_url = f"{host_url.rstrip('/')}/verify-certificate/{cert.verification_token}"
+                    try:
+                        generate_pdf_certificate(
+                            cert_id=cert.certificate_id,
+                            student_name=cert.student_name,
+                            team_name=team.team_name,
+                            project_title=submission.project_title if submission else "Hackathon Project",
+                            cert_type=cert.certificate_type or "Participant",
+                            verification_url=verification_url,
+                            output_path=full_pdf_path,
+                            signature_path=sig_path,
+                            logo_path=logo_path
+                        )
+                    except Exception as e:
+                        print(f"Error regenerating missing PDF for {cert.certificate_id}: {e}")
+                        
+            if updated:
+                db.session.commit()
+            return True
+        return False
+
+    if not certificates_active:
+        return False
+
+    # Auto-generate with status RELEASED
+    cert_type = "Participant"
+    final_res = FinalResult.query.filter_by(team_id=team.team_id).first()
+    if final_res:
+        if final_res.rank == 1:
+            cert_type = "Winner"
+        else:
+            cert_type = "Finalist"
+            
+    sig_path = SystemSetting.get_setting('organizer_signature_path')
+    logo_path = SystemSetting.get_setting('college_logo_path')
+    
+    # Leader
+    leader_user = User.query.get(team.leader_id)
+    leader_name = leader_user.name if leader_user else "Team Leader"
+    cert_count = Certificate.query.count()
+    new_cert_num = cert_count + 1
+    leader_cert_id = f"HC2026-{new_cert_num:06d}"
+    leader_token = secrets.token_urlsafe(16)
+    leader_pdf_filename = f"{leader_cert_id}.pdf"
+    leader_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', leader_pdf_filename)
+    
+    os.makedirs(os.path.dirname(leader_pdf_path), exist_ok=True)
+    verification_url = f"{host_url.rstrip('/')}/verify-certificate/{leader_token}"
+    
+    submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
+    generate_pdf_certificate(
+        cert_id=leader_cert_id,
+        student_name=leader_name,
+        team_name=team.team_name,
+        project_title=submission.project_title if submission else "Hackathon Project",
+        cert_type=cert_type,
+        verification_url=verification_url,
+        output_path=leader_pdf_path,
+        signature_path=sig_path,
+        logo_path=logo_path
+    )
+    
+    leader_cert = Certificate(
+        certificate_id=leader_cert_id,
+        team_id=team.team_id,
+        member_id=None,
+        student_name=leader_name,
+        registration_number=f"{team.team_id}-LDR",
+        college_name=team.college,
+        team_name=team.team_name,
+        certificate_type=cert_type,
+        certificate_path=f"certificates/{leader_pdf_filename}",
+        certificate_status='RELEASED',
+        released_time=datetime.utcnow(),
+        verification_token=leader_token
+    )
+    db.session.add(leader_cert)
+    
+    # Members
+    for member in team.members:
         cert_count = Certificate.query.count()
         new_cert_num = cert_count + 1
-        leader_cert_id = f"HC2026-{new_cert_num:06d}"
-        leader_token = secrets.token_urlsafe(16)
-        leader_pdf_filename = f"{leader_cert_id}.pdf"
-        leader_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', leader_pdf_filename)
+        m_cert_id = f"HC2026-{new_cert_num:06d}"
+        m_token = secrets.token_urlsafe(16)
+        m_pdf_filename = f"{m_cert_id}.pdf"
+        m_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', m_pdf_filename)
         
-        os.makedirs(os.path.dirname(leader_pdf_path), exist_ok=True)
-        verification_url = f"{host_url.rstrip('/')}/verify-certificate/{leader_token}"
+        m_verification_url = f"{host_url.rstrip('/')}/verify-certificate/{m_token}"
         
-        submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
         generate_pdf_certificate(
-            cert_id=leader_cert_id,
-            student_name=leader_name,
+            cert_id=m_cert_id,
+            student_name=member.student_name,
             team_name=team.team_name,
             project_title=submission.project_title if submission else "Hackathon Project",
             cert_type=cert_type,
-            verification_url=verification_url,
-            output_path=leader_pdf_path,
+            verification_url=m_verification_url,
+            output_path=m_pdf_path,
             signature_path=sig_path,
             logo_path=logo_path
         )
         
-        leader_cert = Certificate(
-            certificate_id=leader_cert_id,
+        m_cert = Certificate(
+            certificate_id=m_cert_id,
             team_id=team.team_id,
-            member_id=None,
-            student_name=leader_name,
-            registration_number=f"{team.team_id}-LDR",
+            member_id=member.member_id,
+            student_name=member.student_name,
+            registration_number=member.registration_number,
             college_name=team.college,
             team_name=team.team_name,
             certificate_type=cert_type,
-            certificate_path=f"certificates/{leader_pdf_filename}",
+            certificate_path=f"certificates/{m_pdf_filename}",
             certificate_status='RELEASED',
             released_time=datetime.utcnow(),
-            verification_token=leader_token
+            verification_token=m_token
         )
-        db.session.add(leader_cert)
-        
-        # Members
-        for member in team.members:
-            cert_count = Certificate.query.count()
-            new_cert_num = cert_count + 1
-            m_cert_id = f"HC2026-{new_cert_num:06d}"
-            m_token = secrets.token_urlsafe(16)
-            m_pdf_filename = f"{m_cert_id}.pdf"
-            m_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', m_pdf_filename)
-            
-            m_verification_url = f"{host_url.rstrip('/')}/verify-certificate/{m_token}"
-            
-            generate_pdf_certificate(
-                cert_id=m_cert_id,
-                student_name=member.student_name,
-                team_name=team.team_name,
-                project_title=submission.project_title if submission else "Hackathon Project",
-                cert_type=cert_type,
-                verification_url=m_verification_url,
-                output_path=m_pdf_path,
-                signature_path=sig_path,
-                logo_path=logo_path
-            )
-            
-            m_cert = Certificate(
-                certificate_id=m_cert_id,
-                team_id=team.team_id,
-                member_id=member.member_id,
-                student_name=member.student_name,
-                registration_number=member.registration_number,
-                college_name=team.college,
-                team_name=team.team_name,
-                certificate_type=cert_type,
-                certificate_path=f"certificates/{m_pdf_filename}",
-                certificate_status='RELEASED',
-                released_time=datetime.utcnow(),
-                verification_token=m_token
-            )
-            db.session.add(m_cert)
-        
-        db.session.commit()
-    else:
-        # Check if they have LOCKED status and update to RELEASED
-        updated = False
-        for cert in certs:
-            if cert.certificate_status == 'LOCKED':
-                cert.certificate_status = 'RELEASED'
-                cert.released_time = datetime.utcnow()
-                updated = True
-        if updated:
-            db.session.commit()
-            
+        db.session.add(m_cert)
+    
+    db.session.commit()
     return True
 
 @leader_bp.route('/dashboard')
@@ -517,14 +548,15 @@ def quick_edit(team_id):
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
     certs_by_member = {c.member_id: c for c in certs if c.member_id is not None}
     leader_cert = next((c for c in certs if c.member_id is None), None)
-    
-    released = certificates_active and len(certs) > 0 and any(c.certificate_status == 'RELEASED' for c in certs)
+    is_any_released = len(certs) > 0 and any(c.certificate_status == 'RELEASED' for c in certs)
+    released = is_any_released or certificates_active
+    effective_active = certificates_active or is_any_released
         
     return render_template(
         'leader/quick_edit.html',
         team=team,
         submission=submission,
-        certificates_active=certificates_active,
+        certificates_active=effective_active,
         certs_generated=len(certs) > 0,
         leader_cert=leader_cert,
         certs_by_member=certs_by_member,
