@@ -160,6 +160,11 @@
                                         {% endfor %}
                                     </td>
                                 </tr>
+                                <tr class="fw-bold" style="background-color: rgba(56, 189, 248, 0.15) !important; border-top: 2px solid rgba(56, 189, 248, 0.4) !important;">
+                                    <td class="text-white"><i class="bi bi-trophy-fill text-warning me-2"></i> GRAND TOTAL (3 ROUNDS COMBINED)</td>
+                                    <td class="text-center text-info fs-6 fw-bold"><i class="bi bi-calculator me-1"></i>{{ (r1_avg + r2_avg + r3_avg)|round(2) }} / 300</td>
+                                    <td class="small text-info"><i class="bi bi-check-all me-1"></i> Summed score across Round 1, Round 2, and Round 3</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>

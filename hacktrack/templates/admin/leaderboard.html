@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block page_title %}Leaderboard{% endblock %}
+{% block page_title %}Advanced Leaderboard & Standings{% endblock %}
 
 {% block content %}
 <div class="container-fluid fade-in-up">
@@ -8,70 +8,149 @@
     <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
             <div>
-                <h5 class="mb-1 text-primary"><i class="bi bi-trophy-fill"></i> Final Winner Declaration</h5>
-                <p class="text-secondary small mb-0">Compute the rankings based on current evaluations. This will freeze and lock results into the podium records.</p>
+                <h4 class="mb-1 text-primary fw-bold"><i class="bi bi-trophy-fill me-2"></i> Event Leaderboard &amp; Winner Declaration</h4>
+                <p class="text-secondary small mb-0">Calculates real-time 3-Round score summation (Max 300 Marks). Lock standings to generate Winner &amp; Finalist certificates.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
                 <form action="{{ url_for('admin.declare_winners') }}" method="POST" onsubmit="return confirm('This will calculate final standings and overwrite any previous winner declarations. Proceed?');">
-                    <button type="submit" class="btn btn-warning btn-sm fw-semibold text-dark">
-                        <i class="bi bi-flag-fill"></i> Declare Winners & Lock Rankings
+                    <button type="submit" class="btn btn-warning fw-semibold text-dark btn-sm">
+                        <i class="bi bi-flag-fill me-1"></i> Declare Winners &amp; Lock Rankings
                     </button>
                 </form>
                 <a href="{{ url_for('admin.export_reports', format_type='excel', report_type='final') }}" class="btn btn-sm btn-outline-success">
-                    <i class="bi bi-file-spreadsheet"></i> Export Excel
+                    <i class="bi bi-file-spreadsheet me-1"></i> Export Excel
                 </a>
                 <a href="{{ url_for('admin.export_reports', format_type='pdf', report_type='final') }}" class="btn btn-sm btn-outline-danger">
-                    <i class="bi bi-file-pdf"></i> Export PDF
+                    <i class="bi bi-file-pdf me-1"></i> Export PDF
                 </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Podium Highlights Card (Top 3 Teams) -->
+    {% if leaderboard and leaderboard|length >= 1 %}
+    <div class="row g-3 mb-4">
+        <!-- 1st Place Gold -->
+        <div class="col-md-4">
+            <div class="card border-0 p-3 bg-secondary h-100 position-relative overflow-hidden" style="border: 2px solid #eab308 !important; background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(30, 41, 59, 1) 100%) !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge fs-6" style="background-color: #eab308; color: #000; font-weight: 800;"><i class="bi bi-award-fill me-1"></i> 1ST PLACE GOLD</span>
+                    <span class="text-warning display-6 fw-bold"><i class="bi bi-trophy"></i></span>
+                </div>
+                <h5 class="text-white fw-bold mb-1">{{ leaderboard[0].team.team_name }}</h5>
+                <div class="text-muted small mb-2"><i class="bi bi-person-fill text-info me-1"></i> Leader: {{ leaderboard[0].leader_name }}</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-secondary">
+                    <span class="text-secondary small">Grand Total:</span>
+                    <span class="fs-4 text-warning fw-bold">{{ leaderboard[0].grand_total }} / 300</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2nd Place Silver -->
+        {% if leaderboard|length >= 2 %}
+        <div class="col-md-4">
+            <div class="card border-0 p-3 bg-secondary h-100 position-relative overflow-hidden" style="border: 2px solid #94a3b8 !important; background: linear-gradient(135deg, rgba(148, 163, 184, 0.15) 0%, rgba(30, 41, 59, 1) 100%) !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge fs-6" style="background-color: #94a3b8; color: #000; font-weight: 800;"><i class="bi bi-award-fill me-1"></i> 2ND PLACE SILVER</span>
+                    <span class="text-light display-6 fw-bold"><i class="bi bi-shield-fill"></i></span>
+                </div>
+                <h5 class="text-white fw-bold mb-1">{{ leaderboard[1].team.team_name }}</h5>
+                <div class="text-muted small mb-2"><i class="bi bi-person-fill text-info me-1"></i> Leader: {{ leaderboard[1].leader_name }}</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-secondary">
+                    <span class="text-secondary small">Grand Total:</span>
+                    <span class="fs-4 text-light fw-bold">{{ leaderboard[1].grand_total }} / 300</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 3rd Place Bronze -->
+        {% if leaderboard|length >= 3 %}
+        <div class="col-md-4">
+            <div class="card border-0 p-3 bg-secondary h-100 position-relative overflow-hidden" style="border: 2px solid #cd7f32 !important; background: linear-gradient(135deg, rgba(205, 127, 50, 0.15) 0%, rgba(30, 41, 59, 1) 100%) !important;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge fs-6" style="background-color: #cd7f32; color: #fff; font-weight: 800;"><i class="bi bi-award-fill me-1"></i> 3RD PLACE BRONZE</span>
+                    <span class="display-6 fw-bold" style="color: #cd7f32;"><i class="bi bi-medal"></i></span>
+                </div>
+                <h5 class="text-white fw-bold mb-1">{{ leaderboard[2].team.team_name }}</h5>
+                <div class="text-muted small mb-2"><i class="bi bi-person-fill text-info me-1"></i> Leader: {{ leaderboard[2].leader_name }}</div>
+                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-secondary">
+                    <span class="text-secondary small">Grand Total:</span>
+                    <span class="fs-4 fw-bold" style="color: #cd7f32;">{{ leaderboard[2].grand_total }} / 300</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Filter & Live Search Bar -->
+    <div class="card border-0 shadow-sm p-3 bg-secondary mb-4">
+        <div class="row g-2 align-items-center">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
+                    <input type="text" id="leaderboardSearch" class="form-control border-secondary" placeholder="Search by team name, leader, or college..." onkeyup="filterLeaderboard()">
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <span class="text-secondary small"><i class="bi bi-info-circle me-1"></i> Scores combine R1 (100) + R2 (100) + R3 (100)</span>
             </div>
         </div>
     </div>
     
     <!-- Leaderboard Table -->
     <div class="card border-0 shadow-sm p-4 bg-secondary">
-        <h5 class="mb-3 text-primary"><i class="bi bi-list-ol"></i> Standings</h5>
+        <h5 class="mb-3 text-primary"><i class="bi bi-list-ol"></i> Full Event Rankings</h5>
         <div class="table-responsive-custom">
-            <table class="table table-custom">
+            <table class="table table-hover align-middle mb-0 text-light" id="leaderboardTable">
                 <thead>
-                    <tr>
-                        <th style="width: 80px;">Rank</th>
+                    <tr class="text-secondary border-bottom">
+                        <th style="width: 90px;" class="text-center">Rank</th>
                         <th>Team Name</th>
                         <th>Leader</th>
                         <th>College</th>
-                        <th class="text-center">Round 1 (Avg)</th>
-                        <th class="text-center">Round 2 (Avg)</th>
-                        <th class="text-center">Round 3 (Avg)</th>
-                        <th class="text-end">Grand Total</th>
+                        <th class="text-center">Round 1</th>
+                        <th class="text-center">Round 2</th>
+                        <th class="text-center">Round 3</th>
+                        <th class="text-center">Grand Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in leaderboard %}
-                        <tr class="{% if item.rank == 1 %}table-warning fw-bold{% elif item.rank == 2 %}table-secondary{% elif item.rank == 3 %}table-light{% endif %}">
-                            <td class="text-center">
+                        <tr class="align-middle border-bottom border-secondary border-opacity-25" style="{% if item.rank == 1 %}background-color: rgba(234, 179, 8, 0.08) !important;{% elif item.rank == 2 %}background-color: rgba(148, 163, 184, 0.08) !important;{% elif item.rank == 3 %}background-color: rgba(205, 127, 50, 0.08) !important;{% endif %}">
+                            <td class="text-center fw-bold">
                                 {% if item.rank == 1 %}
-                                    <span class="fs-5 text-warning"><i class="bi bi-award-fill"></i> 1</span>
+                                    <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="bi bi-trophy-fill me-1"></i> 1</span>
                                 {% elif item.rank == 2 %}
-                                    <span class="fs-6 text-muted"><i class="bi bi-award-fill"></i> 2</span>
+                                    <span class="badge bg-secondary text-light fs-6 px-3 py-2"><i class="bi bi-award-fill me-1"></i> 2</span>
                                 {% elif item.rank == 3 %}
-                                    <span class="fs-6 text-bronze" style="color: #cd7f32;"><i class="bi bi-award-fill"></i> 3</span>
+                                    <span class="badge fs-6 px-3 py-2" style="background-color: #cd7f32; color: #fff;"><i class="bi bi-medal me-1"></i> 3</span>
                                 {% else %}
-                                    {{ item.rank }}
+                                    <span class="badge bg-dark border border-secondary text-secondary fs-6 px-3 py-1">#{{ item.rank }}</span>
                                 {% endif %}
                             </td>
                             <td>
-                                <strong>{{ item.team.team_name }}</strong>
-                                <div class="text-muted small" style="font-size: 10px;">{{ item.team.project_title }}</div>
+                                <strong class="text-white fs-6">{{ item.team.team_name }}</strong>
+                                <div class="text-muted small" style="font-size: 11px;">ID: <code>{{ item.team.team_id }}</code></div>
                             </td>
                             <td>{{ item.leader_name }}</td>
                             <td>{{ item.team.college }}</td>
-                            <td class="text-center">{{ item.round1 }}</td>
-                            <td class="text-center">{{ item.round2 }}</td>
-                            <td class="text-center">{{ item.round3 }}</td>
-                            <td class="text-end text-primary fw-bold">{{ item.grand_total }}</td>
+                            <td class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round1 }}</span></td>
+                            <td class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round2 }}</span></td>
+                            <td class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round3 }}</span></td>
+                            <td class="text-center">
+                                <span class="badge bg-primary fs-6 px-3 py-2 fw-bold text-white shadow-sm">
+                                    <i class="bi bi-calculator me-1"></i>{{ item.grand_total }} / 300
+                                </span>
+                            </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">No evaluations submitted yet. Standings are empty.</td>
+                            <td colspan="8" class="text-center py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                                No evaluations submitted yet. Standings will populate as judges grade teams.
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -79,4 +158,15 @@
         </div>
     </div>
 </div>
+
+<script>
+function filterLeaderboard() {
+    let input = document.getElementById("leaderboardSearch").value.toLowerCase();
+    let rows = document.querySelectorAll("#leaderboardTable tbody tr");
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+    });
+}
+</script>
 {% endblock %}
