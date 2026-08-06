@@ -72,40 +72,62 @@
 
         .form-label {
             font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
+            font-weight: 700;
+            color: #38bdf8 !important;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 0.5rem;
+            display: block;
         }
 
         .form-control {
-            background-color: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--text-primary);
+            background-color: #1e293b !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
+            color: #ffffff !important;
             border-radius: 10px;
             padding: 0.75rem 1rem;
             transition: all 0.2s ease;
         }
 
         .form-control:focus {
-            background-color: rgba(15, 23, 42, 0.8);
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
-            color: var(--text-primary);
-        .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.45) !important;
+            background-color: #0f172a !important;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3) !important;
+            color: #ffffff !important;
+        }
+
+        .form-control::-webkit-input-placeholder {
+            color: #cbd5e1 !important;
             opacity: 1 !important;
+            font-weight: 500;
+        }
+
+        .form-control:-ms-input-placeholder {
+            color: #cbd5e1 !important;
+            opacity: 1 !important;
+            font-weight: 500;
+        }
+
+        .form-control::-moz-placeholder {
+            color: #cbd5e1 !important;
+            opacity: 1 !important;
+            font-weight: 500;
+        }
+
+        .form-control::placeholder {
+            color: #cbd5e1 !important;
+            opacity: 1 !important;
+            font-weight: 500;
         }
 
         .member-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--accent-primary);
+            font-size: 12px;
+            font-weight: 700;
+            color: #38bdf8 !important;
             margin-bottom: 0.35rem;
             display: block;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.5px;
         }
 
         .section-header {
