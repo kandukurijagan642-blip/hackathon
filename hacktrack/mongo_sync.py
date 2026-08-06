@@ -141,24 +141,20 @@ def restore_all_from_mongo(app, db):
             if mongo is None:
                 return
 
-            # Check if MongoDB has teams and local SQLite is missing teams
+            # Check if MongoDB has teams
             mongo_teams = list(mongo.teams.find({}))
             if not mongo_teams:
                 return
 
-            # Check local teams count
-            sql_team_count = Team.query.count()
-            if sql_team_count >= len(mongo_teams):
-                return # SQL already has data
-
-            print("Restoring dataset from MongoDB Atlas to SQL database...")
+            print(f"Restoring dataset from MongoDB Atlas ({len(mongo_teams)} teams found)...")
             
             # Restore Users
             mongo_users = list(mongo.users.find({}))
             for u_doc in mongo_users:
-                if not User.query.filter_by(email=u_doc['email']).first():
+                existing_user = User.query.filter_by(email=u_doc['email']).first()
+                if not existing_user:
                     u = User(
-                        id=u_doc['id'],
+                        id=u_doc.get('id'),
                         name=u_doc['name'],
                         email=u_doc['email'],
                         password=u_doc['password'],
