@@ -95,9 +95,9 @@ def register_team():
                 return render_template('organizer/register_team.html')
             
         # Get existing leader user or create a new leader account
+        default_pwd = f"{team_name.replace(' ', '')}@12309"
         leader_user = User.query.filter_by(email=leader_email).first()
         if not leader_user:
-            default_pwd = f"{team_name.replace(' ', '')}@12309"
             hashed_pwd = generate_password_hash(default_pwd)
             leader_user = User(
                 name=leader_name,
