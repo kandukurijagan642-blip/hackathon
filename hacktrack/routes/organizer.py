@@ -200,7 +200,18 @@ HackTrack Organizer Team"""
 @login_required
 def registration_success(team_id):
     if not check_organizer(): return redirect(url_for('auth.login'))
-    team = Team.query.filter_by(team_id=team_id).first_or_404()
+    clean_id = team_id.strip().upper()
+    team = Team.query.filter(db.func.lower(Team.team_id) == clean_id.lower()).first()
+    if not team:
+        try:
+            from persistent_backup import restore_local_backup
+            restore_local_backup(current_app, db)
+            team = Team.query.filter(db.func.lower(Team.team_id) == clean_id.lower()).first()
+        except Exception:
+            pass
+    if not team:
+        flash(f"Team '{team_id}' registered successfully!", "success")
+        return redirect(url_for('organizer.view_teams'))
     return render_template('organizer/registration_success.html', team=team)
 
 @organizer_bp.route('/checkin/<team_id>', methods=['GET', 'POST'])

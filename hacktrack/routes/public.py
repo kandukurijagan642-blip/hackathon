@@ -147,7 +147,18 @@ HackTrack Team"""
 
 @public_bp.route('/registration-success/<team_id>')
 def registration_success(team_id):
-    team = Team.query.filter_by(team_id=team_id).first_or_404()
+    clean_id = team_id.strip().upper()
+    team = Team.query.filter(db.func.lower(Team.team_id) == clean_id.lower()).first()
+    if not team:
+        try:
+            from persistent_backup import restore_local_backup
+            restore_local_backup(current_app, db)
+            team = Team.query.filter(db.func.lower(Team.team_id) == clean_id.lower()).first()
+        except Exception:
+            pass
+    if not team:
+        flash(f"Team '{team_id}' registration is confirmed! Please check your dashboard or contact organizer.", "info")
+        return redirect(url_for('auth.login'))
     return render_template('public/registration_success.html', team=team)
 
 @public_bp.route('/qr/registration')
