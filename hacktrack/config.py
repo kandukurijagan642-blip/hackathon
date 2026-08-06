@@ -56,8 +56,8 @@ class Config:
         'pool_recycle': 1800,
     }
     
-    # MongoDB Atlas settings
-    MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://kandukurijagan7_db_user:xTagPoLQCWfH0agP@cluster0.1yxvdq5.mongodb.net/hacktrack_db?retryWrites=true&w=majority&appName=Cluster0')
+    # MongoDB Atlas settings (Optional — leave None to use persistent SQL/JSON storage)
+    MONGO_URI = os.environ.get('MONGO_URI', None)
     MONGO_DB = os.environ.get('MONGO_DB', 'hacktrack_db')
     
     # Mock Email Settings
