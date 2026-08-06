@@ -50,6 +50,10 @@ class Config:
         
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
+    # MongoDB Atlas settings
+    MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://kandukurijagan7_db_user:xTagPoLQCWfH0agP@cluster0.1yxvdq5.mongodb.net/hacktrack_db?retryWrites=true&w=majority&appName=Cluster0')
+    MONGO_DB = os.environ.get('MONGO_DB', 'hacktrack_db')
+    
     # Mock Email Settings
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'localhost')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 1025))
