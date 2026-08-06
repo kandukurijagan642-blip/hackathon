@@ -111,6 +111,13 @@
       "email": "testleader100@test.com",
       "password": "scrypt:32768:8:1$N9TExzLKdNagUUFF$51a65f30c9c4f6f8094550f4b662bc608c4325a5621617c13869b3046a4e726f0278513ebd8ca854ff06df20718f5d2d3192d23fe626aff84334b4d0c6fe3d1e",
       "role": "Leader"
+    },
+    {
+      "id": 17,
+      "name": "Jagan Kandukuri",
+      "email": "jagan.kandukuri@test.com",
+      "password": "scrypt:32768:8:1$zlyIkDSOOMvU9lTU$9d5f95b5287c9b39ca2f1cca43b59a7a663d3890c1fbdc857fa8d8e0d3067751e634c48f15d8e0818df7a1c73531ea58fdf11205e2f69a7357d75b6c3af7ed8b",
+      "role": "Leader"
     }
   ],
   "teams": [
@@ -549,6 +556,25 @@
           "registration_number": "HT2026012-M1",
           "email": "m100@test.com",
           "phone": "123"
+        }
+      ],
+      "submission": null,
+      "attendance": "Absent"
+    },
+    {
+      "team_id": "HT2026013",
+      "team_name": "Quantum Coders",
+      "college": "IIT Madras",
+      "department": "Computer Science",
+      "leader_id": 17,
+      "created_at": "2026-08-06 16:57:57",
+      "members": [
+        {
+          "member_id": 33,
+          "student_name": "Teammate One",
+          "registration_number": "HT2026013-M1",
+          "email": "tm1@test.com",
+          "phone": "9876543210"
         }
       ],
       "submission": null,
