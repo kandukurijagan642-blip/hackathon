@@ -49,6 +49,12 @@ class Config:
             SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{MYSQL_USER}@{MYSQL_HOST}/{MYSQL_DB}"
         
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 20,
+        'max_overflow': 30,
+        'pool_timeout': 30,
+        'pool_recycle': 1800,
+    }
     
     # MongoDB Atlas settings
     MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://kandukurijagan7_db_user:xTagPoLQCWfH0agP@cluster0.1yxvdq5.mongodb.net/hacktrack_db?retryWrites=true&w=majority&appName=Cluster0')
