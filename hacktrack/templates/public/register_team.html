@@ -93,6 +93,19 @@
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
             color: var(--text-primary);
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.45) !important;
+            opacity: 1 !important;
+        }
+
+        .member-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            margin-bottom: 0.35rem;
+            display: block;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
         }
 
         .section-header {
@@ -109,7 +122,7 @@
 
         .member-card {
             background: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             padding: 1.25rem;
             margin-bottom: 1.25rem;
@@ -215,63 +228,75 @@
             <div id="members-wrapper">
                 <!-- Member 1 -->
                 <div class="member-card">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-white small fw-bold"><i class="bi bi-person-fill text-info"></i> Member 1</span>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-white small fw-bold"><i class="bi bi-person-fill text-info me-1"></i> Member 1</span>
                     </div>
-                    <div class="row g-2">
+                    <div class="row g-3">
                         <div class="col-md-3">
-                            <input type="text" class="form-control form-control-sm" name="member_name[]" placeholder="Name">
+                            <label class="member-label">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" name="member_name[]" placeholder="e.g. Alex Smith">
                         </div>
                         <div class="col-md-3">
-                            <input type="text" class="form-control form-control-sm" name="member_reg[]" placeholder="Reg. Number">
+                            <label class="member-label">Reg. Number</label>
+                            <input type="text" class="form-control form-control-sm" name="member_reg[]" placeholder="e.g. 21CS001">
                         </div>
                         <div class="col-md-3">
-                            <input type="email" class="form-control form-control-sm" name="member_email[]" placeholder="email@domain.com">
+                            <label class="member-label">Email Address</label>
+                            <input type="email" class="form-control form-control-sm" name="member_email[]" placeholder="alex@domain.com">
                         </div>
                         <div class="col-md-3">
-                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" placeholder="Phone">
+                            <label class="member-label">Phone Number</label>
+                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" placeholder="9876543210">
                         </div>
                     </div>
                 </div>
 
                 <!-- Member 2 -->
                 <div class="member-card">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-white small fw-bold"><i class="bi bi-person-fill text-info"></i> Member 2</span>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-white small fw-bold"><i class="bi bi-person-fill text-info me-1"></i> Member 2</span>
                     </div>
-                    <div class="row g-2">
+                    <div class="row g-3">
                         <div class="col-md-3">
-                            <input type="text" class="form-control form-control-sm" name="member_name[]" placeholder="Name">
+                            <label class="member-label">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" name="member_name[]" placeholder="e.g. John Doe">
                         </div>
                         <div class="col-md-3">
-                            <input type="text" class="form-control form-control-sm" name="member_reg[]" placeholder="Reg. Number">
+                            <label class="member-label">Reg. Number</label>
+                            <input type="text" class="form-control form-control-sm" name="member_reg[]" placeholder="e.g. 21CS002">
                         </div>
                         <div class="col-md-3">
-                            <input type="email" class="form-control form-control-sm" name="member_email[]" placeholder="email@domain.com">
+                            <label class="member-label">Email Address</label>
+                            <input type="email" class="form-control form-control-sm" name="member_email[]" placeholder="john@domain.com">
                         </div>
                         <div class="col-md-3">
-                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" placeholder="Phone">
+                            <label class="member-label">Phone Number</label>
+                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" placeholder="9876543211">
                         </div>
                     </div>
                 </div>
 
                 <!-- Member 3 -->
                 <div class="member-card">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-white small fw-bold"><i class="bi bi-person-fill text-info"></i> Member 3</span>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="text-white small fw-bold"><i class="bi bi-person-fill text-info me-1"></i> Member 3</span>
                     </div>
-                    <div class="row g-2">
+                    <div class="row g-3">
                         <div class="col-md-3">
-                            <input type="text" class="form-control form-control-sm" name="member_name[]" placeholder="Name">
+                            <label class="member-label">Student Name</label>
+                            <input type="text" class="form-control form-control-sm" name="member_name[]" placeholder="e.g. Sarah Connor">
                         </div>
                         <div class="col-md-3">
-                            <input type="text" class="form-control form-control-sm" name="member_reg[]" placeholder="Reg. Number">
+                            <label class="member-label">Reg. Number</label>
+                            <input type="text" class="form-control form-control-sm" name="member_reg[]" placeholder="e.g. 21CS003">
                         </div>
                         <div class="col-md-3">
-                            <input type="email" class="form-control form-control-sm" name="member_email[]" placeholder="email@domain.com">
+                            <label class="member-label">Email Address</label>
+                            <input type="email" class="form-control form-control-sm" name="member_email[]" placeholder="sarah@domain.com">
                         </div>
                         <div class="col-md-3">
-                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" placeholder="Phone">
+                            <label class="member-label">Phone Number</label>
+                            <input type="tel" class="form-control form-control-sm" name="member_phone[]" placeholder="9876543212">
                         </div>
                     </div>
                 </div>
