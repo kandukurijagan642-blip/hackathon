@@ -1,76 +1,113 @@
 {% extends "base.html" %}
 
-{% block page_title %}Certificate Verification{% endblock %}
+{% block page_title %}Official Certificate Verification{% endblock %}
 
 {% block content %}
-<div class="container-fluid fade-in-up">
-    <div class="card border-0 shadow-sm p-4 bg-secondary max-width-600 mx-auto text-center">
-        {% if status == "Valid" %}
-            <div class="text-success fs-1 mb-3">
-                <i class="bi bi-patch-check-fill"></i>
+<div class="container fade-in-up py-4" style="max-width: 680px;">
+    {% if status == "Valid" %}
+        <!-- Verified Success Card -->
+        <div class="card border-0 shadow-lg p-4 p-md-5 bg-secondary position-relative overflow-hidden" style="border: 2px solid #10b981 !important; border-radius: 16px; background: linear-gradient(145deg, rgba(16, 185, 129, 0.12) 0%, rgba(30, 41, 59, 1) 100%) !important;">
+            <!-- Background Security Hologram Circle -->
+            <div class="position-absolute" style="right: -40px; top: -40px; opacity: 0.08; pointer-events: none;">
+                <i class="bi bi-patch-check-fill display-1" style="font-size: 200px; color: #10b981;"></i>
             </div>
-            <h4 class="text-success mb-4">Certificate Verified Successfully</h4>
-            
-            <div class="table-responsive text-start border rounded p-3 bg-dark-card">
-                <table class="table table-borderless mb-0">
-                    <tbody>
-                        <tr>
-                            <td class="fw-bold text-muted small py-1">Certificate ID:</td>
-                            <td class="text-light py-1"><code>{{ cert.certificate_id }}</code></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-muted small py-1">Recipient Name:</td>
-                            <td class="text-light py-1">{{ cert.student_name }}</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-muted small py-1">Team:</td>
-                            <td class="text-light py-1">{{ cert.team.team_name }}</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-muted small py-1">Project Title:</td>
-                            <td class="text-light py-1">{{ cert.team.problem_submission.project_title if cert.team.problem_submission else '—' }}</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-muted small py-1">Certificate Type:</td>
-                            <td class="text-light py-1"><span class="badge bg-primary">{{ cert.certificate_type }}</span></td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-muted small py-1">Event:</td>
-                            <td class="text-light py-1">HackTrack Portal Hackathon 2026</td>
-                        </tr>
-                        <tr>
-                            <td class="fw-bold text-muted small py-1">Verification Status:</td>
-                            <td class="text-success fw-bold py-1">VALID</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <div class="text-danger fs-1 mb-3">
-                <i class="bi bi-shield-x"></i>
-            </div>
-            <h4 class="text-danger mb-3">Verification Failed</h4>
-            <p class="text-secondary small">
-                The requested certificate is either invalid or does not exist in our registry. Please check the URL details.
-            </p>
-            <div class="alert alert-danger mb-0 py-2 small fw-bold">
-                Verification Status: INVALID
-            </div>
-        {% endif %}
-        
-        <div class="mt-4">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-primary-custom btn-sm">Go to Portal</a>
-        </div>
-    </div>
-</div>
 
-<style>
-.bg-dark-card {
-    background-color: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--border-color);
-}
-body.dark-mode .bg-dark-card {
-    background-color: rgba(0, 0, 0, 0.15);
-}
-</style>
+            <!-- Top Header -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-25 rounded-circle p-3 mb-3 text-success" style="width: 72px; height: 72px;">
+                    <i class="bi bi-shield-check display-5"></i>
+                </div>
+                <span class="badge bg-success fs-6 px-3 py-2 text-uppercase font-monospace tracking-wider mb-2">
+                    <i class="bi bi-check-circle-fill me-1"></i> Authentic &amp; Verified Certificate
+                </span>
+                <h3 class="text-white fw-bold mt-2 mb-1">Official Hackathon Certificate</h3>
+                <p class="text-secondary small">Issued by HackTrack Event Management Platform</p>
+            </div>
+
+            <!-- Recipient Details Grid -->
+            <div class="card border-0 p-3 mb-4 rounded-3 text-start" style="background-color: rgba(15, 23, 42, 0.7) !important; border: 1px solid rgba(255, 255, 255, 0.08) !important;">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <span class="text-secondary small text-uppercase font-monospace">Certificate ID</span>
+                        <div class="fw-bold text-info fs-6 font-monospace mt-0.5"><code>{{ cert.certificate_id }}</code></div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-secondary small text-uppercase font-monospace">Category</span>
+                        <div class="mt-0.5">
+                            {% if cert.certificate_type == 'Winner' %}
+                                <span class="badge bg-warning text-dark font-monospace px-2.5 py-1 fw-bold"><i class="bi bi-trophy-fill me-1"></i> Winner</span>
+                            {% elif cert.certificate_type == 'Finalist' %}
+                                <span class="badge bg-info text-dark font-monospace px-2.5 py-1 fw-bold"><i class="bi bi-award-fill me-1"></i> Finalist</span>
+                            {% else %}
+                                <span class="badge bg-primary text-white font-monospace px-2.5 py-1 fw-bold"><i class="bi bi-person-check-fill me-1"></i> Participant</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-12 border-top border-secondary border-opacity-25 pt-2">
+                        <span class="text-secondary small text-uppercase font-monospace">Issued To</span>
+                        <h5 class="text-white fw-bold mb-0 mt-0.5">{{ cert.student_name }}</h5>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <span class="text-secondary small text-uppercase font-monospace">Team Name</span>
+                        <div class="text-light fw-medium mt-0.5">{{ cert.team.team_name }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-secondary small text-uppercase font-monospace">Institution</span>
+                        <div class="text-light fw-medium mt-0.5">{{ cert.college_name }}</div>
+                    </div>
+
+                    {% if cert.team.problem_submission %}
+                    <div class="col-12 border-top border-secondary border-opacity-25 pt-2">
+                        <span class="text-secondary small text-uppercase font-monospace">Project Title</span>
+                        <div class="text-white fw-semibold mt-0.5">{{ cert.team.problem_submission.project_title }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Verification Security Stamp -->
+            <div class="p-3 mb-4 rounded-3 text-start d-flex align-items-center justify-content-between" style="background-color: rgba(16, 185, 129, 0.08) !important; border: 1px dashed rgba(16, 185, 129, 0.4) !important;">
+                <div>
+                    <div class="text-success fw-bold small"><i class="bi bi-lock-fill me-1"></i> Digital Security Token</div>
+                    <code class="text-secondary small font-monospace" style="font-size: 11px;">SHA256: {{ cert.verification_token }}</code>
+                </div>
+                <i class="bi bi-patch-check-fill text-success fs-3"></i>
+            </div>
+
+            <!-- Actions -->
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                {% if cert.certificate_path %}
+                <a href="{{ url_for('static', filename=cert.certificate_path) }}" target="_blank" class="btn btn-success fw-bold btn-sm px-3 py-2">
+                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> View / Download PDF
+                </a>
+                {% endif %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-sm px-3 py-2">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Go to Portal Login
+                </a>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Verification Failed Card -->
+        <div class="card border-0 shadow-lg p-4 p-md-5 bg-secondary text-center" style="border: 2px solid #ef4444 !important; border-radius: 16px;">
+            <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-25 rounded-circle p-3 mb-3 text-danger mx-auto" style="width: 72px; height: 72px;">
+                <i class="bi bi-shield-x display-5"></i>
+            </div>
+            <h4 class="text-danger fw-bold mb-2">Invalid or Unverified Certificate</h4>
+            <p class="text-secondary small mb-4">
+                The requested verification link or token does not match any authentic record in our official registry.
+            </p>
+            <div class="alert alert-danger border-0 mb-4 py-2 small fw-bold">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> Verification Status: FAILED / NOT FOUND
+            </div>
+            <div>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-primary-custom btn-sm px-4 py-2">
+                    <i class="bi bi-house-door-fill me-1"></i> Return to Main Portal
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}
