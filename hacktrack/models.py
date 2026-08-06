@@ -50,7 +50,7 @@ class TeamMember(db.Model):
     member_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     team_id = db.Column(db.String(20), db.ForeignKey('teams.team_id', ondelete='CASCADE'), nullable=False)
     student_name = db.Column(db.String(100), nullable=False)
-    registration_number = db.Column(db.String(50), nullable=False)
+    registration_number = db.Column(db.String(50), nullable=True, default='N/A')
     email = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
 
@@ -209,7 +209,7 @@ class Certificate(db.Model):
     team_id = db.Column(db.String(50), db.ForeignKey('teams.team_id', ondelete='CASCADE'), nullable=False)
     member_id = db.Column(db.Integer, db.ForeignKey('team_members.member_id', ondelete='CASCADE'), nullable=True) # null if leader
     student_name = db.Column(db.String(100), nullable=False)
-    registration_number = db.Column(db.String(50), nullable=False)
+    registration_number = db.Column(db.String(50), nullable=True, default='N/A')
     college_name = db.Column(db.String(150), nullable=False)
     team_name = db.Column(db.String(100), nullable=False)
     certificate_type = db.Column(db.String(50), default='Participant') # Participant, Winner, Finalist

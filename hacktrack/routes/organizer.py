@@ -142,16 +142,17 @@ def register_team():
         
         # 6. Add Members
         member_names = request.form.getlist('member_name[]')
-        member_regs = request.form.getlist('member_reg[]')
+        member_regs = request.form.getlist('member_reg[]') if 'member_reg[]' in request.form else []
         member_emails = request.form.getlist('member_email[]')
         member_phones = request.form.getlist('member_phone[]')
         
-        for name, reg, email, phone in zip(member_names, member_regs, member_emails, member_phones):
+        for idx, (name, email, phone) in enumerate(zip(member_names, member_emails, member_phones)):
             if name.strip():
+                reg_val = member_regs[idx].strip() if idx < len(member_regs) and member_regs[idx].strip() else f"{new_team.team_id}-M{idx+1}"
                 m = TeamMember(
                     team_id=new_team.team_id,
                     student_name=name.strip(),
-                    registration_number=reg.strip(),
+                    registration_number=reg_val,
                     email=email.strip(),
                     phone=phone.strip()
                 )
