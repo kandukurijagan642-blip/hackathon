@@ -49,9 +49,9 @@ def register():
             db.session.add(leader_user)
             db.session.commit()
         
-        # 2. Auto-generate Team ID in HT2026001 format
-        count = Team.query.count() + 1
-        team_id = f"HT2026{count:03d}"
+        # 2. Auto-generate guaranteed unique Team ID
+        from utils import generate_unique_team_id
+        team_id = generate_unique_team_id()
         
         # 3. Create Team
         new_team = Team(

@@ -108,9 +108,9 @@ def register_team():
             db.session.add(leader_user)
             db.session.commit()
         
-        # 2. Auto-generate Team ID in HT2026001 format
-        count = Team.query.count() + 1
-        team_id = f"HT2026{count:03d}"
+        # 2. Auto-generate guaranteed unique Team ID
+        from utils import generate_unique_team_id
+        team_id = generate_unique_team_id()
         
         # 3. Create Team
         new_team = Team(
@@ -263,22 +263,21 @@ def csv_import():
                 continue
                 
             leader_email = str(row['leader_email']).strip()
-            if User.query.filter_by(email=leader_email).first():
-                continue
-            default_pwd = f"{team_name.replace(' ', '')}@12309"
-            hashed_pwd = generate_password_hash(default_pwd)
+            leader_user = User.query.filter_by(email=leader_email).first()
+            if not leader_user:
+                default_pwd = f"{team_name.replace(' ', '')}@12309"
+                hashed_pwd = generate_password_hash(default_pwd)
+                leader_user = User(
+                    name=leader_name,
+                    email=leader_email,
+                    password=hashed_pwd,
+                    role='Leader'
+                )
+                db.session.add(leader_user)
+                db.session.commit()
             
-            leader_user = User(
-                name=leader_name,
-                email=leader_email,
-                password=hashed_pwd,
-                role='Leader'
-            )
-            db.session.add(leader_user)
-            db.session.commit()
-            
-            count = Team.query.count() + 1
-            team_id = f"HT2026{count:03d}"
+            from utils import generate_unique_team_id
+            team_id = generate_unique_team_id()
             
             new_team = Team(
                 team_id=team_id,

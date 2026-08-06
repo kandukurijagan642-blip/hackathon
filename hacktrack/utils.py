@@ -28,6 +28,34 @@ def get_actual_host_url(default_val="http://localhost:5000"):
         return env_url.rstrip('/')
     return default_val
 
+def generate_unique_team_id():
+    """
+    Scans all existing teams and returns the next guaranteed unique Team ID in HT2026xxx format.
+    Prevents primary key collisions when teams are added or deleted.
+    """
+    from models import Team
+    try:
+        teams = Team.query.all()
+        max_num = 0
+        for t in teams:
+            if t.team_id and t.team_id.startswith("HT2026"):
+                try:
+                    num = int(t.team_id.replace("HT2026", ""))
+                    if num > max_num:
+                        max_num = num
+                except ValueError:
+                    pass
+        
+        next_num = max_num + 1
+        candidate = f"HT2026{next_num:03d}"
+        while Team.query.get(candidate):
+            next_num += 1
+            candidate = f"HT2026{next_num:03d}"
+        return candidate
+    except Exception as e:
+        import time
+        return f"HT2026{int(time.time()) % 1000:03d}"
+
 def generate_team_qr(team_id, team_name, leader_name, host_url="http://localhost:5000"):
     """
     Generates a QR code for a team containing: Team ID | Team Name | Leader Name
