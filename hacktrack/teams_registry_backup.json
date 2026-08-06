@@ -97,6 +97,20 @@
       "email": "leader10@hacktrack.com",
       "password": "scrypt:32768:8:1$L2ZNuBhT1WU6nIhH$4992a42096562c162a7449cb204043d0883015341d79dda9a28b2b9fd5e4f0fc8b8fb2bb98a50ebdcd50c85d63909d6f6facc8f307fe0f0f04e9f0f657bca181",
       "role": "Leader"
+    },
+    {
+      "id": 15,
+      "name": "Test Leader",
+      "email": "testleader99@test.com",
+      "password": "scrypt:32768:8:1$an9vgHLUsRGc1YO0$36c5d547f85918a193fa7cb9a7fd123010c2aee7c0e3133ac2f0b18f40b42f9694e64c8ac58e47664f08561554e9d365fd9735fb0cb6690de43829258d5cc1da",
+      "role": "Leader"
+    },
+    {
+      "id": 16,
+      "name": "Test Leader 100",
+      "email": "testleader100@test.com",
+      "password": "scrypt:32768:8:1$N9TExzLKdNagUUFF$51a65f30c9c4f6f8094550f4b662bc608c4325a5621617c13869b3046a4e726f0278513ebd8ca854ff06df20718f5d2d3192d23fe626aff84334b4d0c6fe3d1e",
+      "role": "Leader"
     }
   ],
   "teams": [
@@ -130,7 +144,16 @@
           "phone": "+1 555-0103"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "Decentralized Health Ledger",
+        "domain": "Healthcare & Blockchain",
+        "problem_statement": "Integrate Web3 tech into electronic health records to secure access management.",
+        "abstract": "A placeholder abstract generated during database seeding.",
+        "technology_stack": "Python, Flask, SQLAlchemy, MySQL, Bootstrap",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Present"
     },
     {
@@ -163,7 +186,16 @@
           "phone": "+1 555-0203"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "AI Phishing Shield",
+        "domain": "Cyber Security",
+        "problem_statement": "Real-time AI email filtering model to detect credential harvesting pages.",
+        "abstract": "A placeholder abstract generated during database seeding.",
+        "technology_stack": "Python, Flask, SQLAlchemy, MySQL, Bootstrap",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Present"
     },
     {
@@ -196,7 +228,16 @@
           "phone": "+1 555-0303"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "Smart Crop Optimizer",
+        "domain": "Agriculture & ML",
+        "problem_statement": "Predict soil nutrient deficiencies using computer vision on crop leaf images.",
+        "abstract": "A placeholder abstract generated during database seeding.",
+        "technology_stack": "Python, Flask, SQLAlchemy, MySQL, Bootstrap",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Absent"
     },
     {
@@ -262,7 +303,16 @@
           "phone": "+1 555-0503"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "Kubernetes Resource Scaler",
+        "domain": "Cloud & DevOps",
+        "problem_statement": "Dynamic cluster resource autoscaling algorithm based on deep network metrics.",
+        "abstract": "A placeholder abstract generated during database seeding.",
+        "technology_stack": "Python, Flask, SQLAlchemy, MySQL, Bootstrap",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Absent"
     },
     {
@@ -295,7 +345,16 @@
           "phone": "+1 555-0603"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "Quantum Safe Encryption",
+        "domain": "Cryptography",
+        "problem_statement": "Lattice-based signature library compiled to rust-wasm for browsers.",
+        "abstract": "A placeholder abstract generated during database seeding.",
+        "technology_stack": "Python, Flask, SQLAlchemy, MySQL, Bootstrap",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Present"
     },
     {
@@ -361,7 +420,16 @@
           "phone": "+1 555-0803"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "EEG Signal Classifier",
+        "domain": "Neural Engineering",
+        "problem_statement": "Real-time brain signal categorization framework using 1D temporal CNNs.",
+        "abstract": "A placeholder abstract generated during database seeding.",
+        "technology_stack": "Python, Flask, SQLAlchemy, MySQL, Bootstrap",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Absent"
     },
     {
@@ -394,7 +462,16 @@
           "phone": "+1 555-0903"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "Accessibility Mapping App",
+        "domain": "Mobile Development",
+        "problem_statement": "Crowdsourced maps providing wheelchair accessibility route scoring in real-time.",
+        "abstract": "A placeholder abstract generated during database seeding.",
+        "technology_stack": "Python, Flask, SQLAlchemy, MySQL, Bootstrap",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Present"
     },
     {
@@ -427,8 +504,55 @@
           "phone": "+1 555-1003"
         }
       ],
-      "submission": null,
+      "submission": {
+        "project_title": "Decentralized Health Ledger",
+        "domain": "Healthcare & Blockchain",
+        "problem_statement": "uygjhbm",
+        "abstract": "Abstract Details (Pending)",
+        "technology_stack": "Tech Stack (Pending)",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
       "attendance": "Present"
+    },
+    {
+      "team_id": "HT2026011",
+      "team_name": "Test Team 99",
+      "college": "Test College",
+      "department": "CS",
+      "leader_id": 15,
+      "created_at": "2026-08-06 16:53:14",
+      "members": [
+        {
+          "member_id": 31,
+          "student_name": "Mem 1",
+          "registration_number": "HT2026011-M1",
+          "email": "m1@test.com",
+          "phone": "123"
+        }
+      ],
+      "submission": null,
+      "attendance": "Absent"
+    },
+    {
+      "team_id": "HT2026012",
+      "team_name": "Test Team 100",
+      "college": "Test College",
+      "department": "CS",
+      "leader_id": 16,
+      "created_at": "2026-08-06 16:53:48",
+      "members": [
+        {
+          "member_id": 32,
+          "student_name": "Mem 1",
+          "registration_number": "HT2026012-M1",
+          "email": "m100@test.com",
+          "phone": "123"
+        }
+      ],
+      "submission": null,
+      "attendance": "Absent"
     }
   ],
   "round1_marks": [],

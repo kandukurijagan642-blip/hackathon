@@ -402,6 +402,12 @@ with app.app_context():
         except Exception as ex:
             print(f"Fallback db.create_all error: {ex}")
             
+    try:
+        from database import ensure_columns_exist
+        ensure_columns_exist(app, db)
+    except Exception as e:
+        print(f"Migration error: {e}")
+            
     # Restore persistent dataset from local backup & MongoDB Atlas
     try:
         from persistent_backup import restore_local_backup

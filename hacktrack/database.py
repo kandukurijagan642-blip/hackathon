@@ -35,6 +35,23 @@ def create_database_if_not_exists():
         # We don't fail immediately, we let SQLAlchemy try to connect which might fail or succeed 
         # depending on whether the db was already there or if credentials have issues.
 
+def ensure_columns_exist(app, db):
+    """
+    Auto-migrates any missing columns in database tables (e.g. is_locked in problem_submission).
+    """
+    with app.app_context():
+        try:
+            with db.engine.connect() as conn:
+                from sqlalchemy import text
+                try:
+                    conn.execute(text("ALTER TABLE problem_submission ADD COLUMN is_locked BOOLEAN DEFAULT 1"))
+                    conn.commit()
+                    print("Added missing is_locked column to problem_submission table.")
+                except Exception:
+                    pass
+        except Exception as e:
+            print(f"Column migration check notice: {e}")
+
 def get_mongo_db():
     """
     Returns a MongoDB database client instance using MONGO_URI from Config.
