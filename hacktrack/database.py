@@ -39,10 +39,14 @@ def get_mongo_db():
     """
     Returns a MongoDB database client instance using MONGO_URI from Config.
     """
-    import pymongo
-    mongo_uri = Config.MONGO_URI
-    if not mongo_uri:
+    try:
+        import pymongo
+        mongo_uri = Config.MONGO_URI
+        if not mongo_uri:
+            return None
+        client = pymongo.MongoClient(mongo_uri, serverSelectionTimeoutMS=3000)
+        return client[Config.MONGO_DB]
+    except Exception as e:
+        print(f"MongoDB connection notice: {e}")
         return None
-    client = pymongo.MongoClient(mongo_uri)
-    return client[Config.MONGO_DB]
 

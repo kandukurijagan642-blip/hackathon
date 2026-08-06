@@ -23,6 +23,7 @@
                         <th class="text-center">Round 1 (Pitch)</th>
                         <th class="text-center">Round 2 (Build)</th>
                         <th class="text-center">Round 3 (Demo)</th>
+                        <th class="text-center">Total (3 Rounds)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -107,10 +108,17 @@
                                     {% endif %}
                                 {% endif %}
                             </td>
+
+                            <!-- Total (3 Rounds) Column -->
+                            <td class="text-center">
+                                <span class="badge fs-6 bg-info text-dark" style="font-weight: 700; padding: 6px 12px;">
+                                    <i class="bi bi-calculator me-1"></i>{{ item.total_3_rounds }} / 300
+                                </span>
+                            </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="6" class="text-center py-4 text-muted">No teams registered.</td>
+                            <td colspan="7" class="text-center py-4 text-muted">No teams registered.</td>
                         </tr>
                     {% endfor %}
                 </tbody>

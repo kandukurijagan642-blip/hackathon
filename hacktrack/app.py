@@ -401,11 +401,20 @@ with app.app_context():
             db.create_all()
         except Exception as ex:
             print(f"Fallback db.create_all error: {ex}")
+            
+    # Restore persistent dataset from MongoDB Atlas if SQL tables are fresh/empty
+    try:
+        from mongo_sync import restore_all_from_mongo
+        restore_all_from_mongo(app, db)
+    except Exception as e:
+        print(f"MongoDB restoration error: {e}")
         
     # Only seed default accounts if the user registry is empty
     try:
         if not User.query.first():
             seed_database()
+            from mongo_sync import sync_all_to_mongo
+            sync_all_to_mongo()
     except Exception as e:
         print(f"Seeding check failed: {e}")
         try:

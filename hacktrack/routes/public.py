@@ -97,6 +97,13 @@ def register():
                 
         db.session.commit()
 
+        # Sync to MongoDB Atlas for permanent persistence
+        try:
+            from mongo_sync import sync_all_to_mongo
+            sync_all_to_mongo()
+        except Exception as e:
+            print(f"MongoDB sync error: {e}")
+
         # Auto generate LOCKED certificates in the background immediately
         from certificate_automation import auto_generate_team_certificates
         auto_generate_team_certificates(new_team)

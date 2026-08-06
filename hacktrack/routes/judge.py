@@ -42,6 +42,11 @@ def dashboard():
         # Check if project has submitted problem details (Phased workflow)
         is_submitted = (team.problem_submission is not None)
         
+        r1_score = r1.total_marks if r1 else 0
+        r2_score = r2.total_marks if r2 else 0
+        r3_score = r3.total_marks if r3 else 0
+        total_3_rounds = r1_score + r2_score + r3_score
+
         evaluated_teams.append({
             'team': team,
             'is_submitted': is_submitted,
@@ -50,7 +55,8 @@ def dashboard():
             'r2_status': 'Finalized' if r2 and r2.is_submitted else ('Draft' if r2 else 'Not Evaluated'),
             'r2_score': r2.total_marks if r2 else '-',
             'r3_status': 'Finalized' if r3 and r3.is_submitted else ('Draft' if r3 else 'Not Evaluated'),
-            'r3_score': r3.total_marks if r3 else '-'
+            'r3_score': r3.total_marks if r3 else '-',
+            'total_3_rounds': total_3_rounds
         })
         
     return render_template(
@@ -171,6 +177,14 @@ def evaluate(round_num, team_id):
             marks.is_submitted = is_submitted
             
         db.session.commit()
+        
+        # Sync marks to MongoDB Atlas for permanent persistence
+        try:
+            from mongo_sync import sync_all_to_mongo
+            sync_all_to_mongo()
+        except Exception as e:
+            print(f"MongoDB sync error: {e}")
+
         log_judge_activity(
             "Submit Evaluation" if is_submitted else "Draft Evaluation",
             f"Evaluated team {team.team_id} in Round {round_num}. Total: {total}"

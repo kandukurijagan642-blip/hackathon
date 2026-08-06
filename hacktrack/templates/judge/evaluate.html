@@ -19,6 +19,15 @@
                     <strong>Problem Statement:</strong> {{ team.problem_submission.problem_statement if team.problem_submission else '—' }}
                 </div>
                 
+                {% if marks and marks.is_submitted %}
+                <div class="alert alert-warning border-0 p-3 mb-4 rounded-3 d-flex align-items-center gap-2" style="background-color: rgba(234, 179, 8, 0.15) !important; border: 1px solid rgba(234, 179, 8, 0.3) !important; color: #fde047 !important;">
+                    <i class="bi bi-lock-fill fs-5"></i>
+                    <div>
+                        <strong>Evaluation Locked & Finalized:</strong> Marks have already been entered and submitted for Round {{ round_num }}. You cannot alter or edit these scores anymore.
+                    </div>
+                </div>
+                {% endif %}
+                
                 <form action="{{ url_for('judge.evaluate', round_num=round_num, team_id=team.team_id) }}" method="POST">
                     
                     {% if round_num == 1 %}
@@ -26,19 +35,19 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="innovation" class="form-label fw-medium">Innovation (Max 25)</label>
-                                <input type="number" class="form-control" id="innovation" name="innovation" min="0" max="25" value="{{ marks.innovation if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="innovation" name="innovation" min="0" max="25" value="{{ marks.innovation if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="presentation" class="form-label fw-medium">Presentation Skills (Max 25)</label>
-                                <input type="number" class="form-control" id="presentation" name="presentation" min="0" max="25" value="{{ marks.presentation if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="presentation" name="presentation" min="0" max="25" value="{{ marks.presentation if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="feasibility" class="form-label fw-medium">Feasibility (Max 25)</label>
-                                <input type="number" class="form-control" id="feasibility" name="feasibility" min="0" max="25" value="{{ marks.feasibility if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="feasibility" name="feasibility" min="0" max="25" value="{{ marks.feasibility if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="confidence" class="form-label fw-medium">Confidence (Max 25)</label>
-                                <input type="number" class="form-control" id="confidence" name="confidence" min="0" max="25" value="{{ marks.confidence if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="confidence" name="confidence" min="0" max="25" value="{{ marks.confidence if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                         </div>
                     
@@ -47,19 +56,19 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="prototype" class="form-label fw-medium">Prototype / Mockup (Max 30)</label>
-                                <input type="number" class="form-control" id="prototype" name="prototype" min="0" max="30" value="{{ marks.prototype if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="prototype" name="prototype" min="0" max="30" value="{{ marks.prototype if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="technical_implementation" class="form-label fw-medium">Technical Implementation (Max 30)</label>
-                                <input type="number" class="form-control" id="technical_implementation" name="technical_implementation" min="0" max="30" value="{{ marks.technical_implementation if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="technical_implementation" name="technical_implementation" min="0" max="30" value="{{ marks.technical_implementation if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="uiux" class="form-label fw-medium">UI / UX Design (Max 20)</label>
-                                <input type="number" class="form-control" id="uiux" name="uiux" min="0" max="20" value="{{ marks.uiux if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="uiux" name="uiux" min="0" max="20" value="{{ marks.uiux if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="question_answer" class="form-label fw-medium">Q&A / Defence (Max 20)</label>
-                                <input type="number" class="form-control" id="question_answer" name="question_answer" min="0" max="20" value="{{ marks.question_answer if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="question_answer" name="question_answer" min="0" max="20" value="{{ marks.question_answer if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                         </div>
                         
@@ -68,41 +77,44 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label for="working_demo" class="form-label fw-medium">Working Demo Effectiveness (Max 40)</label>
-                                <input type="number" class="form-control" id="working_demo" name="working_demo" min="0" max="40" value="{{ marks.working_demo if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="working_demo" name="working_demo" min="0" max="40" value="{{ marks.working_demo if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="business_model" class="form-label fw-medium">Business Model / Monetization (Max 20)</label>
-                                <input type="number" class="form-control" id="business_model" name="business_model" min="0" max="20" value="{{ marks.business_model if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="business_model" name="business_model" min="0" max="20" value="{{ marks.business_model if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="scalability" class="form-label fw-medium">Scalability / Future Scope (Max 20)</label>
-                                <input type="number" class="form-control" id="scalability" name="scalability" min="0" max="20" value="{{ marks.scalability if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="scalability" name="scalability" min="0" max="20" value="{{ marks.scalability if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                             <div class="col-md-6">
                                 <label for="presentation_r3" class="form-label fw-medium">Pitch / Presentation (Max 20)</label>
-                                <!-- ID is presentation_r3, name is presentation to map to round3_marks.presentation column -->
-                                <input type="number" class="form-control" id="presentation_r3" name="presentation" min="0" max="20" value="{{ marks.presentation if marks else 0 }}" required>
+                                <input type="number" class="form-control" id="presentation_r3" name="presentation" min="0" max="20" value="{{ marks.presentation if marks else 0 }}" required {% if marks and marks.is_submitted %}disabled{% endif %}>
                             </div>
                         </div>
                     {% endif %}
                     
                     <div class="mb-4">
                         <label for="comments" class="form-label fw-medium">Jury Feedback / Comments</label>
-                        <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Provide constructive feedback for the team...">{{ marks.comments if marks else '' }}</textarea>
+                        <textarea class="form-control" id="comments" name="comments" rows="3" placeholder="Provide constructive feedback for the team..." {% if marks and marks.is_submitted %}disabled{% endif %}>{{ marks.comments if marks else '' }}</textarea>
                     </div>
                     
-                    <!-- Hidden field to post calculated total to backend, just in case -->
+                    <!-- Hidden field to post calculated total to backend -->
                     <input type="hidden" name="total_marks" id="total-marks-input" value="{{ marks.total_marks if marks else 0 }}">
                     
                     <!-- Submission actions -->
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ url_for('judge.dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <a href="{{ url_for('judge.dashboard') }}" class="btn btn-outline-secondary">Back to Dashboard</a>
+                        {% if not (marks and marks.is_submitted) %}
                         <button type="submit" name="action" value="draft" class="btn btn-warning text-dark fw-medium">
                             <i class="bi bi-file-earmark-plus"></i> Save Draft
                         </button>
                         <button type="submit" name="action" value="final" class="btn btn-primary btn-primary-custom" onclick="return confirm('Final submission cannot be edited once saved. Are you sure you want to lock this evaluation?');">
                             <i class="bi bi-lock-fill"></i> Submit Final &amp; Lock
                         </button>
+                        {% else %}
+                        <span class="badge bg-success py-2 px-3 align-self-center"><i class="bi bi-lock-fill me-1"></i> Evaluation Locked &amp; Submitted</span>
+                        {% endif %}
                     </div>
                 </form>
             </div>
