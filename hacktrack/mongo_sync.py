@@ -14,22 +14,18 @@ def sync_all_to_mongo():
             
         # 1. Sync Users
         users = User.query.all()
-        user_docs = []
         for u in users:
-            user_docs.append({
+            doc = {
                 'id': u.id,
                 'name': u.name,
                 'email': u.email,
                 'password': u.password,
                 'role': u.role
-            })
-        if user_docs:
-            mongo.users.delete_many({})
-            mongo.users.insert_many(user_docs)
+            }
+            mongo.users.update_one({'email': u.email}, {'$set': doc}, upsert=True)
 
         # 2. Sync Teams and Members
         teams = Team.query.all()
-        team_docs = []
         for t in teams:
             members = []
             for m in t.members:
@@ -50,15 +46,15 @@ def sync_all_to_mongo():
                     'problem_statement': sub.problem_statement,
                     'abstract': sub.abstract,
                     'technology_stack': sub.technology_stack,
-                    'github_url': sub.github_url,
-                    'demo_url': sub.demo_url,
-                    'is_locked': sub.is_locked
+                    'github_url': getattr(sub, 'github_url', None),
+                    'demo_url': getattr(sub, 'demo_url', None),
+                    'is_locked': getattr(sub, 'is_locked', False)
                 }
                 
             att = Attendance.query.filter_by(team_id=t.team_id).first()
             att_status = att.status if att else 'Absent'
 
-            team_docs.append({
+            team_doc = {
                 'team_id': t.team_id,
                 'team_name': t.team_name,
                 'college': t.college,
@@ -67,66 +63,59 @@ def sync_all_to_mongo():
                 'members': members,
                 'submission': sub_dict,
                 'attendance': att_status
-            })
-            
-        if team_docs:
-            mongo.teams.delete_many({})
-            mongo.teams.insert_many(team_docs)
+            }
+            mongo.teams.update_one({'team_id': t.team_id}, {'$set': team_doc}, upsert=True)
 
         # 3. Sync Round 1, 2, 3 Marks
-        r1_list = [{
-            'team_id': r.team_id,
-            'judge_id': r.judge_id,
-            'innovation': r.innovation,
-            'presentation': r.presentation,
-            'feasibility': r.feasibility,
-            'confidence': r.confidence,
-            'comments': r.comments,
-            'total_marks': r.total_marks,
-            'is_submitted': r.is_submitted
-        } for r in Round1Marks.query.all()]
-        if r1_list:
-            mongo.round1_marks.delete_many({})
-            mongo.round1_marks.insert_many(r1_list)
+        for r in Round1Marks.query.all():
+            r_doc = {
+                'team_id': r.team_id,
+                'judge_id': r.judge_id,
+                'innovation': r.innovation,
+                'presentation': r.presentation,
+                'feasibility': r.feasibility,
+                'confidence': r.confidence,
+                'comments': r.comments,
+                'total_marks': r.total_marks,
+                'is_submitted': r.is_submitted
+            }
+            mongo.round1_marks.update_one({'team_id': r.team_id, 'judge_id': r.judge_id}, {'$set': r_doc}, upsert=True)
 
-        r2_list = [{
-            'team_id': r.team_id,
-            'judge_id': r.judge_id,
-            'prototype': r.prototype,
-            'technical_implementation': r.technical_implementation,
-            'uiux': r.uiux,
-            'question_answer': r.question_answer,
-            'comments': r.comments,
-            'total_marks': r.total_marks,
-            'is_submitted': r.is_submitted
-        } for r in Round2Marks.query.all()]
-        if r2_list:
-            mongo.round2_marks.delete_many({})
-            mongo.round2_marks.insert_many(r2_list)
+        for r in Round2Marks.query.all():
+            r_doc = {
+                'team_id': r.team_id,
+                'judge_id': r.judge_id,
+                'prototype': r.prototype,
+                'technical_implementation': r.technical_implementation,
+                'uiux': r.uiux,
+                'question_answer': r.question_answer,
+                'comments': r.comments,
+                'total_marks': r.total_marks,
+                'is_submitted': r.is_submitted
+            }
+            mongo.round2_marks.update_one({'team_id': r.team_id, 'judge_id': r.judge_id}, {'$set': r_doc}, upsert=True)
 
-        r3_list = [{
-            'team_id': r.team_id,
-            'judge_id': r.judge_id,
-            'working_demo': r.working_demo,
-            'business_model': r.business_model,
-            'scalability': r.scalability,
-            'presentation': r.presentation,
-            'comments': r.comments,
-            'total_marks': r.total_marks,
-            'is_submitted': r.is_submitted
-        } for r in Round3Marks.query.all()]
-        if r3_list:
-            mongo.round3_marks.delete_many({})
-            mongo.round3_marks.insert_many(r3_list)
+        for r in Round3Marks.query.all():
+            r_doc = {
+                'team_id': r.team_id,
+                'judge_id': r.judge_id,
+                'working_demo': r.working_demo,
+                'business_model': r.business_model,
+                'scalability': r.scalability,
+                'presentation': r.presentation,
+                'comments': r.comments,
+                'total_marks': r.total_marks,
+                'is_submitted': r.is_submitted
+            }
+            mongo.round3_marks.update_one({'team_id': r.team_id, 'judge_id': r.judge_id}, {'$set': r_doc}, upsert=True)
             
         # 4. Sync System Settings
-        settings = [{
-            'key_name': s.key_name,
-            'value': s.value
-        } for s in SystemSetting.query.all()]
-        if settings:
-            mongo.system_settings.delete_many({})
-            mongo.system_settings.insert_many(settings)
+        for s in SystemSetting.query.all():
+            s_doc = {
+                'key_name': s.key_name,
+                'value': s.value
+            }
+            mongo.system_settings.update_one({'key_name': s.key_name}, {'$set': s_doc}, upsert=True)
 
     except Exception as e:
         print(f"Error syncing data to MongoDB Atlas: {e}")

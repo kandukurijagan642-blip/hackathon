@@ -97,7 +97,13 @@ def register():
                 
         db.session.commit()
 
-        # Sync to MongoDB Atlas for permanent persistence
+        # Sync to Local Backup & MongoDB Atlas for permanent persistence
+        try:
+            from persistent_backup import save_local_backup
+            save_local_backup()
+        except Exception as e:
+            print(f"Local backup error: {e}")
+
         try:
             from mongo_sync import sync_all_to_mongo
             sync_all_to_mongo()

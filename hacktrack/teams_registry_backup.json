@@ -1,0 +1,437 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Super Admin",
+      "email": "admin@hacktrack.com",
+      "password": "scrypt:32768:8:1$fd78CpWkyIfBG5sv$6638369290286ba313a0d421f34ded06223dba9d7b393c7d2dee20719c94d7ffd14e3bf69aa20d6f03f6b3a1d2165dfbea1ebb2c93db254305fe0fcef195ce79",
+      "role": "Admin"
+    },
+    {
+      "id": 2,
+      "name": "Organizer Team",
+      "email": "organizer@hacktrack.com",
+      "password": "scrypt:32768:8:1$KCOoJbWxS0e9qjPc$e185c4bc5989705919885944199c37aea2c54480e2a0be50e669f183e79328086bb835da379f87d81f6d150569c4bf0a8ca8d755024a367cec263eb3da14c2be",
+      "role": "Organizer"
+    },
+    {
+      "id": 3,
+      "name": "Prof. Alan Turing",
+      "email": "judge1@hacktrack.com",
+      "password": "scrypt:32768:8:1$OZBv2OVkbgMCefMM$34577f9a85284cfa900ea099084e0f5bdbd8e4dc837294dce5e66b271299580b93f63b6338f03abfcd6d3c84af229fccdc4e62637bffcfe28de68dad36bed41b",
+      "role": "Judge"
+    },
+    {
+      "id": 4,
+      "name": "Dr. Grace Hopper",
+      "email": "judge2@hacktrack.com",
+      "password": "scrypt:32768:8:1$4We8bvTiLG4kAP3F$06a5789453ae3f680b0ece3c5688a164f5e9877b43074f0d39cb07c13d9e6c64f6b6851f0f2f884460fe93eccc0cd84233edfbad5b395759da6bca537de67759",
+      "role": "Judge"
+    },
+    {
+      "id": 5,
+      "name": "Jane Doe",
+      "email": "jane.doe@mit.edu",
+      "password": "scrypt:32768:8:1$I4u1Uvii2fzwvMWS$9fbf3f84b0fa4e4c4b36713f7180781efc340923bdab0423d1615400736b0f55ad3bfbc2f74438c81912bc37c28b1532816cd8e64b79ff1a223c3fdf5aa39f08",
+      "role": "Leader"
+    },
+    {
+      "id": 6,
+      "name": "John Smith",
+      "email": "leader2@hacktrack.com",
+      "password": "scrypt:32768:8:1$m0cehOPkcmdj6fPK$0174678c50c0d07ee8bbdfbc740094cd19db9625f5567a10c17b3f7e53b29a5b6e99436476323ee9a12bd32a250cca4d6e7b68444c6e4cc00fd37f3f600b2274",
+      "role": "Leader"
+    },
+    {
+      "id": 7,
+      "name": "Sarah Connor",
+      "email": "leader3@hacktrack.com",
+      "password": "scrypt:32768:8:1$YemWXTwIa35TNawp$cb5309a69e70010283ccdf4ba5e7efe211276f783a2417421797e4cda0803be4bbbcd18c16d6b9e951d0e9da259260260dc74990af0d74c861fe813e1a10d5e7",
+      "role": "Leader"
+    },
+    {
+      "id": 8,
+      "name": "Bruce Wayne",
+      "email": "leader4@hacktrack.com",
+      "password": "scrypt:32768:8:1$3j8uQipBv4qZK503$a8e66ddc1d351c9136e63842605b1ecbee99ebd9801d4cbabba40b1de65dfa0d89ec7c3644b6eafcb8e18e1ad627cbd33a7386842e61522f1b7e674c2565c692",
+      "role": "Leader"
+    },
+    {
+      "id": 9,
+      "name": "Clark Kent",
+      "email": "leader5@hacktrack.com",
+      "password": "scrypt:32768:8:1$9P3ora7oJgzQf0TK$d9e61ac8be6d9e96169419677f20b01f9c19d95d51383eefa48bf4808e9de34ca5abc9d60cd6f5df3da1384fcae09d40cb6a2e7bd27d5cb49fa079d076a95506",
+      "role": "Leader"
+    },
+    {
+      "id": 10,
+      "name": "Peter Parker",
+      "email": "leader6@hacktrack.com",
+      "password": "scrypt:32768:8:1$bkPBqDZBBIyILLzj$d180e503d22c7d0e34ce95413084439eb46cf59e31bb24007a9d7a103e8567ede9c5e9b00247a81cd57372fb9118eec3b38d949072abda017b4f6c85447430a5",
+      "role": "Leader"
+    },
+    {
+      "id": 11,
+      "name": "Tony Stark",
+      "email": "leader7@hacktrack.com",
+      "password": "scrypt:32768:8:1$qqmpJq7Ek0PyeVJo$529b2e77cfbdc26a18cbd156c5f8538bf4dae96ccb8ffd33fe3f2a396ec3ae8f155b81d2491e8bd51bb658a48540369695fea2882aeb4af2cfbf29cf4195388c",
+      "role": "Leader"
+    },
+    {
+      "id": 12,
+      "name": "Barry Allen",
+      "email": "leader8@hacktrack.com",
+      "password": "scrypt:32768:8:1$reCJRqWV4qweR35t$01ba932b44b4d0af791f19cd6e4ffd3225eae1fd4432c4a7ab402885736645bd8b4039e612c728f09717eaee4afc20a0fbe0ae363c0c14db78cb41ca4a5b4d07",
+      "role": "Leader"
+    },
+    {
+      "id": 13,
+      "name": "Steve Jobs",
+      "email": "leader9@hacktrack.com",
+      "password": "scrypt:32768:8:1$gcViyurylFOx9IUe$47411460821d7f1cd2bb2dc2b4b7ec8537674d8729a72fa2cf2d45b9074cf33b67cb1f08f940a90a255a2d6527c453f0d922b42101100f9304f2562269e5d536",
+      "role": "Leader"
+    },
+    {
+      "id": 14,
+      "name": "Ada Lovelace",
+      "email": "leader10@hacktrack.com",
+      "password": "scrypt:32768:8:1$L2ZNuBhT1WU6nIhH$4992a42096562c162a7449cb204043d0883015341d79dda9a28b2b9fd5e4f0fc8b8fb2bb98a50ebdcd50c85d63909d6f6facc8f307fe0f0f04e9f0f657bca181",
+      "role": "Leader"
+    }
+  ],
+  "teams": [
+    {
+      "team_id": "HT2026001",
+      "team_name": "Web Wizards",
+      "college": "MIT",
+      "department": "Information Technology",
+      "leader_id": 5,
+      "created_at": "2026-07-31 13:54:59",
+      "members": [
+        {
+          "member_id": 1,
+          "student_name": "Alice Smith",
+          "registration_number": "MIT2601",
+          "email": "alice@mit.edu",
+          "phone": "+1 555-0101"
+        },
+        {
+          "member_id": 2,
+          "student_name": "Bob Jones",
+          "registration_number": "MIT2602",
+          "email": "bob@mit.edu",
+          "phone": "+1 555-0102"
+        },
+        {
+          "member_id": 3,
+          "student_name": "Charlie Brown",
+          "registration_number": "MIT2603",
+          "email": "charlie@mit.edu",
+          "phone": "+1 555-0103"
+        }
+      ],
+      "submission": null,
+      "attendance": "Present"
+    },
+    {
+      "team_id": "HT2026002",
+      "team_name": "Cyber Sentinels",
+      "college": "Stanford",
+      "department": "Computer Science",
+      "leader_id": 6,
+      "created_at": "2026-07-31 13:54:59",
+      "members": [
+        {
+          "member_id": 4,
+          "student_name": "David Miller",
+          "registration_number": "STAN2601",
+          "email": "david@stanford.edu",
+          "phone": "+1 555-0201"
+        },
+        {
+          "member_id": 5,
+          "student_name": "Emma Wilson",
+          "registration_number": "STAN2602",
+          "email": "emma@stanford.edu",
+          "phone": "+1 555-0202"
+        },
+        {
+          "member_id": 6,
+          "student_name": "Frank Thomas",
+          "registration_number": "STAN2603",
+          "email": "frank@stanford.edu",
+          "phone": "+1 555-0203"
+        }
+      ],
+      "submission": null,
+      "attendance": "Present"
+    },
+    {
+      "team_id": "HT2026003",
+      "team_name": "AI Pioneers",
+      "college": "UC Berkeley",
+      "department": "Data Science",
+      "leader_id": 7,
+      "created_at": "2026-07-31 13:54:59",
+      "members": [
+        {
+          "member_id": 7,
+          "student_name": "Grace Hopper",
+          "registration_number": "BERK2601",
+          "email": "grace@berkeley.edu",
+          "phone": "+1 555-0301"
+        },
+        {
+          "member_id": 8,
+          "student_name": "Henry Ford",
+          "registration_number": "BERK2602",
+          "email": "henry@berkeley.edu",
+          "phone": "+1 555-0302"
+        },
+        {
+          "member_id": 9,
+          "student_name": "Ivy League",
+          "registration_number": "BERK2603",
+          "email": "ivy@berkeley.edu",
+          "phone": "+1 555-0303"
+        }
+      ],
+      "submission": null,
+      "attendance": "Absent"
+    },
+    {
+      "team_id": "HT2026004",
+      "team_name": "Code Crusaders",
+      "college": "Gotham Tech",
+      "department": "Robotics Engineering",
+      "leader_id": 8,
+      "created_at": "2026-07-31 13:55:00",
+      "members": [
+        {
+          "member_id": 10,
+          "student_name": "Jack Ryan",
+          "registration_number": "GOT2601",
+          "email": "jack@gotham.edu",
+          "phone": "+1 555-0401"
+        },
+        {
+          "member_id": 11,
+          "student_name": "Karen Page",
+          "registration_number": "GOT2602",
+          "email": "karen@gotham.edu",
+          "phone": "+1 555-0402"
+        },
+        {
+          "member_id": 12,
+          "student_name": "Leo Fitz",
+          "registration_number": "GOT2603",
+          "email": "leo@gotham.edu",
+          "phone": "+1 555-0403"
+        }
+      ],
+      "submission": null,
+      "attendance": "Present"
+    },
+    {
+      "team_id": "HT2026005",
+      "team_name": "Cloud Knights",
+      "college": "Metropolis Univ",
+      "department": "Cloud Infrastructure",
+      "leader_id": 9,
+      "created_at": "2026-07-31 13:55:00",
+      "members": [
+        {
+          "member_id": 13,
+          "student_name": "Mary Jane",
+          "registration_number": "MET2601",
+          "email": "mary@metropolis.edu",
+          "phone": "+1 555-0501"
+        },
+        {
+          "member_id": 14,
+          "student_name": "Ned Leeds",
+          "registration_number": "MET2602",
+          "email": "ned@metropolis.edu",
+          "phone": "+1 555-0502"
+        },
+        {
+          "member_id": 15,
+          "student_name": "Oliver Queen",
+          "registration_number": "MET2603",
+          "email": "oliver@metropolis.edu",
+          "phone": "+1 555-0503"
+        }
+      ],
+      "submission": null,
+      "attendance": "Absent"
+    },
+    {
+      "team_id": "HT2026006",
+      "team_name": "Data Dynamos",
+      "college": "Empire State Univ",
+      "department": "Applied Mathematics",
+      "leader_id": 10,
+      "created_at": "2026-07-31 13:55:01",
+      "members": [
+        {
+          "member_id": 16,
+          "student_name": "Peggy Carter",
+          "registration_number": "EMP2601",
+          "email": "peggy@empire.edu",
+          "phone": "+1 555-0601"
+        },
+        {
+          "member_id": 17,
+          "student_name": "Quentin Beck",
+          "registration_number": "EMP2602",
+          "email": "quentin@empire.edu",
+          "phone": "+1 555-0602"
+        },
+        {
+          "member_id": 18,
+          "student_name": "Reed Richards",
+          "registration_number": "EMP2603",
+          "email": "reed@empire.edu",
+          "phone": "+1 555-0603"
+        }
+      ],
+      "submission": null,
+      "attendance": "Present"
+    },
+    {
+      "team_id": "HT2026007",
+      "team_name": "DevOps Dragons",
+      "college": "Stark Inst",
+      "department": "Aerospace Engineering",
+      "leader_id": 11,
+      "created_at": "2026-07-31 13:55:01",
+      "members": [
+        {
+          "member_id": 19,
+          "student_name": "Steve Rogers",
+          "registration_number": "STK2601",
+          "email": "steve@stark.edu",
+          "phone": "+1 555-0701"
+        },
+        {
+          "member_id": 20,
+          "student_name": "Sam Wilson",
+          "registration_number": "STK2602",
+          "email": "sam@stark.edu",
+          "phone": "+1 555-0702"
+        },
+        {
+          "member_id": 21,
+          "student_name": "Thor Odinson",
+          "registration_number": "STK2603",
+          "email": "thor@stark.edu",
+          "phone": "+1 555-0703"
+        }
+      ],
+      "submission": null,
+      "attendance": "Present"
+    },
+    {
+      "team_id": "HT2026008",
+      "team_name": "Neural Ninjas",
+      "college": "Central City Univ",
+      "department": "Bio-Physics",
+      "leader_id": 12,
+      "created_at": "2026-07-31 13:55:01",
+      "members": [
+        {
+          "member_id": 22,
+          "student_name": "Wanda Maximoff",
+          "registration_number": "CCU2601",
+          "email": "wanda@central.edu",
+          "phone": "+1 555-0801"
+        },
+        {
+          "member_id": 23,
+          "student_name": "Vision Victor",
+          "registration_number": "CCU2602",
+          "email": "vision@central.edu",
+          "phone": "+1 555-0802"
+        },
+        {
+          "member_id": 24,
+          "student_name": "Natasha Romanoff",
+          "registration_number": "CCU2603",
+          "email": "natasha@central.edu",
+          "phone": "+1 555-0803"
+        }
+      ],
+      "submission": null,
+      "attendance": "Absent"
+    },
+    {
+      "team_id": "HT2026009",
+      "team_name": "App Avengers",
+      "college": "Cupertino Design",
+      "department": "Interaction Design",
+      "leader_id": 13,
+      "created_at": "2026-07-31 13:55:02",
+      "members": [
+        {
+          "member_id": 25,
+          "student_name": "Clint Barton",
+          "registration_number": "CUP2601",
+          "email": "clint@cupertino.edu",
+          "phone": "+1 555-0901"
+        },
+        {
+          "member_id": 26,
+          "student_name": "Bruce Banner",
+          "registration_number": "CUP2602",
+          "email": "bruce@cupertino.edu",
+          "phone": "+1 555-0902"
+        },
+        {
+          "member_id": 27,
+          "student_name": "Loki Laufeyson",
+          "registration_number": "CUP2603",
+          "email": "loki@cupertino.edu",
+          "phone": "+1 555-0903"
+        }
+      ],
+      "submission": null,
+      "attendance": "Present"
+    },
+    {
+      "team_id": "HT2026010",
+      "team_name": "IoT Innovators",
+      "college": "Oxford College",
+      "department": "Mathematics & Computation",
+      "leader_id": 14,
+      "created_at": "2026-07-31 13:55:02",
+      "members": [
+        {
+          "member_id": 28,
+          "student_name": "Charles Babbage",
+          "registration_number": "OXF2601",
+          "email": "charles@oxford.edu",
+          "phone": "+1 555-1001"
+        },
+        {
+          "member_id": 29,
+          "student_name": "Alan Turing",
+          "registration_number": "OXF2602",
+          "email": "alan@oxford.edu",
+          "phone": "+1 555-1002"
+        },
+        {
+          "member_id": 30,
+          "student_name": "John von Neumann",
+          "registration_number": "OXF2603",
+          "email": "john@oxford.edu",
+          "phone": "+1 555-1003"
+        }
+      ],
+      "submission": null,
+      "attendance": "Present"
+    }
+  ],
+  "round1_marks": [],
+  "round2_marks": [],
+  "round3_marks": []
+}
