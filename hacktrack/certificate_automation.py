@@ -5,10 +5,6 @@ from database import db
 from models import User, Certificate, FinalResult, SystemSetting
 from certificate_pdf import generate_pdf_certificate
 
-def auto_generate_team_certificates(team):
-    """
-    Generates and saves LOCKED certificate records and PDF files for the team leader and members.
-    Can be run dynamically in the request context after registration.
 def get_unique_cert_id():
     certs = Certificate.query.all()
     max_num = 0
