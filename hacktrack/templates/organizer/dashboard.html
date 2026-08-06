@@ -1,9 +1,67 @@
 {% extends "base.html" %}
 
-{% block page_title %}Organizer Dashboard{% endblock %}
+{% block page_title %}Advanced Organizer Event Monitor{% endblock %}
 
 {% block content %}
 <div class="container-fluid fade-in-up">
+
+    <!-- Advanced Event Stage Tracker Banner -->
+    <div class="card border-0 shadow-sm p-4 bg-secondary mb-4 position-relative overflow-hidden" style="border-left: 4px solid #38bdf8 !important;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="mb-1 text-primary fw-bold"><i class="bi bi-broadcast me-2"></i> HackTrack Live Control Console</h4>
+                <p class="text-secondary small mb-0">Manage event workflow, phase toggles, jury grading status, and participant check-ins in real time.</p>
+            </div>
+            <div>
+                <span class="badge bg-success py-2 px-3 fs-6 font-monospace"><i class="bi bi-circle-fill me-1 small pulse"></i> SYSTEM OPERATIONAL</span>
+            </div>
+        </div>
+
+        <!-- Workflow Stage Stepper -->
+        <div class="row g-2 text-center border-top border-secondary border-opacity-25 pt-3">
+            <div class="col-md">
+                <div class="p-2 rounded {% if get_setting('problem_released', 'False') == 'True' %}bg-success bg-opacity-25 text-success border border-success{% else %}bg-dark text-secondary border border-secondary border-opacity-25{% endif %}">
+                    <div class="fw-bold small"><i class="bi bi-file-earmark-code me-1"></i> Phase 1: Problem Release</div>
+                    <span class="badge {% if get_setting('problem_released', 'False') == 'True' %}bg-success{% else %}bg-secondary{% endif %} mt-1" style="font-size:10px;">
+                        {% if get_setting('problem_released', 'False') == 'True' %}ACTIVE{% else %}LOCKED{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="p-2 rounded {% if get_setting('round1_enabled', 'False') == 'True' %}bg-primary bg-opacity-25 text-info border border-info{% else %}bg-dark text-secondary border border-secondary border-opacity-25{% endif %}">
+                    <div class="fw-bold small"><i class="bi bi-mic-fill me-1"></i> Phase 2: Round 1 Pitch</div>
+                    <span class="badge {% if get_setting('round1_enabled', 'False') == 'True' %}bg-info text-dark{% else %}bg-secondary{% endif %} mt-1" style="font-size:10px;">
+                        {% if get_setting('round1_enabled', 'False') == 'True' %}GRADING ACTIVE{% else %}LOCKED{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="p-2 rounded {% if get_setting('round2_enabled', 'False') == 'True' %}bg-primary bg-opacity-25 text-info border border-info{% else %}bg-dark text-secondary border border-secondary border-opacity-25{% endif %}">
+                    <div class="fw-bold small"><i class="bi bi-code-slash me-1"></i> Phase 3: Round 2 Build</div>
+                    <span class="badge {% if get_setting('round2_enabled', 'False') == 'True' %}bg-info text-dark{% else %}bg-secondary{% endif %} mt-1" style="font-size:10px;">
+                        {% if get_setting('round2_enabled', 'False') == 'True' %}GRADING ACTIVE{% else %}LOCKED{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="p-2 rounded {% if get_setting('round3_enabled', 'False') == 'True' %}bg-primary bg-opacity-25 text-info border border-info{% else %}bg-dark text-secondary border border-secondary border-opacity-25{% endif %}">
+                    <div class="fw-bold small"><i class="bi bi-laptop me-1"></i> Phase 4: Round 3 Demo</div>
+                    <span class="badge {% if get_setting('round3_enabled', 'False') == 'True' %}bg-info text-dark{% else %}bg-secondary{% endif %} mt-1" style="font-size:10px;">
+                        {% if get_setting('round3_enabled', 'False') == 'True' %}GRADING ACTIVE{% else %}LOCKED{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="col-md">
+                <div class="p-2 rounded {% if get_setting('certificates_enabled', 'False') == 'True' %}bg-warning bg-opacity-25 text-warning border border-warning{% else %}bg-dark text-secondary border border-secondary border-opacity-25{% endif %}">
+                    <div class="fw-bold small"><i class="bi bi-trophy me-1"></i> Phase 5: Certificates</div>
+                    <span class="badge {% if get_setting('certificates_enabled', 'False') == 'True' %}bg-warning text-dark{% else %}bg-secondary{% endif %} mt-1" style="font-size:10px;">
+                        {% if get_setting('certificates_enabled', 'False') == 'True' %}RELEASED{% else %}LOCKED{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Stat Cards Row -->
     <div class="row g-4 mb-4">
         <div class="col-md-4">
@@ -35,13 +93,13 @@
         <!-- System Control Panel -->
         <div class="col-lg-5">
             <div class="card border-0 shadow-sm p-4 bg-secondary mb-4">
-                <h5 class="mb-4 text-primary"><i class="bi bi-gear-wide-connected"></i> Hackathon Workflow Control</h5>
+                <h5 class="mb-4 text-primary"><i class="bi bi-gear-wide-connected"></i> Event Workflow Control Switches</h5>
                 
                 <!-- Problem Statement Release Control -->
-                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom border-secondary border-opacity-25">
                     <div>
-                        <h6 class="mb-0">Problem Statements Phase</h6>
-                        <span class="text-secondary small">Release statement submission to leaders</span>
+                        <h6 class="mb-0 text-white">Problem Statement Release</h6>
+                        <span class="text-secondary small">Allows leaders to submit problem details</span>
                     </div>
                     <div>
                         {% set prob_status = get_setting('problem_released', 'False') %}
@@ -54,11 +112,14 @@
                 
                 <!-- Evaluation Rounds Controls -->
                 <div class="mb-4">
-                    <h6 class="mb-3 text-secondary"><i class="bi bi-clipboard2-check"></i> Active Jury Evaluation Rounds</h6>
+                    <h6 class="mb-3 text-primary"><i class="bi bi-clipboard2-check"></i> Jury Evaluation Round Toggles</h6>
                     
                     <!-- Round 1 -->
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="small">Round 1 (Innovation & Pitch)</span>
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                        <div>
+                            <div class="fw-semibold text-light small">Round 1 (Innovation &amp; Pitch)</div>
+                            <span class="text-secondary" style="font-size:11px;">Max 100 Marks</span>
+                        </div>
                         <label class="form-switch-ios">
                             <input type="checkbox" class="ajax-toggle-switch" data-key="round1_enabled" {% if get_setting('round1_enabled', 'False') == 'True' %}checked{% endif %}>
                             <span class="slider"></span>
@@ -66,8 +127,11 @@
                     </div>
 
                     <!-- Round 2 -->
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="small">Round 2 (Prototype & Implementation)</span>
+                    <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                        <div>
+                            <div class="fw-semibold text-light small">Round 2 (Prototype &amp; Build)</div>
+                            <span class="text-secondary" style="font-size:11px;">Max 100 Marks</span>
+                        </div>
                         <label class="form-switch-ios">
                             <input type="checkbox" class="ajax-toggle-switch" data-key="round2_enabled" {% if get_setting('round2_enabled', 'False') == 'True' %}checked{% endif %}>
                             <span class="slider"></span>
@@ -76,7 +140,10 @@
 
                     <!-- Round 3 -->
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="small">Round 3 (Working Demo & Scale)</span>
+                        <div>
+                            <div class="fw-semibold text-light small">Round 3 (Working Demo &amp; Scale)</div>
+                            <span class="text-secondary" style="font-size:11px;">Max 100 Marks</span>
+                        </div>
                         <label class="form-switch-ios">
                             <input type="checkbox" class="ajax-toggle-switch" data-key="round3_enabled" {% if get_setting('round3_enabled', 'False') == 'True' %}checked{% endif %}>
                             <span class="slider"></span>
@@ -84,19 +151,19 @@
                     </div>
                 </div>
                 
-                <hr>
+                <hr class="border-secondary">
                 
                 <!-- Quick Navigation Links -->
                 <div class="d-flex flex-column gap-2 mb-3">
-                    <a href="{{ url_for('organizer.register_team') }}" class="btn btn-primary btn-primary-custom w-100 py-2">
-                        <i class="bi bi-plus-circle"></i> Register New Team
+                    <a href="{{ url_for('organizer.register_team') }}" class="btn btn-primary btn-primary-custom w-100 py-2 fw-semibold">
+                        <i class="bi bi-plus-circle-fill me-1"></i> Register New Team
                     </a>
-                    <a href="{{ url_for('organizer.scan_qr') }}" class="btn btn-outline-success w-100 py-2">
-                        <i class="bi bi-qr-code-scan"></i> Open QR Attendance Scanner
+                    <a href="{{ url_for('organizer.scan_qr') }}" class="btn btn-outline-success w-100 py-2 fw-semibold">
+                        <i class="bi bi-qr-code-scan me-1"></i> Open QR Attendance Scanner
                     </a>
                 </div>
                 
-                <hr>
+                <hr class="border-secondary">
                 
                 <!-- CSV Import -->
                 <h6 class="mb-2 text-primary"><i class="bi bi-file-earmark-arrow-up"></i> Bulk Team CSV Import</h6>
@@ -104,8 +171,8 @@
                     <div class="mb-3">
                         <input class="form-control form-control-sm" type="file" id="csv_file" name="csv_file" accept=".csv" required>
                     </div>
-                    <button type="submit" class="btn btn-outline-primary btn-xs w-100">
-                        <i class="bi bi-upload"></i> Upload & Import
+                    <button type="submit" class="btn btn-outline-primary btn-sm w-100 fw-semibold">
+                        <i class="bi bi-upload me-1"></i> Upload &amp; Import Teams
                     </button>
                 </form>
             </div>
@@ -116,13 +183,13 @@
             <div class="card border-0 shadow-sm p-4 bg-secondary">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="mb-0 text-primary"><i class="bi bi-clock-history"></i> Recent Registrations</h5>
-                    <a href="{{ url_for('organizer.view_teams') }}" class="small text-decoration-none">View All</a>
+                    <a href="{{ url_for('organizer.view_teams') }}" class="small text-decoration-none fw-semibold">View All Teams &rarr;</a>
                 </div>
                 
                 <div class="table-responsive">
-                    <table class="table align-middle table-sm border-0">
+                    <table class="table align-middle table-sm text-light border-0">
                         <thead>
-                            <tr class="text-muted small border-bottom">
+                            <tr class="text-secondary small border-bottom">
                                 <th>Team ID</th>
                                 <th>Team Name</th>
                                 <th>Leader</th>
@@ -132,20 +199,20 @@
                         </thead>
                         <tbody>
                             {% for team in recent_teams %}
-                                <tr class="border-bottom">
+                                <tr class="border-bottom border-secondary border-opacity-25">
                                     <td><code>{{ team.team_id }}</code></td>
-                                    <td class="py-2"><strong>{{ team.team_name }}</strong></td>
+                                    <td class="py-2"><strong class="text-white">{{ team.team_name }}</strong></td>
                                     <td>{{ team.leader.name if team.leader else 'N/A' }}</td>
                                     <td>{{ team.college }}</td>
                                     <td class="text-end">
-                                        <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" target="_blank" class="btn btn-xs btn-outline-secondary p-1" style="font-size:10px;">
+                                        <a href="{{ url_for('static', filename='qrcodes/team_' ~ team.team_id ~ '_qr.png') }}" target="_blank" class="btn btn-xs btn-outline-info py-1 px-2" style="font-size:11px;">
                                             <i class="bi bi-qr-code"></i> View QR
                                         </a>
                                     </td>
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td colspan="5" class="text-center py-3 text-muted">No teams registered yet.</td>
+                                    <td colspan="5" class="text-center py-4 text-muted">No teams registered yet.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
