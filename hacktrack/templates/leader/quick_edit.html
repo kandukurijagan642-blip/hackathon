@@ -239,7 +239,6 @@
                         <thead>
                             <tr class="text-secondary" style="font-size: 0.85rem; border-bottom: 1px solid var(--card-border);">
                                 <th class="py-2">Name</th>
-                                <th class="py-2">Registration No</th>
                                 <th class="py-2 text-end">Role</th>
                             </tr>
                         </thead>
@@ -250,7 +249,6 @@
                                     <div class="fw-bold">{{ team.leader.name if team.leader else 'Team Leader' }}</div>
                                     <div class="text-muted" style="font-size: 11px;">{{ team.leader.email if team.leader else '' }}</div>
                                 </td>
-                                <td class="py-3"><code>{{ team.team_id }}-LDR</code></td>
                                 <td class="py-3 text-end"><span class="badge bg-info text-dark" style="font-size: 0.7rem;">Leader</span></td>
                             </tr>
                             <!-- Members Rows -->
@@ -260,7 +258,6 @@
                                         <div class="fw-bold">{{ member.student_name }}</div>
                                         <div class="text-muted" style="font-size: 11px;">{{ member.email }} &bull; {{ member.phone }}</div>
                                     </td>
-                                    <td class="py-3"><code>{{ member.registration_number }}</code></td>
                                     <td class="py-3 text-end"><span class="badge bg-secondary" style="font-size: 0.7rem;">Member</span></td>
                                 </tr>
                             {% endfor %}

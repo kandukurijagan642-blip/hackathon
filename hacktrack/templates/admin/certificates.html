@@ -258,7 +258,6 @@
                             <tr>
                                 <th>Certificate ID</th>
                                 <th>Student Name</th>
-                                <th>Reg No.</th>
                                 <th>Team Name</th>
                                 <th>Category</th>
                                 <th>Downloads</th>
@@ -271,7 +270,6 @@
                                 <tr>
                                     <td><code>{{ cert.certificate_id }}</code></td>
                                     <td><strong class="text-light">{{ cert.student_name }}</strong></td>
-                                    <td><code>{{ cert.registration_number }}</code></td>
                                     <td>{{ cert.team_name }}</td>
                                     <td><span class="badge bg-primary">{{ cert.certificate_type }}</span></td>
                                     <td><span class="badge bg-secondary">{{ cert.download_count or 0 }}</span></td>
@@ -322,7 +320,6 @@
                                 <thead>
                                     <tr style="background-color: #0f172a !important; border-bottom: 1px solid #334155; color: #94a3b8 !important; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px;">
                                         <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; white-space: nowrap !important;">Student Name</th>
-                                        <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: center; white-space: nowrap !important;">Reg Number</th>
                                         <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: center; white-space: nowrap !important;">Certificate ID</th>
                                         <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: center; white-space: nowrap !important;">Downloads</th>
                                         <th style="padding: 16px 24px; background-color: #0f172a !important; color: #94a3b8 !important; border: 0 !important; text-align: right; white-space: nowrap !important;">Actions</th>
@@ -333,9 +330,6 @@
                                         <tr style="background-color: #1e293b !important; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-size: 14px;">
                                             <td style="padding: 16px 24px; background-color: #1e293b !important; color: #ffffff !important; border: 0 !important; white-space: nowrap !important;">
                                                 <span style="font-weight: 600; color: #ffffff !important; font-size: 15px;">{{ cert.student_name }}</span>
-                                            </td>
-                                            <td style="padding: 16px 24px; background-color: #1e293b !important; border: 0 !important; text-align: center; white-space: nowrap !important;">
-                                                <code style="background-color: rgba(56, 189, 248, 0.15) !important; color: #38bdf8 !important; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(56, 189, 248, 0.3) !important; font-weight: 600; display: inline-block; white-space: nowrap !important;">{{ cert.registration_number }}</code>
                                             </td>
                                             <td style="padding: 16px 24px; background-color: #1e293b !important; border: 0 !important; text-align: center; white-space: nowrap !important;">
                                                 <code style="background-color: rgba(244, 114, 182, 0.15) !important; color: #f472b6 !important; padding: 6px 12px; border-radius: 6px; font-size: 13px; border: 1px solid rgba(244, 114, 182, 0.3) !important; font-weight: 600; display: inline-block; white-space: nowrap !important;">{{ cert.certificate_id }}</code>

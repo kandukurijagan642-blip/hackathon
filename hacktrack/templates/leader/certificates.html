@@ -71,7 +71,6 @@
                             <thead>
                                 <tr>
                                     <th>Student Name</th>
-                                    <th>Reg No.</th>
                                     <th>Role</th>
                                     <th>Certificate ID</th>
                                     <th class="text-end">Actions</th>
@@ -84,7 +83,6 @@
                                         <div class="fw-bold text-light">{{ current_user.name }}</div>
                                         <div class="text-secondary small">{{ current_user.email }}</div>
                                     </td>
-                                    <td><code>{{ team.team_id }}-LDR</code></td>
                                     <td><span class="badge bg-info">Leader</span></td>
                                     <td>
                                         {% if leader_cert %}
@@ -120,7 +118,6 @@
                                             <div class="fw-bold text-light">{{ member.student_name }}</div>
                                             <div class="text-secondary small">{{ member.email }}</div>
                                         </td>
-                                        <td><code>{{ member.registration_number }}</code></td>
                                         <td><span class="badge bg-secondary">Member</span></td>
                                         <td>
                                             {% if m_cert %}

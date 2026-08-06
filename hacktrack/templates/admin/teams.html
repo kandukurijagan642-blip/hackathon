@@ -201,7 +201,6 @@
                                                             <tr class="text-secondary border-bottom">
                                                                 <th>Name</th>
                                                                 <th>Role</th>
-                                                                <th>Reg. Number</th>
                                                                 <th>Email</th>
                                                                 <th>Phone</th>
                                                             </tr>
@@ -210,7 +209,6 @@
                                                             <tr>
                                                                 <td><strong>{{ team.leader.name if team.leader else 'N/A' }}</strong></td>
                                                                 <td><span class="badge bg-primary">Leader</span></td>
-                                                                <td>—</td>
                                                                 <td>{{ team.leader.email if team.leader else 'N/A' }}</td>
                                                                 <td>—</td>
                                                             </tr>
@@ -218,7 +216,6 @@
                                                                 <tr>
                                                                     <td>{{ member.student_name }}</td>
                                                                     <td><span class="badge bg-secondary text-light">Member</span></td>
-                                                                    <td><code>{{ member.registration_number }}</code></td>
                                                                     <td>{{ member.email }}</td>
                                                                     <td>{{ member.phone }}</td>
                                                                 </tr>
