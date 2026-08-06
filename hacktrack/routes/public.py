@@ -32,26 +32,22 @@ def register():
         for t in existing_teams:
             l_user = User.query.get(t.leader_id)
             if l_user and l_user.name.lower().strip() == leader_name.lower().strip():
-                flash(f'A team named "{team_name}" led by "{leader_name}" already exists!', 'danger')
+                flash(f'Team "{team_name}" led by leader "{leader_name}" already exists!', 'danger')
                 return render_template('public/register_team.html')
             
-        # Check if Leader user email already exists
-        if User.query.filter_by(email=leader_email).first():
-            flash(f'Email "{leader_email}" is already registered!', 'danger')
-            return render_template('public/register_team.html')
-            
-        # 1. Create Leader User Account
-        default_pwd = f"{team_name.replace(' ', '')}@12309"
-        hashed_pwd = generate_password_hash(default_pwd)
-        
-        leader_user = User(
-            name=leader_name,
-            email=leader_email,
-            password=hashed_pwd,
-            role='Leader'
-        )
-        db.session.add(leader_user)
-        db.session.commit()
+        # Get existing leader user or create a new leader account
+        leader_user = User.query.filter_by(email=leader_email).first()
+        if not leader_user:
+            default_pwd = f"{team_name.replace(' ', '')}@12309"
+            hashed_pwd = generate_password_hash(default_pwd)
+            leader_user = User(
+                name=leader_name,
+                email=leader_email,
+                password=hashed_pwd,
+                role='Leader'
+            )
+            db.session.add(leader_user)
+            db.session.commit()
         
         # 2. Auto-generate Team ID in HT2026001 format
         count = Team.query.count() + 1
