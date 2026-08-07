@@ -788,6 +788,7 @@ def send_certificates_email():
         return redirect(url_for('leader.certificates'))
         
     attachments = []
+    clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
     for cert in certs:
         full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
         if not os.path.exists(full_path):
@@ -814,8 +815,10 @@ def send_certificates_email():
                 print(f"PDF on-the-fly regen error: {ex}")
                 
         if os.path.exists(full_path):
+            clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+            att_filename = f"{clean_team}_{clean_student}.pdf"
             with open(full_path, 'rb') as f:
-                attachments.append((f"{cert.student_name}_Certificate.pdf", f.read()))
+                attachments.append((att_filename, f.read()))
                 
     # Create ZIP of all PDFs
     zip_buffer = io.BytesIO()

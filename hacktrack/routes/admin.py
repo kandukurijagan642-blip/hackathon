@@ -638,11 +638,14 @@ def release_team_certificates(team_id):
     # Automatically send the email to the Team Leader with the certificates attached in a ZIP
     if team and team.leader:
         attachments = []
+        clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
         for cert in certs:
             full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
             if os.path.exists(full_path):
+                clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+                att_filename = f"{clean_team}_{clean_student}.pdf"
                 with open(full_path, 'rb') as f:
-                    attachments.append((f"{cert.student_name}_Certificate.pdf", f.read()))
+                    attachments.append((att_filename, f.read()))
                     
         if attachments:
             email_body = f"""Dear Team Leader,
@@ -765,6 +768,7 @@ def send_team_certificates_email(team_id):
         certs = Certificate.query.filter_by(team_id=team_id).all()
         
     attachments = []
+    clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
     for cert in certs:
         full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
         if not os.path.exists(full_path):
@@ -791,8 +795,10 @@ def send_team_certificates_email(team_id):
                 print(f"PDF on-the-fly regen error: {ex}")
 
         if os.path.exists(full_path):
+            clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+            att_filename = f"{clean_team}_{clean_student}.pdf"
             with open(full_path, 'rb') as f:
-                attachments.append((f"{cert.student_name}_Certificate.pdf", f.read()))
+                attachments.append((att_filename, f.read()))
                 
     if attachments:
         email_body = f"""Dear Team Leader {team.leader.name},
