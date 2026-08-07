@@ -205,9 +205,9 @@
                                                 <a href="{{ url_for('admin.download_team_certificates_zip', team_id=team.team_id) }}" class="btn btn-sm btn-outline-primary">
                                                     <i class="bi bi-file-zip"></i> ZIP
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-warning fw-bold text-dark" onclick="shareTeamZipFile('{{ team.team_id }}', '{{ team.team_name }}')" title="Share PDF Certificates Archive">
+                                                <a href="{{ url_for('admin.download_team_certificates_zip', team_id=team.team_id) }}" class="btn btn-sm btn-warning fw-bold text-dark" title="Download All PDFs as ZIP">
                                                     <i class="bi bi-file-earmark-pdf-fill me-1"></i> Share PDF
-                                                </button>
+                                                </a>
                                                 {% set mail_subject = "Hackathon Certificates - Team " ~ team.team_name %}
                                                 {% set mail_body = "Dear " ~ team.leader.name ~ ",\n\nYour team's hackathon certificates for '" ~ team.team_name ~ "' have been officially released!\n\nPlease find your team's official participation certificates attached in PDF format.\n\nBest regards,\nHackTrack Organizing Committee" %}
                                                 {% set compose_to = team.leader.email ~ '.com' if '@' in team.leader.email and '.' not in team.leader.email.split('@')[1] else team.leader.email %}
@@ -219,7 +219,7 @@
                                                         <li>
                                                             <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST" style="margin: 0;">
                                                                 <button type="submit" class="dropdown-item text-light" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
-                                                                    <i class="bi bi-send-fill text-success" style="margin-right: 8px;"></i> Send Immediately (Backend PDF Attachment)
+                                                                    <i class="bi bi-send-fill text-success" style="margin-right: 8px;"></i> Send to Leader Email (PDF Attached)
                                                                 </button>
                                                             </form>
                                                         </li>
@@ -227,27 +227,6 @@
                                                             <button type="button" class="dropdown-item text-warning" data-bs-toggle="modal" data-bs-target="#customEmailModal-{{ team.team_id }}" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
                                                                 <i class="bi bi-pencil-square text-warning" style="margin-right: 8px;"></i> Send to Custom / Corrected Email...
                                                             </button>
-                                                        </li>
-                                                        <li>
-                                                            <button type="button" class="dropdown-item text-info" onclick="triggerWebShare('Team {{ team.team_name }} Certificates', 'Official Hackathon Certificates for Team {{ team.team_name }}', '{{ request.url_root.rstrip('/') ~ url_for('leader.public_download_all_certificates', team_id=team.team_id) }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
-                                                                <i class="bi bi-share-fill text-primary" style="margin-right: 8px;"></i> Share via OS App Picker (WhatsApp, Mail, etc.)
-                                                            </button>
-                                                        </li>
-                                                        <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
-                                                        <li>
-                                                            <a class="dropdown-item text-light" href="https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                                                <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item text-light" href="mailto:{{ compose_to }}?subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                                                <i class="bi bi-envelope-at-fill text-info" style="margin-right: 8px;"></i> Open in Default Mail App
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item text-light" href="https://outlook.live.com/owa/?path=/mail/action/compose&to={{ compose_to|urlencode }}&subject={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                                                <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
-                                                            </a>
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -415,36 +394,11 @@
                             Leader Email: <code style="color: #38bdf8;">{{ team.leader.email }}</code>
                         </div>
                         <div class="d-flex gap-2">
-                            <div class="dropdown">
-                                <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; color: #0f172a;">
-                                    <i class="bi bi-envelope"></i> Send Team Certificates via Email
+                            <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-warning fw-bold" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; color: #0f172a;">
+                                    <i class="bi bi-send-fill me-2"></i> Send to Leader Email (PDF Attached)
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);">
-                                    <li>
-                                        <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST" style="margin: 0;">
-                                            <button type="submit" class="dropdown-item text-light" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
-                                                <i class="bi bi-send-fill text-success" style="margin-right: 8px;"></i> Send Immediately (Backend PDF Attachment)
-                                            </button>
-                                        </form>
-                                    </li>
-                                    <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
-                                    <li>
-                                        <a class="dropdown-item text-light" href="https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to={{ modal_compose_to|urlencode }}&su={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                            <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-light" href="mailto:{{ modal_compose_to }}?subject={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                            <i class="bi bi-envelope-at-fill text-info" style="margin-right: 8px;"></i> Open in Default Mail App
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item text-light" href="https://outlook.live.com/owa/?path=/mail/action/compose&to={{ modal_compose_to|urlencode }}&subject={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                            <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
+                            </form>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; background-color: #334155; border-color: #334155; color: #ffffff;">Close</button>
                         </div>
                     </div>
@@ -473,13 +427,7 @@
                             </div>
                             <div class="d-grid gap-2 mt-4">
                                 <button type="submit" class="btn btn-success fw-bold py-2" style="border-radius: 8px; background-color: #10b981; border: 0;">
-                                    <i class="bi bi-send-fill me-2"></i> Send Immediately (Attach PDFs to this Email)
-                                </button>
-                                <button type="button" class="btn btn-outline-danger fw-bold py-2" style="border-radius: 8px;" onclick="openCustomGmail('{{ team.team_id }}', '{{ mail_subject|urlencode }}', '{{ mail_body|urlencode }}')">
-                                    <i class="bi bi-google me-2"></i> Open in Gmail Web Compose with this Email
-                                </button>
-                                <button type="button" class="btn btn-outline-info fw-bold py-2" style="border-radius: 8px;" onclick="triggerWebShare('Team {{ team.team_name }} Certificates', 'Official Hackathon Certificates for Team {{ team.team_name }}', '{{ request.url_root.rstrip('/') ~ url_for('leader.public_download_all_certificates', team_id=team.team_id) }}')">
-                                    <i class="bi bi-share-fill me-2"></i> Open OS App Picker / WhatsApp / Telegram
+                                    <i class="bi bi-send-fill me-2"></i> Send Now — PDFs Attached to Email
                                 </button>
                             </div>
                         </div>
