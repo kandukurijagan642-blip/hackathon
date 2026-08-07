@@ -778,82 +778,83 @@ def send_certificates_email():
     team = Team.query.filter_by(leader_id=current_user.id).first()
     if not team:
         abort(403)
-        
+
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
     if not certs:
         flash('No certificates found.', 'warning')
         return redirect(url_for('leader.certificates'))
-        
+
     if certs[0].certificate_status != 'RELEASED':
         flash('Certificates have not been released by the organizer yet.', 'warning')
         return redirect(url_for('leader.certificates'))
-        
-    attachments = []
+
+    # Step 1: Generate PDFs for every member — fail fast if any PDF missing
+    from certificate_pdf import generate_pdf_certificate
+    from utils import get_actual_host_url
+    sub = team.problem_submission
+    sig_path = SystemSetting.get_setting('organizer_signature_path', '')
+    logo_path = SystemSetting.get_setting('college_logo_path', '')
+    host_url = get_actual_host_url()
+
     clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+    attachments = []
+
     for cert in certs:
         full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+
+        verification_url = f"{host_url}/verify-certificate/{cert.verification_token}"
+        try:
+            generate_pdf_certificate(
+                cert_id=cert.certificate_id,
+                student_name=cert.student_name,
+                team_name=team.team_name,
+                project_title=sub.project_title if sub else "Hackathon Project",
+                cert_type=cert.certificate_type or "Participant",
+                verification_url=verification_url,
+                output_path=full_path,
+                signature_path=sig_path,
+                logo_path=logo_path
+            )
+        except Exception as ex:
+            print(f"PDF generation error for {cert.student_name}: {ex}")
+
         if not os.path.exists(full_path):
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)
-            from certificate_pdf import generate_pdf_certificate
-            from utils import get_actual_host_url
-            sub = team.problem_submission
-            verification_url = f"{get_actual_host_url()}/verify-certificate/{cert.verification_token}"
-            sig_path = SystemSetting.get_setting('organizer_signature_path', '')
-            logo_path = SystemSetting.get_setting('college_logo_path', '')
-            try:
-                generate_pdf_certificate(
-                    cert_id=cert.certificate_id,
-                    student_name=cert.student_name,
-                    team_name=team.team_name,
-                    project_title=sub.project_title if sub else "Hackathon Project",
-                    cert_type=cert.certificate_type or "Participant",
-                    verification_url=verification_url,
-                    output_path=full_path,
-                    signature_path=sig_path,
-                    logo_path=logo_path
-                )
-            except Exception as ex:
-                print(f"PDF on-the-fly regen error: {ex}")
-                
-        if os.path.exists(full_path):
-            clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
-            att_filename = f"{clean_team}_{clean_student}.pdf"
-            with open(full_path, 'rb') as f:
-                attachments.append((att_filename, f.read()))
-                
-    # Create ZIP of all PDFs
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for name, data in attachments:
-            zipf.writestr(name, data)
-    zip_buffer.seek(0)
-    
-    email_body = f"""Dear Team Leader,
+            flash(f'PDF generation failed for {cert.student_name}. Email not sent. Please try again.', 'danger')
+            return redirect(url_for('leader.certificates'))
 
-Congratulations on participating in the Hackathon.
+        clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+        att_filename = f"{clean_team}_{clean_student}_Certificate.pdf"
+        with open(full_path, 'rb') as f:
+            attachments.append((att_filename, f.read()))
 
-Attached are the participation certificates for all members of your team.
+    # Step 2: Build clean email body — NO URLs
+    email_body = f"""Dear {current_user.name or 'Team Leader'},
 
-Thank you for participating.
+Congratulations! The hackathon certificates for your team "{team.team_name}" have been officially released.
 
-Regards,
-Hackathon Organizing Committee"""
+Team ID: {team.team_id}
+College: {team.college or 'N/A'}
 
-    email_attachments = attachments + [(f"{team.team_name}_Certificates.zip", zip_buffer.getvalue())]
-    
+Please find {len(attachments)} certificate(s) attached to this email as PDF files.
+
+Best regards,
+HackTrack Organizing Committee"""
+
+    # Step 3: Send with only PDF attachments (no ZIP)
     send_mock_email_with_attachments(
         to_email=current_user.email,
-        subject="Hackathon Certificates",
+        subject=f"Hackathon Certificates - {team.team_name}",
         body_text=email_body,
-        attachments=email_attachments
+        attachments=attachments
     )
-    
+
     for cert in certs:
         cert.email_sent = True
     db.session.commit()
-    
-    log_leader_activity("Send Certificates Email", f"Dispatched certificates email to {current_user.email}")
-    flash('Certificates sent to leader email successfully!', 'success')
+
+    log_leader_activity("Send Certificates Email", f"Dispatched {len(attachments)} PDF(s) to {current_user.email}")
+    flash(f'✅ Certificates sent as PDF attachments to {current_user.email}!', 'success')
     return redirect(url_for('leader.certificates'))
 
 
