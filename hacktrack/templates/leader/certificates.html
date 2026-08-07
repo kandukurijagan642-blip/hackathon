@@ -95,13 +95,13 @@
                                         {% if leader_cert %}
                                              <div class="btn-group btn-group-sm">
                                                   <a href="{{ url_for('preview_certificate', cert_id=leader_cert.certificate_id) }}" target="_blank" class="btn btn-outline-info" title="Preview Certificate">
-                                                      <i class="bi bi-eye"></i>
+                                                      <i class="bi bi-eye"></i> Preview
                                                   </a>
                                                  <a href="{{ url_for('leader.download_team_certificate', cert_id=leader_cert.certificate_id) }}" class="btn btn-outline-primary" title="Download">
-                                                     <i class="bi bi-download"></i>
+                                                     <i class="bi bi-download"></i> Download
                                                  </a>
-                                                 <button type="button" class="btn btn-outline-secondary" id="shareBtn-{{ leader_cert.certificate_id }}" onclick="copyToClipboard('{{ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=leader_cert.certificate_id) }}', 'shareBtn-{{ leader_cert.certificate_id }}')" title="Copy Certificate Link">
-                                                     <i class="bi bi-link-45deg"></i> Share
+                                                 <button type="button" class="btn btn-outline-warning" id="shareBtn-{{ leader_cert.certificate_id }}" onclick="shareActualPdfFile('{{ leader_cert.certificate_id }}', '{{ current_user.name }}', '{{ team.team_name }}')" title="Share PDF File">
+                                                     <i class="bi bi-share-fill"></i> Share PDF
                                                  </button>
                                              </div>
                                         {% else %}
@@ -111,12 +111,11 @@
                                 </tr>
                                 
                                 <!-- Members Rows -->
-                                {% for member in team.members %}
-                                    {% set m_cert = certs_by_member.get(member.member_id) %}
+                                {% for member, m_cert in member_certs %}
                                     <tr>
                                         <td>
-                                            <div class="fw-bold text-light">{{ member.student_name }}</div>
-                                            <div class="text-secondary small">{{ member.email }}</div>
+                                            <div class="fw-bold text-light">{{ member.name }}</div>
+                                            <div class="text-secondary small">{{ member.registration_number }} | {{ member.email or 'N/A' }}</div>
                                         </td>
                                         <td><span class="badge bg-secondary">Member</span></td>
                                         <td>
@@ -130,13 +129,13 @@
                                             {% if m_cert %}
                                                  <div class="btn-group btn-group-sm">
                                                       <a href="{{ url_for('preview_certificate', cert_id=m_cert.certificate_id) }}" target="_blank" class="btn btn-outline-info" title="Preview Certificate">
-                                                          <i class="bi bi-eye"></i>
+                                                          <i class="bi bi-eye"></i> Preview
                                                       </a>
                                                      <a href="{{ url_for('leader.download_team_certificate', cert_id=m_cert.certificate_id) }}" class="btn btn-outline-primary" title="Download">
-                                                         <i class="bi bi-download"></i>
+                                                         <i class="bi bi-download"></i> Download
                                                      </a>
-                                                     <button type="button" class="btn btn-outline-secondary" id="shareBtn-{{ m_cert.certificate_id }}" onclick="copyToClipboard('{{ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=m_cert.certificate_id) }}', 'shareBtn-{{ m_cert.certificate_id }}')" title="Copy Certificate Link">
-                                                         <i class="bi bi-link-45deg"></i> Share
+                                                     <button type="button" class="btn btn-outline-warning" id="shareBtn-{{ m_cert.certificate_id }}" onclick="shareActualPdfFile('{{ m_cert.certificate_id }}', '{{ member.name }}', '{{ team.team_name }}')" title="Share PDF File">
+                                                         <i class="bi bi-share-fill"></i> Share PDF
                                                      </button>
                                                  </div>
                                             {% else %}
@@ -157,6 +156,42 @@
 
 {% block scripts %}
 <script>
+async function shareActualPdfFile(certId, studentName, teamName) {
+    const btn = event ? event.currentTarget : null;
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Fetching PDF...';
+    try {
+        const response = await fetch('/certificates/public-download/' + certId);
+        if (!response.ok) throw new Error('PDF download failed');
+        const blob = await response.blob();
+        const cleanTeam = teamName.replace(/[^a-zA-Z0-9]/g, '_');
+        const cleanStudent = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = cleanTeam + '_' + cleanStudent + '.pdf';
+        const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+            await navigator.share({
+                title: studentName + ' Certificate PDF',
+                text: 'Attached is the official PDF certificate for ' + studentName + ' (' + teamName + ').',
+                files: [pdfFile]
+            });
+        } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('PDF file "' + fileName + '" has been downloaded to your device so you can attach it to any email or app!');
+        }
+    } catch (err) {
+        console.error('Error sharing PDF file:', err);
+        alert('Could not prepare PDF file for sharing.');
+    } finally {
+        if (btn) btn.innerHTML = origHtml;
+    }
+}
+
 function copyToClipboard(text, elementId) {
     navigator.clipboard.writeText(text).then(function() {
         const btn = document.getElementById(elementId);

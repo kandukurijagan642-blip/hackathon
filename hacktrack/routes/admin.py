@@ -512,6 +512,26 @@ def upload_certificate_assets():
     return redirect(url_for('admin.certificates'))
 
 
+@admin_bp.route('/certificates/save-smtp', methods=['POST'])
+@login_required
+def save_smtp_settings():
+    if not check_admin(): return redirect(url_for('auth.login'))
+    smtp_user = request.form.get('smtp_user', '').strip()
+    smtp_pass = request.form.get('smtp_pass', '').strip()
+    smtp_server = request.form.get('smtp_server', 'smtp.gmail.com').strip()
+    smtp_port = request.form.get('smtp_port', '587').strip()
+    
+    SystemSetting.set_setting('smtp_user', smtp_user)
+    if smtp_pass:
+        SystemSetting.set_setting('smtp_pass', smtp_pass)
+    SystemSetting.set_setting('smtp_server', smtp_server if smtp_server else 'smtp.gmail.com')
+    SystemSetting.set_setting('smtp_port', smtp_port if smtp_port else '587')
+    
+    log_admin_activity("Save SMTP Settings", f"Updated SMTP email config for {smtp_user}")
+    flash("SMTP Email Server credentials saved successfully! Backend email dispatch with PDF attachments is live.", "success")
+    return redirect(url_for('admin.certificates'))
+
+
 @admin_bp.route('/certificates/regenerate', methods=['POST'])
 @login_required
 def regenerate_all_certificates():

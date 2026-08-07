@@ -338,10 +338,22 @@ def send_mock_email_with_attachments(to_email, subject, body_text, attachments=N
     from email.mime.multipart import MIMEMultipart
     from email.mime.application import MIMEApplication
     
-    smtp_user = os.environ.get('SMTP_USER', '')
-    smtp_pass = os.environ.get('SMTP_PASS', '')
-    smtp_server = os.environ.get('SMTP_SERVER', 'smtp.gmail.com')
-    smtp_port = int(os.environ.get('SMTP_PORT', '587'))
+    try:
+        from models import SystemSetting
+        sys_user = SystemSetting.get_setting('smtp_user', '')
+        sys_pass = SystemSetting.get_setting('smtp_pass', '')
+        sys_server = SystemSetting.get_setting('smtp_server', 'smtp.gmail.com')
+        sys_port = SystemSetting.get_setting('smtp_port', '587')
+    except Exception:
+        sys_user = sys_pass = ''
+        sys_server = 'smtp.gmail.com'
+        sys_port = '587'
+        
+    smtp_user = os.environ.get('SMTP_USER', '') or sys_user
+    smtp_pass = os.environ.get('SMTP_PASS', '') or sys_pass
+    smtp_server = os.environ.get('SMTP_SERVER', '') or sys_server
+    smtp_port_val = os.environ.get('SMTP_PORT', '') or sys_port
+    smtp_port = int(smtp_port_val) if smtp_port_val and str(smtp_port_val).isdigit() else 587
     
     if smtp_user and smtp_pass:
         try:

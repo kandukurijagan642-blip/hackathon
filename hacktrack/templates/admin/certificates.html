@@ -372,6 +372,12 @@
                                                         </button>
                                                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom">
                                                             <li>
+                                                                <button type="button" class="dropdown-item text-warning" onclick="shareActualPdfFile('{{ cert.certificate_id }}', '{{ cert.student_name }}', '{{ team.team_name }}')" style="font-size: 13px; font-weight: 600; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
+                                                                    <i class="bi bi-file-earmark-pdf-fill text-danger me-2"></i> Share Actual PDF File (Apps/Mail)
+                                                                </button>
+                                                            </li>
+                                                            <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
+                                                            <li>
                                                                 <button class="dropdown-item text-light" onclick="copyToClipboard('{{ cert_preview_url }}', 'shareBtn-{{ cert.certificate_id }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
                                                                     <i class="bi bi-clipboard text-warning" style="margin-right: 8px;"></i> Copy Link
                                                                 </button>
@@ -508,6 +514,42 @@ function copyToClipboard(text, elementId) {
     }, function(err) {
         console.error('Could not copy text: ', err);
     });
+}
+
+async function shareActualPdfFile(certId, studentName, teamName) {
+    const btn = event ? event.currentTarget : null;
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Fetching PDF...';
+    try {
+        const response = await fetch('/certificates/public-download/' + certId);
+        if (!response.ok) throw new Error('PDF download failed');
+        const blob = await response.blob();
+        const cleanTeam = teamName.replace(/[^a-zA-Z0-9]/g, '_');
+        const cleanStudent = studentName.replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = cleanTeam + '_' + cleanStudent + '.pdf';
+        const pdfFile = new File([blob], fileName, { type: 'application/pdf' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+            await navigator.share({
+                title: studentName + ' Certificate PDF',
+                text: 'Attached is the official PDF certificate for ' + studentName + ' (' + teamName + ').',
+                files: [pdfFile]
+            });
+        } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('PDF file "' + fileName + '" has been downloaded to your device so you can attach it to any email or app!');
+        }
+    } catch (err) {
+        console.error('Error sharing PDF file:', err);
+        alert('Could not prepare PDF file for sharing.');
+    } finally {
+        if (btn) btn.innerHTML = origHtml;
+    }
 }
 
 function triggerWebShare(title, text, url) {
