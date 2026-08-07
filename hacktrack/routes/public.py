@@ -8,12 +8,32 @@ from utils import generate_team_qr, send_mock_email
 
 public_bp = Blueprint('public', __name__)
 
-@public_bp.route('/verify-certificate/<token>')
-def verify_certificate(token):
-    # Lookup the certificate using the verification token
-    cert = Certificate.query.filter_by(verification_token=token).first()
-    status = "Valid" if cert else "Invalid"
-    return render_template('public/verify_certificate.html', cert=cert, status=status)
+@public_bp.route('/verify-certificate', methods=['GET', 'POST'])
+@public_bp.route('/verify-certificate/<search_term>', methods=['GET'])
+def verify_certificate(search_term=None):
+    import hashlib
+    
+    query = search_term or request.form.get('query') or request.args.get('query', '')
+    query = query.strip()
+    
+    cert = None
+    if query:
+        clean_q = query.upper()
+        cert = Certificate.query.filter(
+            (Certificate.verification_token == query) |
+            (db.func.upper(Certificate.certificate_id) == clean_q) |
+            (db.func.upper(Certificate.registration_number) == clean_q)
+        ).first()
+        
+    status = "Valid" if cert else ("Invalid" if query else None)
+    
+    # Compute cryptographic checksum hash for digital authenticity badge
+    digital_signature_hash = None
+    if cert:
+        raw_token = f"{cert.certificate_id}:{cert.student_name}:{cert.team_name}:{cert.verification_token}"
+        digital_signature_hash = hashlib.sha256(raw_token.encode('utf-8')).hexdigest()[:16].upper()
+        
+    return render_template('public/verify_certificate.html', cert=cert, status=status, query=query, digital_hash=digital_signature_hash)
 
 @public_bp.route('/register', methods=['GET', 'POST'])
 def register():
