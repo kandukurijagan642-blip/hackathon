@@ -93,9 +93,12 @@
                         <i class="bi bi-arrow-repeat"></i> Regenerate PDFs
                     </button>
                 </form>
-                <a href="{{ url_for('admin.export_certificates_csv') }}" class="btn btn-outline-info w-100 btn-sm">
+                <a href="{{ url_for('admin.export_certificates_csv') }}" class="btn btn-outline-info w-100 btn-sm mb-2">
                     <i class="bi bi-file-earmark-spreadsheet"></i> Export Registry (CSV)
                 </a>
+                <button type="button" class="btn btn-outline-light w-100 btn-sm" data-bs-toggle="modal" data-bs-target="#smtpConfigModal">
+                    <i class="bi bi-gear-fill me-1"></i> Setup Live Email (SMTP)
+                </button>
             </div>
         </div>
     </div>
@@ -491,6 +494,50 @@
                 </div>
             </div>
         </div>
+        <!-- SMTP Credentials Configuration Modal -->
+        <div class="modal fade" id="smtpConfigModal" tabindex="-1" aria-labelledby="smtpConfigModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered text-start">
+                <div class="modal-content" style="background-color: #1e293b !important; color: #ffffff !important; border: 1px solid #334155; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);">
+                    <form action="{{ url_for('admin.save_smtp_settings') }}" method="POST">
+                        <div class="modal-header" style="background-color: #0f172a !important; border-bottom: 1px solid #334155; padding: 18px 24px;">
+                            <h5 class="modal-title" id="smtpConfigModalLabel" style="color: #38bdf8 !important; font-weight: 700; margin: 0; font-size: 16px;">
+                                <i class="bi bi-gear-fill me-2"></i> Configure Live Email Delivery (SMTP)
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4" style="background-color: #1e293b !important;">
+                            <p class="text-light small mb-3">
+                                Configure your Gmail or SMTP server credentials so that clicking <strong>Send Immediately</strong> delivers real emails with <strong>actual PDF certificate files attached</strong> directly into the recipient's inbox.
+                            </p>
+                            <div class="mb-3">
+                                <label class="form-label text-light fw-bold small">Sender Gmail / Email Address</label>
+                                <input type="email" name="smtp_user" class="form-control text-light border-secondary" style="background-color: #0f172a !important; border-radius: 8px;" placeholder="e.g. your_organization@gmail.com" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label text-light fw-bold small">Gmail App Password (16 Characters)</label>
+                                <input type="password" name="smtp_pass" class="form-control text-light border-secondary" style="background-color: #0f172a !important; border-radius: 8px;" placeholder="Enter 16-char App Password" required>
+                                <div class="text-muted small mt-1">Generate in Google Account &gt; Security &gt; 2-Step Verification &gt; App Passwords.</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-8 mb-3">
+                                    <label class="form-label text-light fw-bold small">SMTP Server Host</label>
+                                    <input type="text" name="smtp_server" class="form-control text-light border-secondary" style="background-color: #0f172a !important; border-radius: 8px;" value="smtp.gmail.com">
+                                </div>
+                                <div class="col-4 mb-3">
+                                    <label class="form-label text-light fw-bold small">Port</label>
+                                    <input type="text" name="smtp_port" class="form-control text-light border-secondary" style="background-color: #0f172a !important; border-radius: 8px;" value="587">
+                                </div>
+                            </div>
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-success fw-bold py-2" style="border-radius: 8px; background-color: #10b981; border: 0;">
+                                    <i class="bi bi-check-circle-fill me-2"></i> Save SMTP Credentials & Enable PDF Email Dispatch
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endif %}
     {% endfor %}
 {% endblock %}
@@ -566,15 +613,29 @@ function triggerWebShare(title, text, url) {
     }
 }
 
-function openCustomGmail(teamId, subjectEncoded, bodyEncoded) {
+function openCustomGmail(teamId, subjectEncoded, bodyEncoded, teamName) {
     const input = document.getElementById('custom_recipient_email_' + teamId);
     let target = input ? input.value.trim() : '';
     if (!target) {
         alert('Please enter a valid recipient email address.');
         return;
     }
+    
+    // Auto-trigger ZIP/PDF download to device
+    try {
+        const downloadUrl = '/leader/certificates/public-download-all/' + teamId;
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = (teamName || 'Team') + '_Certificates.zip';
+        a.click();
+    } catch(e) {
+        console.log('Auto-download notice:', e);
+    }
+
     const url = 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=' + encodeURIComponent(target) + '&su=' + subjectEncoded + '&body=' + bodyEncoded;
     window.open(url, '_blank');
+
+    alert('📥 The certificate PDF files for team "' + (teamName || 'your team') + '" have been downloaded to your browser Downloads folder!\n\nIn the Gmail compose tab that just opened, click the paperclip attachment icon (📎) at the bottom and select the downloaded PDF/ZIP file to send it as an attachment.');
 }
 </script>
 {% endblock %}
