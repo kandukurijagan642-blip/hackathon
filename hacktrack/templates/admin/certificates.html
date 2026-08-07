@@ -209,12 +209,7 @@
                                                     <i class="bi bi-file-earmark-pdf-fill me-1"></i> Share PDF
                                                 </button>
                                                 {% set mail_subject = "Hackathon Certificates - Team " ~ team.team_name %}
-                                                {% set ns = namespace(body="Dear " ~ team.leader.name ~ ",\n\nYour team's hackathon certificates for '" ~ team.team_name ~ "' have been officially released!\n\nTeam ID: " ~ team.team_id ~ "\nCollege: " ~ team.college ~ "\n\nDirect links to preview/download PDF certificates:\n") %}
-                                                {% for cert in team_certs %}
-                                                    {% set ns.body = ns.body ~ "📄 " ~ cert.student_name ~ ": " ~ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=cert.certificate_id) ~ "\n" %}
-                                                {% endfor %}
-                                                {% set ns.body = ns.body ~ "\nDownload All Team Certificates (ZIP): " ~ request.url_root.rstrip('/') ~ url_for('leader.public_download_all_certificates', team_id=team.team_id) ~ "\n\nVerify Certificates Online: " ~ request.url_root.rstrip('/') ~ url_for('public.verify_certificate') ~ "\n\nBest regards,\nHackTrack Organizing Committee" %}
-                                                {% set mail_body = ns.body %}
+                                                {% set mail_body = "Dear " ~ team.leader.name ~ ",\n\nYour team's hackathon certificates for '" ~ team.team_name ~ "' have been officially released!\n\nPlease find your team's official participation certificates attached in PDF format.\n\nBest regards,\nHackTrack Organizing Committee" %}
                                                 {% set compose_to = team.leader.email ~ '.com' if '@' in team.leader.email and '.' not in team.leader.email.split('@')[1] else team.leader.email %}
                                                 <div class="dropdown d-inline-block">
                                                     <button class="btn btn-sm btn-outline-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -409,12 +404,7 @@
                         </div>
                     </div>
                     {% set modal_mail_subject = "Hackathon Certificates - Team " ~ team.team_name %}
-                    {% set mns = namespace(body="Hello " ~ team.leader.name ~ ",\n\nYour team's certificates have been released and are ready!\n\nTeam ID: " ~ team.team_id ~ "\nCollege: " ~ team.college ~ "\n\nDirect links to preview/download PDF certificates:\n") %}
-                    {% for cert in team_certs %}
-                        {% set mns.body = mns.body ~ "- " ~ cert.student_name ~ ": " ~ request.url_root.rstrip('/') ~ url_for('preview_certificate', cert_id=cert.certificate_id) ~ "\n" %}
-                    {% endfor %}
-                    {% set mns.body = mns.body ~ "\nBest regards,\nHackTrack Organizing Committee" %}
-                    {% set modal_mail_body = mns.body %}
+                    {% set modal_mail_body = "Hello " ~ team.leader.name ~ ",\n\nYour team's hackathon certificates for '" ~ team.team_name ~ "' have been officially released!\n\nPlease find your team's official participation certificates attached in PDF format.\n\nBest regards,\nHackTrack Organizing Committee" %}
                     {% set modal_cert_ids = [] %}
                     {% for cert in team_certs %}
                         {% set _ = modal_cert_ids.append(cert.certificate_id) %}

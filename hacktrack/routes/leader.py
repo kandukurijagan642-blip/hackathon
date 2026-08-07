@@ -950,6 +950,46 @@ def public_download_all_certificates(team_id):
                 c.released_time = datetime.utcnow()
     db.session.commit()
         
+    # If team has 1 cert, return PDF directly instead of zip
+    if len(certs) == 1:
+        cert = certs[0]
+        full_path = os.path.normpath(os.path.join(current_app.root_path, 'static', cert.certificate_path))
+        if not os.path.exists(full_path):
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            from certificate_pdf import generate_pdf_certificate
+            from utils import get_actual_host_url
+            sub = team.problem_submission
+            verification_url = f"{get_actual_host_url()}/verify-certificate/{cert.verification_token}"
+            sig_path = SystemSetting.get_setting('organizer_signature_path', '')
+            logo_path = SystemSetting.get_setting('college_logo_path', '')
+            try:
+                generate_pdf_certificate(
+                    cert_id=cert.certificate_id,
+                    student_name=cert.student_name,
+                    team_name=team.team_name,
+                    project_title=sub.project_title if sub else "Hackathon Project",
+                    cert_type=cert.certificate_type or "Participant",
+                    verification_url=verification_url,
+                    output_path=full_path,
+                    signature_path=sig_path,
+                    logo_path=logo_path
+                )
+            except Exception as ex:
+                print(f"PDF regen error: {ex}")
+
+        clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+        clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+        download_filename = f"{clean_team}_{clean_student}.pdf"
+        cert.download_count = (cert.download_count or 0) + 1
+        db.session.commit()
+        
+        return send_file(
+            full_path,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=download_filename
+        )
+
     clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
     memory_file = io.BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
