@@ -362,7 +362,18 @@ def seed_database():
                     db.session.add(sub)
                     db.session.commit()
                 
-                # 6. Generate QR Code image file
+                # 6. Seed sample evaluation marks for initial leaderboard standings
+                marks_preset = [(95, 94, 95), (91, 90, 92), (88, 86, 88), (84, 82, 85), (80, 78, 80), (76, 75, 76), (72, 70, 72), (68, 66, 68), (65, 63, 65), (60, 58, 60)]
+                m_r1, m_r2, m_r3 = marks_preset[idx % len(marks_preset)]
+                j_id = 4 # Default Judge ID
+                
+                r1 = Round1Marks(team_id=team.team_id, judge_id=j_id, innovation=int(m_r1*0.25), presentation=int(m_r1*0.25), feasibility=int(m_r1*0.25), confidence=m_r1-3*int(m_r1*0.25), total_marks=m_r1, comments='Great innovation & feasibility.', is_submitted=True)
+                r2 = Round2Marks(team_id=team.team_id, judge_id=j_id, prototype=int(m_r2*0.3), technical_implementation=int(m_r2*0.3), uiux=int(m_r2*0.2), question_answer=m_r2-(2*int(m_r2*0.3)+int(m_r2*0.2)), total_marks=m_r2, comments='Solid prototype implementation.', is_submitted=True)
+                r3 = Round3Marks(team_id=team.team_id, judge_id=j_id, working_demo=int(m_r3*0.4), business_model=int(m_r3*0.2), scalability=int(m_r3*0.2), presentation=m_r3-(int(m_r3*0.4)+2*int(m_r3*0.2)), total_marks=m_r3, comments='Impressive live demo.', is_submitted=True)
+                db.session.add_all([r1, r2, r3])
+                db.session.commit()
+
+                # 7. Generate QR Code image file
                 base_url = os.environ.get('APP_BASE_URL', 'http://localhost:5000').rstrip('/')
                 generate_team_qr(
                     team_id=team.team_id,
@@ -370,9 +381,8 @@ def seed_database():
                     leader_name=leader_user.name,
                     host_url=base_url
                 )
-                
 
-            print("Database seeding completed. Admin, Organizer, Judges, and 10 default Teams seeded successfully.")
+            print("Database seeding completed. Admin, Organizer, Judges, 10 default Teams & Evaluation Marks seeded successfully.")
     except Exception as e:
         db.session.rollback()
         print(f"Error seeding database: {e}")

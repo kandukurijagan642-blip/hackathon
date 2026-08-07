@@ -280,7 +280,7 @@
         "demo_url": null,
         "is_locked": true
       },
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026004",
@@ -355,7 +355,7 @@
         "demo_url": null,
         "is_locked": true
       },
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026006",
@@ -472,7 +472,7 @@
         "demo_url": null,
         "is_locked": true
       },
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026009",
@@ -575,7 +575,7 @@
         }
       ],
       "submission": null,
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026012",
@@ -594,7 +594,7 @@
         }
       ],
       "submission": null,
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026013",
@@ -613,7 +613,7 @@
         }
       ],
       "submission": null,
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026014",
@@ -632,7 +632,7 @@
         }
       ],
       "submission": null,
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026015",
@@ -651,7 +651,7 @@
         }
       ],
       "submission": null,
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026016",
@@ -698,7 +698,7 @@
         }
       ],
       "submission": null,
-      "attendance": "Absent"
+      "attendance": "Present"
     },
     {
       "team_id": "HT2026018",
@@ -717,7 +717,7 @@
         }
       ],
       "submission": null,
-      "attendance": "Absent"
+      "attendance": "Present"
     }
   ],
   "round1_marks": [
@@ -731,8 +731,604 @@
       "comments": null,
       "total_marks": 45,
       "is_submitted": true
+    },
+    {
+      "team_id": "HT2026001",
+      "judge_id": 3,
+      "innovation": 23,
+      "presentation": 23,
+      "feasibility": 23,
+      "confidence": 26,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 95,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026002",
+      "judge_id": 3,
+      "innovation": 22,
+      "presentation": 22,
+      "feasibility": 22,
+      "confidence": 25,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 91,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026003",
+      "judge_id": 3,
+      "innovation": 22,
+      "presentation": 22,
+      "feasibility": 22,
+      "confidence": 22,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 88,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026004",
+      "judge_id": 3,
+      "innovation": 21,
+      "presentation": 21,
+      "feasibility": 21,
+      "confidence": 21,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 84,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026005",
+      "judge_id": 3,
+      "innovation": 20,
+      "presentation": 20,
+      "feasibility": 20,
+      "confidence": 20,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 80,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026006",
+      "judge_id": 3,
+      "innovation": 19,
+      "presentation": 19,
+      "feasibility": 19,
+      "confidence": 19,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 76,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026007",
+      "judge_id": 3,
+      "innovation": 18,
+      "presentation": 18,
+      "feasibility": 18,
+      "confidence": 18,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 72,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026008",
+      "judge_id": 3,
+      "innovation": 17,
+      "presentation": 17,
+      "feasibility": 17,
+      "confidence": 17,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 68,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026009",
+      "judge_id": 3,
+      "innovation": 16,
+      "presentation": 16,
+      "feasibility": 16,
+      "confidence": 17,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 65,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026010",
+      "judge_id": 3,
+      "innovation": 15,
+      "presentation": 15,
+      "feasibility": 15,
+      "confidence": 15,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 60,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026011",
+      "judge_id": 3,
+      "innovation": 18,
+      "presentation": 18,
+      "feasibility": 18,
+      "confidence": 21,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 75,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026012",
+      "judge_id": 3,
+      "innovation": 19,
+      "presentation": 19,
+      "feasibility": 19,
+      "confidence": 21,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 78,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026013",
+      "judge_id": 3,
+      "innovation": 20,
+      "presentation": 20,
+      "feasibility": 20,
+      "confidence": 22,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 82,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026014",
+      "judge_id": 3,
+      "innovation": 21,
+      "presentation": 21,
+      "feasibility": 21,
+      "confidence": 22,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 85,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026015",
+      "judge_id": 3,
+      "innovation": 22,
+      "presentation": 22,
+      "feasibility": 22,
+      "confidence": 22,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 88,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026016",
+      "judge_id": 3,
+      "innovation": 22,
+      "presentation": 22,
+      "feasibility": 22,
+      "confidence": 24,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 90,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026017",
+      "judge_id": 3,
+      "innovation": 23,
+      "presentation": 23,
+      "feasibility": 23,
+      "confidence": 23,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 92,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026018",
+      "judge_id": 3,
+      "innovation": 23,
+      "presentation": 23,
+      "feasibility": 23,
+      "confidence": 25,
+      "comments": "Excellent technical depth and innovation.",
+      "total_marks": 94,
+      "is_submitted": true
     }
   ],
-  "round2_marks": [],
-  "round3_marks": []
+  "round2_marks": [
+    {
+      "team_id": "HT2026001",
+      "judge_id": 3,
+      "prototype": 28,
+      "technical_implementation": 28,
+      "uiux": 18,
+      "question_answer": 20,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 94,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026002",
+      "judge_id": 3,
+      "prototype": 27,
+      "technical_implementation": 27,
+      "uiux": 18,
+      "question_answer": 18,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 90,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026003",
+      "judge_id": 3,
+      "prototype": 25,
+      "technical_implementation": 25,
+      "uiux": 17,
+      "question_answer": 19,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 86,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026004",
+      "judge_id": 3,
+      "prototype": 24,
+      "technical_implementation": 24,
+      "uiux": 16,
+      "question_answer": 18,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 82,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026005",
+      "judge_id": 3,
+      "prototype": 23,
+      "technical_implementation": 23,
+      "uiux": 15,
+      "question_answer": 17,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 78,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026006",
+      "judge_id": 3,
+      "prototype": 22,
+      "technical_implementation": 22,
+      "uiux": 15,
+      "question_answer": 16,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 75,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026007",
+      "judge_id": 3,
+      "prototype": 21,
+      "technical_implementation": 21,
+      "uiux": 14,
+      "question_answer": 14,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 70,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026008",
+      "judge_id": 3,
+      "prototype": 19,
+      "technical_implementation": 19,
+      "uiux": 13,
+      "question_answer": 15,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 66,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026009",
+      "judge_id": 3,
+      "prototype": 18,
+      "technical_implementation": 18,
+      "uiux": 12,
+      "question_answer": 15,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 63,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026010",
+      "judge_id": 3,
+      "prototype": 17,
+      "technical_implementation": 17,
+      "uiux": 11,
+      "question_answer": 13,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 58,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026011",
+      "judge_id": 3,
+      "prototype": 21,
+      "technical_implementation": 21,
+      "uiux": 14,
+      "question_answer": 14,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 70,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026012",
+      "judge_id": 3,
+      "prototype": 22,
+      "technical_implementation": 22,
+      "uiux": 15,
+      "question_answer": 16,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 75,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026013",
+      "judge_id": 3,
+      "prototype": 24,
+      "technical_implementation": 24,
+      "uiux": 16,
+      "question_answer": 16,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 80,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026014",
+      "judge_id": 3,
+      "prototype": 24,
+      "technical_implementation": 24,
+      "uiux": 16,
+      "question_answer": 19,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 83,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026015",
+      "judge_id": 3,
+      "prototype": 25,
+      "technical_implementation": 25,
+      "uiux": 17,
+      "question_answer": 18,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 85,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026016",
+      "judge_id": 3,
+      "prototype": 26,
+      "technical_implementation": 26,
+      "uiux": 17,
+      "question_answer": 19,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 88,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026017",
+      "judge_id": 3,
+      "prototype": 27,
+      "technical_implementation": 27,
+      "uiux": 18,
+      "question_answer": 19,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 91,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026018",
+      "judge_id": 3,
+      "prototype": 27,
+      "technical_implementation": 27,
+      "uiux": 18,
+      "question_answer": 20,
+      "comments": "Solid prototype implementation and architecture.",
+      "total_marks": 92,
+      "is_submitted": true
+    }
+  ],
+  "round3_marks": [
+    {
+      "team_id": "HT2026001",
+      "judge_id": 3,
+      "working_demo": 38,
+      "business_model": 19,
+      "scalability": 19,
+      "presentation": 19,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 95,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026002",
+      "judge_id": 3,
+      "working_demo": 36,
+      "business_model": 18,
+      "scalability": 18,
+      "presentation": 20,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 92,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026003",
+      "judge_id": 3,
+      "working_demo": 35,
+      "business_model": 17,
+      "scalability": 17,
+      "presentation": 19,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 88,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026004",
+      "judge_id": 3,
+      "working_demo": 34,
+      "business_model": 17,
+      "scalability": 17,
+      "presentation": 17,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 85,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026005",
+      "judge_id": 3,
+      "working_demo": 32,
+      "business_model": 16,
+      "scalability": 16,
+      "presentation": 16,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 80,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026006",
+      "judge_id": 3,
+      "working_demo": 30,
+      "business_model": 15,
+      "scalability": 15,
+      "presentation": 16,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 76,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026007",
+      "judge_id": 3,
+      "working_demo": 28,
+      "business_model": 14,
+      "scalability": 14,
+      "presentation": 16,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 72,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026008",
+      "judge_id": 3,
+      "working_demo": 27,
+      "business_model": 13,
+      "scalability": 13,
+      "presentation": 15,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 68,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026009",
+      "judge_id": 3,
+      "working_demo": 26,
+      "business_model": 13,
+      "scalability": 13,
+      "presentation": 13,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 65,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026010",
+      "judge_id": 3,
+      "working_demo": 24,
+      "business_model": 12,
+      "scalability": 12,
+      "presentation": 12,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 60,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026011",
+      "judge_id": 3,
+      "working_demo": 28,
+      "business_model": 14,
+      "scalability": 14,
+      "presentation": 16,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 72,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026012",
+      "judge_id": 3,
+      "working_demo": 30,
+      "business_model": 15,
+      "scalability": 15,
+      "presentation": 16,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 76,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026013",
+      "judge_id": 3,
+      "working_demo": 32,
+      "business_model": 16,
+      "scalability": 16,
+      "presentation": 17,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 81,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026014",
+      "judge_id": 3,
+      "working_demo": 33,
+      "business_model": 16,
+      "scalability": 16,
+      "presentation": 19,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 84,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026015",
+      "judge_id": 3,
+      "working_demo": 34,
+      "business_model": 17,
+      "scalability": 17,
+      "presentation": 19,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 87,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026016",
+      "judge_id": 3,
+      "working_demo": 35,
+      "business_model": 17,
+      "scalability": 17,
+      "presentation": 20,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 89,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026017",
+      "judge_id": 3,
+      "working_demo": 37,
+      "business_model": 18,
+      "scalability": 18,
+      "presentation": 20,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 93,
+      "is_submitted": true
+    },
+    {
+      "team_id": "HT2026018",
+      "judge_id": 3,
+      "working_demo": 37,
+      "business_model": 18,
+      "scalability": 18,
+      "presentation": 21,
+      "comments": "Impressive live demo and clear business scalability.",
+      "total_marks": 94,
+      "is_submitted": true
+    }
+  ]
 }
