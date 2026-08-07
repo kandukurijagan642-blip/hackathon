@@ -155,24 +155,38 @@
                                         {% endif %}
                                     </td>
                                     <td>
+                                        {% set orig_el = teams_eligibility.get(team.team_id) if teams_eligibility else None %}
                                         {% if is_released %}
-                                            <span class="badge bg-success">RELEASED</span>
+                                            <span class="badge bg-success"><i class="bi bi-patch-check-fill me-1"></i> RELEASED</span>
+                                        {% elif orig_el and orig_el.eligible %}
+                                            <span class="badge bg-info text-dark"><i class="bi bi-check2-circle me-1"></i> READY FOR APPROVAL</span>
                                         {% else %}
-                                            <span class="badge bg-danger">LOCKED</span>
+                                            <span class="badge bg-warning text-dark" title="Missing: {{ orig_el.missing|join(', ') if orig_el else 'Prerequisites' }}">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i> MISSING STEPS
+                                            </span>
+                                            {% if orig_el and orig_el.missing %}
+                                                <div class="text-danger" style="font-size:10px; line-height:1.2; margin-top:2px;">{{ orig_el.missing|join(', ') }}</div>
+                                            {% endif %}
                                         {% endif %}
                                     </td>
                                     <td class="text-end">
-                                        <div class="d-flex justify-content-end gap-2">
+                                        <div class="d-flex justify-content-end gap-2 align-items-center">
                                             {% if generated %}
                                                 <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#certDetailsModal-{{ team.team_id }}">
                                                     <i class="bi bi-eye"></i> View
                                                 </button>
                                                 {% if not is_released %}
-                                                    <form action="{{ url_for('admin.release_team_certificates', team_id=team.team_id) }}" method="POST" style="display:inline;">
-                                                        <button type="submit" class="btn btn-sm btn-success">
-                                                            <i class="bi bi-unlock"></i> Release
+                                                    {% if orig_el and orig_el.eligible %}
+                                                        <form action="{{ url_for('admin.release_team_certificates', team_id=team.team_id) }}" method="POST" style="display:inline;">
+                                                            <button type="submit" class="btn btn-sm btn-success fw-bold">
+                                                                <i class="bi bi-unlock-fill me-1"></i> Approve &amp; Release
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <button class="btn btn-sm btn-outline-secondary opacity-50" disabled title="Cannot approve until all steps are complete: {{ orig_el.missing|join(', ') if orig_el else 'Pending steps' }}">
+                                                            <i class="bi bi-lock-fill me-1"></i> Workflow Pending
                                                         </button>
-                                                    </form>
+                                                    {% endif %}
                                                 {% else %}
                                                     <form action="{{ url_for('admin.lock_team_certificates', team_id=team.team_id) }}" method="POST" style="display:inline;">
                                                         <button type="submit" class="btn btn-sm btn-danger">

@@ -446,6 +446,15 @@ def certificates():
     certs = Certificate.query.order_by(Certificate.generated_time.desc()).all()
     teams = Team.query.all()
     
+    # Calculate workflow eligibility per team
+    teams_eligibility = {}
+    for team in teams:
+        is_eligible, missing_steps = check_team_workflow_eligibility(team)
+        teams_eligibility[team.team_id] = {
+            'eligible': is_eligible,
+            'missing': missing_steps
+        }
+    
     # Load settings
     certs_enabled = SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
     sig_path = SystemSetting.get_setting('organizer_signature_path', '')
@@ -455,6 +464,7 @@ def certificates():
         'admin/certificates.html',
         certs=certs,
         teams=teams,
+        teams_eligibility=teams_eligibility,
         certs_enabled=certs_enabled,
         sig_path=sig_path,
         logo_path=logo_path
@@ -569,14 +579,51 @@ def export_certificates_csv():
     )
 
 
+def check_team_workflow_eligibility(team):
+    """
+    Validates mandatory sequential workflow requirements before certificate release:
+    1. Attendance: Status must be 'Present'.
+    2. Problem Details: ProblemSubmission must exist with project_title and problem_statement.
+    3. Jury Marks: At least one jury evaluation (Round 1, 2, or 3) submitted (is_submitted=True).
+    Returns (is_eligible, missing_steps_list)
+    """
+    missing = []
+    
+    # 1. Attendance Check
+    att = Attendance.query.filter_by(team_id=team.team_id).first()
+    if not (att and att.status == 'Present'):
+        missing.append('Attendance (Marked Present)')
+        
+    # 2. Problem Statement Submission Check
+    sub = team.problem_submission
+    if not (sub and sub.project_title and sub.problem_statement):
+        missing.append('Problem Statement Submission')
+        
+    # 3. Jury Evaluation Marks Check
+    r1 = Round1Marks.query.filter_by(team_id=team.team_id, is_submitted=True).count()
+    r2 = Round2Marks.query.filter_by(team_id=team.team_id, is_submitted=True).count()
+    r3 = Round3Marks.query.filter_by(team_id=team.team_id, is_submitted=True).count()
+    if (r1 + r2 + r3) == 0:
+        missing.append('Jury Evaluation Marks')
+        
+    return (len(missing) == 0), missing
+
+
 @admin_bp.route('/certificates/release/<team_id>', methods=['POST'])
 @login_required
 def release_team_certificates(team_id):
     if not check_admin(): return redirect(url_for('auth.login'))
+    
+    team = Team.query.filter_by(team_id=team_id).first_or_404()
+    is_eligible, missing_steps = check_team_workflow_eligibility(team)
+    
+    if not is_eligible:
+        missing_str = ", ".join(missing_steps)
+        flash(f"❌ Cannot approve/release certificates for '{team.team_name}'! Prerequisite workflow steps missing: [{missing_str}]. All steps must be completed first.", "danger")
+        return redirect(url_for('admin.certificates'))
+        
     certs = Certificate.query.filter_by(team_id=team_id).all()
     if not certs:
-        # If no certs exist, let's auto-generate them now!
-        team = Team.query.filter_by(team_id=team_id).first_or_404()
         from certificate_automation import auto_generate_team_certificates
         auto_generate_team_certificates(team)
         certs = Certificate.query.filter_by(team_id=team_id).all()
@@ -589,9 +636,7 @@ def release_team_certificates(team_id):
     db.session.commit()
     
     # Automatically send the email to the Team Leader with the certificates attached in a ZIP
-    team = Team.query.filter_by(team_id=team_id).first()
     if team and team.leader:
-        # Read files for attachment zipping
         attachments = []
         for cert in certs:
             full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
@@ -602,7 +647,7 @@ def release_team_certificates(team_id):
         if attachments:
             email_body = f"""Dear Team Leader,
 
-Congratulations! The certificates for your team '{team.team_name}' have been released.
+Congratulations! All sequential workflow steps have been completed and approved. The certificates for team '{team.team_name}' have been officially released by Admin!
 
 Please find all team members' participation certificates attached in PDF format.
 
@@ -612,7 +657,7 @@ HackTrack Organizing Committee"""
             from routes.leader import send_mock_email_with_attachments
             send_mock_email_with_attachments(
                 to_email=team.leader.email,
-                subject=f"Hackathon Certificates - Team {team.team_name}",
+                subject=f"Hackathon Certificates Released - Team {team.team_name}",
                 body_text=email_body,
                 attachments=attachments
             )
@@ -620,9 +665,9 @@ HackTrack Organizing Committee"""
             for cert in certs:
                 cert.email_sent = True
             db.session.commit()
-            
-    log_admin_activity("Release Certificates", f"Released certificates for team {team_id}")
-    flash(f"Certificates for team {team_id} released and emailed successfully.", "success")
+
+    log_admin_activity("Release Certificates", f"Approved and released certificates for team {team_id}")
+    flash(f"Certificates approved & released successfully for team '{team.team_name}'! Notification sent.", "success")
     return redirect(url_for('admin.certificates'))
 
 

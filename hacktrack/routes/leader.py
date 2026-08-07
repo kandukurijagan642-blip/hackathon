@@ -124,7 +124,7 @@ def ensure_certificates_ready(team, host_url):
         team_name=team.team_name,
         certificate_type=cert_type,
         certificate_path=f"certificates/{leader_pdf_filename}",
-        certificate_status='RELEASED',
+        certificate_status='LOCKED',
         released_time=datetime.utcnow(),
         verification_token=leader_token
     )
@@ -163,7 +163,7 @@ def ensure_certificates_ready(team, host_url):
             team_name=team.team_name,
             certificate_type=cert_type,
             certificate_path=f"certificates/{m_pdf_filename}",
-            certificate_status='RELEASED',
+            certificate_status='LOCKED',
             released_time=datetime.utcnow(),
             verification_token=m_token
         )
