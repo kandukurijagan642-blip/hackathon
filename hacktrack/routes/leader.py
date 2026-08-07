@@ -34,44 +34,31 @@ def ensure_certificates_ready(team, host_url):
     
     # If certs already exist, check if any is RELEASED or if module is active
     if certs:
-        is_already_released = any(c.certificate_status == 'RELEASED' for c in certs)
-        if is_already_released or certificates_active:
-            sig_path = SystemSetting.get_setting('organizer_signature_path')
-            logo_path = SystemSetting.get_setting('college_logo_path')
-            submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
-            
-            updated = False
-            for cert in certs:
-                if cert.certificate_status != 'RELEASED':
-                    cert.certificate_status = 'RELEASED'
-                    if not cert.released_time:
-                        cert.released_time = datetime.utcnow()
-                    updated = True
-                
-                # Check if PDF file on disk exists; if missing (e.g. ephemeral server restart), regenerate it on-the-fly
-                full_pdf_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
-                if not os.path.exists(full_pdf_path):
-                    os.makedirs(os.path.dirname(full_pdf_path), exist_ok=True)
-                    verification_url = f"{host_url.rstrip('/')}/verify-certificate/{cert.verification_token}"
-                    try:
-                        generate_pdf_certificate(
-                            cert_id=cert.certificate_id,
-                            student_name=cert.student_name,
-                            team_name=team.team_name,
-                            project_title=submission.project_title if submission else "Hackathon Project",
-                            cert_type=cert.certificate_type or "Participant",
-                            verification_url=verification_url,
-                            output_path=full_pdf_path,
-                            signature_path=sig_path,
-                            logo_path=logo_path
-                        )
-                    except Exception as e:
-                        print(f"Error regenerating missing PDF for {cert.certificate_id}: {e}")
-                        
-            if updated:
-                db.session.commit()
-            return True
-        return False
+        sig_path = SystemSetting.get_setting('organizer_signature_path')
+        logo_path = SystemSetting.get_setting('college_logo_path')
+        submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
+        
+        for cert in certs:
+            # Check if PDF file on disk exists; if missing (e.g. ephemeral server restart), regenerate it on-the-fly
+            full_pdf_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
+            if not os.path.exists(full_pdf_path):
+                os.makedirs(os.path.dirname(full_pdf_path), exist_ok=True)
+                verification_url = f"{host_url.rstrip('/')}/verify-certificate/{cert.verification_token}"
+                try:
+                    generate_pdf_certificate(
+                        cert_id=cert.certificate_id,
+                        student_name=cert.student_name,
+                        team_name=team.team_name,
+                        project_title=submission.project_title if submission else "Hackathon Project",
+                        cert_type=cert.certificate_type or "Participant",
+                        verification_url=verification_url,
+                        output_path=full_pdf_path,
+                        signature_path=sig_path,
+                        logo_path=logo_path
+                    )
+                except Exception as e:
+                    print(f"Error regenerating missing PDF for {cert.certificate_id}: {e}")
+        return True
 
     if not certificates_active:
         return False
@@ -431,7 +418,7 @@ def quick_edit(team_id):
                     team_name=team.team_name,
                     certificate_type=cert_type,
                     certificate_path=f"certificates/{leader_pdf_filename}",
-                    certificate_status='RELEASED',
+                    certificate_status='LOCKED',
                     verification_token=leader_token
                 )
                 db.session.add(leader_cert)
@@ -470,7 +457,7 @@ def quick_edit(team_id):
                         team_name=team.team_name,
                         certificate_type=cert_type,
                         certificate_path=f"certificates/{m_pdf_filename}",
-                        certificate_status='RELEASED',
+                        certificate_status='LOCKED',
                         verification_token=m_token
                     )
                     db.session.add(m_cert)
@@ -554,9 +541,11 @@ def quick_edit(team_id):
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
     certs_by_member = {c.member_id: c for c in certs if c.member_id is not None}
     leader_cert = next((c for c in certs if c.member_id is None), None)
-    is_any_released = len(certs) > 0 and any(c.certificate_status == 'RELEASED' for c in certs)
-    released = is_any_released or certificates_active
-    effective_active = certificates_active or is_any_released
+    
+    # A team's certificates are ONLY released if Admin explicitly approved & released them!
+    is_admin_released = (len(certs) > 0 and certs[0].certificate_status == 'RELEASED')
+    released = is_admin_released and certificates_active
+    effective_active = certificates_active
         
     return render_template(
         'leader/quick_edit.html',
