@@ -191,8 +191,6 @@ def restore_local_backup(app, db):
                             problem_statement=sub_doc['problem_statement'],
                             abstract=sub_doc['abstract'],
                             technology_stack=sub_doc['technology_stack'],
-                            github_url=sub_doc.get('github_url'),
-                            demo_url=sub_doc.get('demo_url'),
                             is_locked=sub_doc.get('is_locked', False)
                         )
                         db.session.add(ps)
@@ -202,8 +200,6 @@ def restore_local_backup(app, db):
                         existing_sub.problem_statement = sub_doc['problem_statement']
                         existing_sub.abstract = sub_doc['abstract']
                         existing_sub.technology_stack = sub_doc['technology_stack']
-                        existing_sub.github_url = sub_doc.get('github_url')
-                        existing_sub.demo_url = sub_doc.get('demo_url')
                         existing_sub.is_locked = sub_doc.get('is_locked', False)
 
                 # Attendance Upsert

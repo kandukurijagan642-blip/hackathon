@@ -191,8 +191,6 @@ def restore_all_from_mongo(app, db):
                             problem_statement=sub_doc.get('problem_statement', ''),
                             abstract=sub_doc.get('abstract', ''),
                             technology_stack=sub_doc.get('technology_stack', ''),
-                            github_url=sub_doc.get('github_url', ''),
-                            demo_url=sub_doc.get('demo_url', ''),
                             is_locked=sub_doc.get('is_locked', False)
                         )
                         db.session.add(sub)
