@@ -1,7 +1,7 @@
 import os
 import json
 from database import db
-from models import User, Team, TeamMember, ProblemSubmission, Attendance, Round1Marks, Round2Marks, Round3Marks, SystemSetting
+from models import User, Team, TeamMember, ProblemSubmission, Attendance, Round1Marks, Round2Marks, Round3Marks, FinalResult, SystemSetting
 from werkzeug.security import generate_password_hash
 
 BACKUP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'teams_registry_backup.json')
@@ -287,7 +287,32 @@ def restore_local_backup(app, db):
                     r3.is_submitted = r_doc.get('is_submitted', True)
 
             db.session.commit()
-            print("Local backup restoration completed successfully.")
+
+            # Recalculate FinalResult (Leaderboard Rankings) so /admin/leaderboard is instantly populated
+            all_teams = Team.query.all()
+            leaderboard_data = []
+            for t_item in all_teams:
+                r1_avg = db.session.query(db.func.avg(Round1Marks.total_marks)).filter(Round1Marks.team_id == t_item.team_id).scalar() or 0.0
+                r2_avg = db.session.query(db.func.avg(Round2Marks.total_marks)).filter(Round2Marks.team_id == t_item.team_id).scalar() or 0.0
+                r3_avg = db.session.query(db.func.avg(Round3Marks.total_marks)).filter(Round3Marks.team_id == t_item.team_id).scalar() or 0.0
+                grand_total = r1_avg + r2_avg + r3_avg
+                leaderboard_data.append({'team_id': t_item.team_id, 'r1': r1_avg, 'r2': r2_avg, 'r3': r3_avg, 'grand': grand_total})
+                
+            leaderboard_data.sort(key=lambda x: x['grand'], reverse=True)
+            FinalResult.query.delete()
+            for idx, item in enumerate(leaderboard_data):
+                rank = idx + 1
+                res = FinalResult(
+                    team_id=item['team_id'],
+                    round1_total=round(item['r1'], 2),
+                    round2_total=round(item['r2'], 2),
+                    round3_total=round(item['r3'], 2),
+                    grand_total=round(item['grand'], 2),
+                    rank=rank
+                )
+                db.session.add(res)
+            db.session.commit()
+            print("Local backup restoration & leaderboard calculation completed successfully.")
 
         except Exception as e:
             print(f"Error restoring local backup: {e}")
