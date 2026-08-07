@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, send_file, current_app, abort
 from flask_login import login_required, current_user
 import os
+from datetime import datetime
 
 from database import db
 from models import User, Team, TeamMember, Attendance, FinalResult, Round1Marks, Round2Marks, Round3Marks, ActivityLog, SystemSetting, ProblemSubmission, Certificate
@@ -882,10 +883,11 @@ def public_download_certificate(cert_id):
         FinalResult.query.count() > 0 or 
         SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
     )
-    is_released = (cert.certificate_status == 'RELEASED') and certificates_active
-    
-    if not is_released and not (current_user.is_authenticated and current_user.role in ['Admin', 'Organizer']):
-        return render_template('certificate_locked.html', cert=cert)
+    if cert.certificate_status != 'RELEASED':
+        cert.certificate_status = 'RELEASED'
+        if not cert.released_time:
+            cert.released_time = datetime.utcnow()
+        db.session.commit()
         
     preview = request.args.get('preview', '0') == '1'
     if not preview:
@@ -938,8 +940,15 @@ def public_download_all_certificates(team_id):
         auto_generate_team_certificates(team)
         certs = Certificate.query.filter_by(team_id=team.team_id).all()
         
-    if not certs or certs[0].certificate_status != 'RELEASED':
-        abort(403)
+    if not certs:
+        abort(404)
+
+    for c in certs:
+        if c.certificate_status != 'RELEASED':
+            c.certificate_status = 'RELEASED'
+            if not c.released_time:
+                c.released_time = datetime.utcnow()
+    db.session.commit()
         
     clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
     memory_file = io.BytesIO()
