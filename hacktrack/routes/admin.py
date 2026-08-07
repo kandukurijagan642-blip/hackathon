@@ -720,18 +720,35 @@ def release_all_certificates():
     # Enable system-wide certificates setting
     SystemSetting.set_setting('certificates_enabled', 'True')
     
-    # Fetch all certificates and mark them RELEASED
-    certs = Certificate.query.all()
-    for cert in certs:
-        cert.certificate_status = 'RELEASED'
-        if not cert.released_time:
-            cert.released_time = datetime.utcnow()
-            cert.released_by = current_user.id
+    teams = Team.query.all()
+    released_count = 0
+    skipped_count = 0
+    
+    for team in teams:
+        is_eligible, missing = check_team_workflow_eligibility(team)
+        if is_eligible:
+            certs = Certificate.query.filter_by(team_id=team.team_id).all()
+            if not certs:
+                from certificate_automation import auto_generate_team_certificates
+                auto_generate_team_certificates(team)
+                certs = Certificate.query.filter_by(team_id=team.team_id).all()
+                
+            for cert in certs:
+                cert.certificate_status = 'RELEASED'
+                if not cert.released_time:
+                    cert.released_time = datetime.utcnow()
+                    cert.released_by = current_user.id
+            released_count += 1
+        else:
+            skipped_count += 1
             
     db.session.commit()
     
-    log_admin_activity("Release All Certificates", "Approved and released all student certificates system-wide")
-    flash("All certificates have been approved, released, and published successfully!", "success")
+    log_admin_activity("Release All Certificates", f"Approved {released_count} eligible teams, skipped {skipped_count} incomplete teams")
+    if skipped_count > 0:
+        flash(f"✅ Approved & released certificates for {released_count} eligible teams! ⚠️ {skipped_count} teams were skipped because mandatory prerequisites (Attendance / Problem Details / Jury Marks) are incomplete.", "info")
+    else:
+        flash(f"🎉 All {released_count} teams met prerequisites and their certificates have been approved & released successfully!", "success")
     return redirect(url_for('admin.certificates'))
 
 
