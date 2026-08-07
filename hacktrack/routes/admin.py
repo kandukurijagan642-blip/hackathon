@@ -764,10 +764,32 @@ def send_team_certificates_email(team_id):
         auto_generate_team_certificates(team)
         certs = Certificate.query.filter_by(team_id=team_id).all()
         
-    # Read files for attachment zipping
     attachments = []
     for cert in certs:
         full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
+        if not os.path.exists(full_path):
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            from certificate_pdf import generate_pdf_certificate
+            from utils import get_actual_host_url
+            sub = team.problem_submission
+            verification_url = f"{get_actual_host_url()}/verify-certificate/{cert.verification_token}"
+            sig_path = SystemSetting.get_setting('organizer_signature_path', '')
+            logo_path = SystemSetting.get_setting('college_logo_path', '')
+            try:
+                generate_pdf_certificate(
+                    cert_id=cert.certificate_id,
+                    student_name=cert.student_name,
+                    team_name=team.team_name,
+                    project_title=sub.project_title if sub else "Hackathon Project",
+                    cert_type=cert.certificate_type or "Participant",
+                    verification_url=verification_url,
+                    output_path=full_path,
+                    signature_path=sig_path,
+                    logo_path=logo_path
+                )
+            except Exception as ex:
+                print(f"PDF on-the-fly regen error: {ex}")
+
         if os.path.exists(full_path):
             with open(full_path, 'rb') as f:
                 attachments.append((f"{cert.student_name}_Certificate.pdf", f.read()))
