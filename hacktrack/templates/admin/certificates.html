@@ -381,37 +381,11 @@
                         <div class="text-muted small">
                             Leader Email: <code style="color: #38bdf8;">{{ team.leader.email }}</code>
                         </div>
-                        <div class="d-flex gap-2">
-                            <div class="dropdown">
-                                <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; color: #0f172a;">
-                                    <i class="bi bi-envelope"></i> Send Team PDFs via Email
+                            <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-warning" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; color: #0f172a;">
+                                    <i class="bi bi-send-fill me-1"></i> Send Team Certificates PDF to Mail
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark-custom" style="background-color: #0f172a; border: 1px solid #334155; border-radius: 8px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.5);">
-                                    <li>
-                                        <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST" style="margin: 0;">
-                                            <button type="submit" class="dropdown-item text-light" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
-                                                <i class="bi bi-send-fill text-success" style="margin-right: 8px;"></i> Send Immediately (Backend)
-                                            </button>
-                                        </form>
-                                    </li>
-                                    <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
-                                    <li>
-                                        <a class="dropdown-item text-light" href="mailto:{{ modal_compose_to }}?subject={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}" target="_blank" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                            <i class="bi bi-envelope-at-fill text-info" style="margin-right: 8px;"></i> Open in Default Mail App
-                                        </a>
-                                    </li>
-                                    <li>
-                                         <a class="dropdown-item text-light" href="https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to={{ modal_compose_to|urlencode }}&su={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                             <i class="bi bi-google text-danger" style="margin-right: 8px;"></i> Open in Gmail (Web)
-                                         </a>
-                                     </li>
-                                     <li>
-                                         <a class="dropdown-item text-light" href="https://outlook.live.com/owa/?path=/mail/action/compose&to={{ modal_compose_to|urlencode }}&subject={{ modal_mail_subject|urlencode }}&body={{ modal_mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
-                                             <i class="bi bi-microsoft text-primary" style="margin-right: 8px;"></i> Open in Outlook (Web)
-                                         </a>
-                                     </li>
-                                </ul>
-                            </div>
+                            </form>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="font-weight: 600; border-radius: 6px; padding: 8px 16px; font-size: 13px; background-color: #334155; border-color: #334155; color: #ffffff;">Close</button>
                         </div>
                     </div>
