@@ -125,26 +125,11 @@ def generate_pdf_certificate(cert_id, student_name, team_name, project_title, ce
     c.drawCentredString(width / 2.0, height - 310, body_text_2)
     c.drawCentredString(width / 2.0, height - 330, body_text_3)
     
-    # Draw Gold Security Seal Badge on bottom left
-    c.setStrokeColor(colors.HexColor('#d4af37'))
-    c.setFillColor(colors.HexColor('#fef08a'))
-    c.setLineWidth(2)
-    c.circle(85, 80, 26, fill=True, stroke=True)
-    
-    c.setFillColor(colors.HexColor('#854d0e'))
-    c.setFont("Helvetica-Bold", 7)
-    c.drawCentredString(85, 84, "VERIFIED")
-    c.drawCentredString(85, 74, "CREDENTIAL")
-    
-    # Issue Date, Certificate ID, and Online Verification Link
-    c.setFont("Helvetica", 9)
+    # Issue Date and Certificate ID
+    c.setFont("Helvetica", 10)
     c.setFillColor(colors.HexColor('#4b5563'))
-    c.drawString(125, 90, f"Date of Issue: {datetime.now().strftime('%B %d, %Y')}")
-    c.drawString(125, 75, f"Certificate ID: {cert_id}")
-    
-    c.setFont("Helvetica-Bold", 8)
-    c.setFillColor(colors.HexColor('#1d4ed8'))
-    c.drawString(125, 60, f"Verify Online: {verification_url}")
+    c.drawString(45, 65, f"Date of Issue: {datetime.now().strftime('%B %d, %Y')}")
+    c.drawString(45, 48, f"Certificate ID: {cert_id}")
     
     # Signatures
     # 1. HOD / Event Coordinator Signature
