@@ -173,7 +173,7 @@
         }
       ],
       "submission": {
-        "project_title": "Decentralized Health Ledger",
+        "project_title": "Updated Title 999",
         "domain": "Healthcare & Blockchain",
         "problem_statement": "Integrate Web3 tech into electronic health records to secure access management.",
         "abstract": "A placeholder abstract generated during database seeding.",
@@ -655,11 +655,32 @@
           "phone": "1112223330"
         }
       ],
-      "submission": null,
-      "attendance": "Absent"
+      "submission": {
+        "project_title": "AI Workflow Engine",
+        "domain": "AI/ML",
+        "problem_statement": "Build seq workflow",
+        "abstract": "Abstract text",
+        "technology_stack": "Python",
+        "github_url": null,
+        "demo_url": null,
+        "is_locked": true
+      },
+      "attendance": "Present"
     }
   ],
-  "round1_marks": [],
+  "round1_marks": [
+    {
+      "team_id": "HT2026016",
+      "judge_id": 1,
+      "innovation": 0,
+      "presentation": 0,
+      "feasibility": 0,
+      "confidence": 0,
+      "comments": null,
+      "total_marks": 45,
+      "is_submitted": true
+    }
+  ],
   "round2_marks": [],
   "round3_marks": []
 }

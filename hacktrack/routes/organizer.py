@@ -230,6 +230,12 @@ def checkin_team(team_id):
     att.checkin_time = datetime.datetime.utcnow()
     db.session.commit()
     
+    try:
+        from persistent_backup import save_local_backup
+        save_local_backup()
+    except Exception as ex:
+        print(f"Notice: backup save after checkin error: {ex}")
+    
     # Notify team leader
     leader = User.query.get(team.leader_id)
     if leader:

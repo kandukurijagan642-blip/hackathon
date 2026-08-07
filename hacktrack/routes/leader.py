@@ -289,6 +289,12 @@ def submit_problem():
         db.session.add(new_sub)
         db.session.commit()
         
+        try:
+            from persistent_backup import save_local_backup
+            save_local_backup()
+        except Exception as ex:
+            print(f"Notice: backup save after problem submission error: {ex}")
+        
         log_leader_activity("Submit Problem Statement", f"Submitted project details for {team.team_id} ({project_title})")
         flash('Submission Successful.', 'success')
         return redirect(url_for('leader.dashboard'))

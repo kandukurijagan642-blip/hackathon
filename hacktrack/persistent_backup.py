@@ -152,7 +152,7 @@ def restore_local_backup(app, db):
                     db.session.add(u)
             db.session.commit()
 
-            # Restore Teams
+            # Restore Teams & Submissions & Attendance
             for t_doc in data.get('teams', []):
                 existing_team = Team.query.filter_by(team_id=t_doc['team_id']).first()
                 if not existing_team:
@@ -165,22 +165,25 @@ def restore_local_backup(app, db):
                     )
                     db.session.add(new_t)
                     db.session.commit()
+                    existing_team = new_t
 
-                    # Members
-                    for m_doc in t_doc.get('members', []):
-                        if not TeamMember.query.filter_by(team_id=t_doc['team_id'], email=m_doc['email']).first():
-                            m = TeamMember(
-                                team_id=t_doc['team_id'],
-                                student_name=m_doc['student_name'],
-                                registration_number=m_doc.get('registration_number', 'N/A'),
-                                email=m_doc['email'],
-                                phone=m_doc.get('phone', '')
-                            )
-                            db.session.add(m)
+                # Members
+                for m_doc in t_doc.get('members', []):
+                    if not TeamMember.query.filter_by(team_id=t_doc['team_id'], email=m_doc['email']).first():
+                        m = TeamMember(
+                            team_id=t_doc['team_id'],
+                            student_name=m_doc['student_name'],
+                            registration_number=m_doc.get('registration_number', 'N/A'),
+                            email=m_doc['email'],
+                            phone=m_doc.get('phone', '')
+                        )
+                        db.session.add(m)
 
-                    # Submission
-                    sub_doc = t_doc.get('submission')
-                    if sub_doc and not ProblemSubmission.query.filter_by(team_id=t_doc['team_id']).first():
+                # Submission Upsert
+                sub_doc = t_doc.get('submission')
+                if sub_doc:
+                    existing_sub = ProblemSubmission.query.filter_by(team_id=t_doc['team_id']).first()
+                    if not existing_sub:
                         ps = ProblemSubmission(
                             team_id=t_doc['team_id'],
                             project_title=sub_doc['project_title'],
@@ -193,18 +196,32 @@ def restore_local_backup(app, db):
                             is_locked=sub_doc.get('is_locked', False)
                         )
                         db.session.add(ps)
+                    else:
+                        existing_sub.project_title = sub_doc['project_title']
+                        existing_sub.domain = sub_doc['domain']
+                        existing_sub.problem_statement = sub_doc['problem_statement']
+                        existing_sub.abstract = sub_doc['abstract']
+                        existing_sub.technology_stack = sub_doc['technology_stack']
+                        existing_sub.github_url = sub_doc.get('github_url')
+                        existing_sub.demo_url = sub_doc.get('demo_url')
+                        existing_sub.is_locked = sub_doc.get('is_locked', False)
 
-                    # Attendance
-                    if not Attendance.query.filter_by(team_id=t_doc['team_id']).first():
-                        att = Attendance(team_id=t_doc['team_id'], status=t_doc.get('attendance', 'Absent'))
-                        db.session.add(att)
+                # Attendance Upsert
+                att = Attendance.query.filter_by(team_id=t_doc['team_id']).first()
+                if not att:
+                    att = Attendance(team_id=t_doc['team_id'], status=t_doc.get('attendance', 'Absent'))
+                    db.session.add(att)
+                else:
+                    if t_doc.get('attendance') and t_doc['attendance'] != 'Absent':
+                        att.status = t_doc['attendance']
 
-                    db.session.commit()
+                db.session.commit()
 
-            # Restore Marks
+            # Restore & Upsert Marks
             for r_doc in data.get('round1_marks', []):
-                if not Round1Marks.query.filter_by(team_id=r_doc['team_id'], judge_id=r_doc['judge_id']).first():
-                    r = Round1Marks(
+                r1 = Round1Marks.query.filter_by(team_id=r_doc['team_id'], judge_id=r_doc['judge_id']).first()
+                if not r1:
+                    r1 = Round1Marks(
                         team_id=r_doc['team_id'],
                         judge_id=r_doc['judge_id'],
                         innovation=r_doc['innovation'],
@@ -215,11 +232,20 @@ def restore_local_backup(app, db):
                         total_marks=r_doc['total_marks'],
                         is_submitted=r_doc.get('is_submitted', True)
                     )
-                    db.session.add(r)
+                    db.session.add(r1)
+                else:
+                    r1.innovation = r_doc['innovation']
+                    r1.presentation = r_doc['presentation']
+                    r1.feasibility = r_doc['feasibility']
+                    r1.confidence = r_doc['confidence']
+                    r1.comments = r_doc.get('comments', '')
+                    r1.total_marks = r_doc['total_marks']
+                    r1.is_submitted = r_doc.get('is_submitted', True)
 
             for r_doc in data.get('round2_marks', []):
-                if not Round2Marks.query.filter_by(team_id=r_doc['team_id'], judge_id=r_doc['judge_id']).first():
-                    r = Round2Marks(
+                r2 = Round2Marks.query.filter_by(team_id=r_doc['team_id'], judge_id=r_doc['judge_id']).first()
+                if not r2:
+                    r2 = Round2Marks(
                         team_id=r_doc['team_id'],
                         judge_id=r_doc['judge_id'],
                         prototype=r_doc['prototype'],
@@ -230,11 +256,20 @@ def restore_local_backup(app, db):
                         total_marks=r_doc['total_marks'],
                         is_submitted=r_doc.get('is_submitted', True)
                     )
-                    db.session.add(r)
+                    db.session.add(r2)
+                else:
+                    r2.prototype = r_doc['prototype']
+                    r2.technical_implementation = r_doc['technical_implementation']
+                    r2.uiux = r_doc['uiux']
+                    r2.question_answer = r_doc['question_answer']
+                    r2.comments = r_doc.get('comments', '')
+                    r2.total_marks = r_doc['total_marks']
+                    r2.is_submitted = r_doc.get('is_submitted', True)
 
             for r_doc in data.get('round3_marks', []):
-                if not Round3Marks.query.filter_by(team_id=r_doc['team_id'], judge_id=r_doc['judge_id']).first():
-                    r = Round3Marks(
+                r3 = Round3Marks.query.filter_by(team_id=r_doc['team_id'], judge_id=r_doc['judge_id']).first()
+                if not r3:
+                    r3 = Round3Marks(
                         team_id=r_doc['team_id'],
                         judge_id=r_doc['judge_id'],
                         working_demo=r_doc['working_demo'],
@@ -245,7 +280,15 @@ def restore_local_backup(app, db):
                         total_marks=r_doc['total_marks'],
                         is_submitted=r_doc.get('is_submitted', True)
                     )
-                    db.session.add(r)
+                    db.session.add(r3)
+                else:
+                    r3.working_demo = r_doc['working_demo']
+                    r3.business_model = r_doc['business_model']
+                    r3.scalability = r_doc['scalability']
+                    r3.presentation = r_doc['presentation']
+                    r3.comments = r_doc.get('comments', '')
+                    r3.total_marks = r_doc['total_marks']
+                    r3.is_submitted = r_doc.get('is_submitted', True)
 
             db.session.commit()
             print("Local backup restoration completed successfully.")

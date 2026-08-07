@@ -178,6 +178,12 @@ def evaluate(round_num, team_id):
             
         db.session.commit()
         
+        try:
+            from persistent_backup import save_local_backup
+            save_local_backup()
+        except Exception as ex:
+            print(f"Notice: backup save after evaluation error: {ex}")
+        
         # Sync marks to MongoDB Atlas for permanent persistence
         try:
             from mongo_sync import sync_all_to_mongo
