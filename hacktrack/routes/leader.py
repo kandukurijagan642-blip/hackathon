@@ -858,7 +858,26 @@ Hackathon Organizing Committee"""
 
 @leader_bp.route('/certificates/public-download/<cert_id>')
 def public_download_certificate(cert_id):
-    cert = Certificate.query.get_or_404(cert_id)
+    clean_id = cert_id.strip().upper()
+    cert = Certificate.query.filter(
+        (db.func.upper(Certificate.certificate_id) == clean_id) |
+        (Certificate.verification_token == cert_id.strip())
+    ).first()
+
+    if not cert:
+        try:
+            from persistent_backup import restore_local_backup
+            restore_local_backup(current_app, db)
+            cert = Certificate.query.filter(
+                (db.func.upper(Certificate.certificate_id) == clean_id) |
+                (Certificate.verification_token == cert_id.strip())
+            ).first()
+        except Exception as ex:
+            print(f"Restore lookup notice: {ex}")
+
+    if not cert:
+        abort(404)
+
     certificates_active = (
         FinalResult.query.count() > 0 or 
         SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
@@ -874,30 +893,85 @@ def public_download_certificate(cert_id):
         db.session.commit()
     
     full_path = os.path.normpath(os.path.join(current_app.root_path, 'static', cert.certificate_path))
+    if not os.path.exists(full_path):
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        from certificate_pdf import generate_pdf_certificate
+        from utils import get_actual_host_url
+        sub = cert.team.problem_submission if cert.team else None
+        verification_url = f"{get_actual_host_url()}/verify-certificate/{cert.verification_token}"
+        sig_path = SystemSetting.get_setting('organizer_signature_path', '')
+        logo_path = SystemSetting.get_setting('college_logo_path', '')
+        try:
+            generate_pdf_certificate(
+                cert_id=cert.certificate_id,
+                student_name=cert.student_name,
+                team_name=cert.team_name,
+                project_title=sub.project_title if sub else "Hackathon Project",
+                cert_type=cert.certificate_type or "Participant",
+                verification_url=verification_url,
+                output_path=full_path,
+                signature_path=sig_path,
+                logo_path=logo_path
+            )
+        except Exception as ex:
+            print(f"PDF on-the-fly regen error: {ex}")
+
+    clean_team = "".join(c for c in cert.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+    clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+    download_filename = f"{clean_team}_{clean_student}.pdf"
+
     return send_file(
         full_path,
         mimetype='application/pdf',
         as_attachment=not preview,
-        download_name=f"{cert.student_name}_Certificate.pdf" if not preview else None
+        download_name=download_filename if not preview else None
     )
 
 
 @leader_bp.route('/certificates/public-download-all/<team_id>')
 def public_download_all_certificates(team_id):
-    team = Team.query.get_or_404(team_id)
+    clean_id = team_id.strip().upper()
+    team = Team.query.filter(db.func.upper(Team.team_id) == clean_id).first_or_404()
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
     if not certs:
-        abort(404)
+        from certificate_automation import auto_generate_team_certificates
+        auto_generate_team_certificates(team)
+        certs = Certificate.query.filter_by(team_id=team.team_id).all()
         
-    if certs[0].certificate_status != 'RELEASED':
+    if not certs or certs[0].certificate_status != 'RELEASED':
         abort(403)
         
+    clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
     memory_file = io.BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for cert in certs:
             full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
+            if not os.path.exists(full_path):
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                from certificate_pdf import generate_pdf_certificate
+                from utils import get_actual_host_url
+                sub = team.problem_submission
+                verification_url = f"{get_actual_host_url()}/verify-certificate/{cert.verification_token}"
+                sig_path = SystemSetting.get_setting('organizer_signature_path', '')
+                logo_path = SystemSetting.get_setting('college_logo_path', '')
+                try:
+                    generate_pdf_certificate(
+                        cert_id=cert.certificate_id,
+                        student_name=cert.student_name,
+                        team_name=team.team_name,
+                        project_title=sub.project_title if sub else "Hackathon Project",
+                        cert_type=cert.certificate_type or "Participant",
+                        verification_url=verification_url,
+                        output_path=full_path,
+                        signature_path=sig_path,
+                        logo_path=logo_path
+                    )
+                except Exception as ex:
+                    print(f"PDF on-the-fly regen error: {ex}")
+
             if os.path.exists(full_path):
-                zipf.write(full_path, arcname=f"{cert.student_name}_Certificate.pdf")
+                clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+                zipf.write(full_path, arcname=f"{clean_team}_{clean_student}.pdf")
                 cert.download_count = (cert.download_count or 0) + 1
                 
     db.session.commit()
@@ -906,7 +980,7 @@ def public_download_all_certificates(team_id):
         memory_file,
         mimetype='application/zip',
         as_attachment=True,
-        download_name=f"{team.team_name}_Certificates.zip"
+        download_name=f"{clean_team}_Certificates.zip"
     )
 
 

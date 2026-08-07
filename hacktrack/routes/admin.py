@@ -699,19 +699,44 @@ def download_team_certificates_zip(team_id):
         flash('No certificates found for this team.', 'warning')
         return redirect(url_for('admin.certificates'))
         
+    clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
     memory_file = io.BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for cert in certs:
             full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
+            if not os.path.exists(full_path):
+                os.makedirs(os.path.dirname(full_path), exist_ok=True)
+                from certificate_pdf import generate_pdf_certificate
+                from utils import get_actual_host_url
+                sub = team.problem_submission
+                verification_url = f"{get_actual_host_url()}/verify-certificate/{cert.verification_token}"
+                sig_path = SystemSetting.get_setting('organizer_signature_path', '')
+                logo_path = SystemSetting.get_setting('college_logo_path', '')
+                try:
+                    generate_pdf_certificate(
+                        cert_id=cert.certificate_id,
+                        student_name=cert.student_name,
+                        team_name=team.team_name,
+                        project_title=sub.project_title if sub else "Hackathon Project",
+                        cert_type=cert.certificate_type or "Participant",
+                        verification_url=verification_url,
+                        output_path=full_path,
+                        signature_path=sig_path,
+                        logo_path=logo_path
+                    )
+                except Exception as ex:
+                    print(f"PDF on-the-fly regen error: {ex}")
+
             if os.path.exists(full_path):
-                zipf.write(full_path, arcname=f"{cert.student_name}_Certificate.pdf")
+                clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+                zipf.write(full_path, arcname=f"{clean_team}_{clean_student}.pdf")
                 
     memory_file.seek(0)
     return send_file(
         memory_file,
         mimetype='application/zip',
         as_attachment=True,
-        download_name=f"{team.team_name}_Certificates.zip"
+        download_name=f"{clean_team}_Certificates.zip"
     )
 
 
@@ -837,13 +862,45 @@ HackTrack Organizing Committee"""
 @login_required
 def download_certificate(cert_id):
     if not check_admin(): return redirect(url_for('auth.login'))
-    cert = Certificate.query.get_or_404(cert_id)
+    clean_id = cert_id.strip().upper()
+    cert = Certificate.query.filter(
+        (db.func.upper(Certificate.certificate_id) == clean_id) |
+        (Certificate.verification_token == cert_id.strip())
+    ).first_or_404()
+    
     preview = request.args.get('preview', '0') == '1'
     full_path = os.path.normpath(os.path.join(current_app.root_path, 'static', cert.certificate_path))
+    if not os.path.exists(full_path):
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        from certificate_pdf import generate_pdf_certificate
+        from utils import get_actual_host_url
+        sub = cert.team.problem_submission if cert.team else None
+        verification_url = f"{get_actual_host_url()}/verify-certificate/{cert.verification_token}"
+        sig_path = SystemSetting.get_setting('organizer_signature_path', '')
+        logo_path = SystemSetting.get_setting('college_logo_path', '')
+        try:
+            generate_pdf_certificate(
+                cert_id=cert.certificate_id,
+                student_name=cert.student_name,
+                team_name=cert.team_name,
+                project_title=sub.project_title if sub else "Hackathon Project",
+                cert_type=cert.certificate_type or "Participant",
+                verification_url=verification_url,
+                output_path=full_path,
+                signature_path=sig_path,
+                logo_path=logo_path
+            )
+        except Exception as ex:
+            print(f"PDF on-the-fly regen error: {ex}")
+
+    clean_team = "".join(c for c in cert.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+    clean_student = "".join(c for c in cert.student_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
+    download_filename = f"{clean_team}_{clean_student}.pdf"
+
     return send_file(
         full_path,
         mimetype='application/pdf',
         as_attachment=not preview,
-        download_name=f"{cert.student_name}_Certificate.pdf" if not preview else None
+        download_name=download_filename if not preview else None
     )
 
