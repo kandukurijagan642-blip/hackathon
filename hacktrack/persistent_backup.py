@@ -1,7 +1,7 @@
 import os
 import json
 from database import db
-from models import User, Team, TeamMember, ProblemSubmission, Attendance, Round1Marks, Round2Marks, Round3Marks, FinalResult, SystemSetting
+from models import User, Team, TeamMember, ProblemSubmission, Attendance, Round1Marks, Round2Marks, Round3Marks, FinalResult, SystemSetting, Certificate
 from werkzeug.security import generate_password_hash
 
 BACKUP_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'teams_registry_backup.json')
@@ -17,7 +17,8 @@ def save_local_backup():
             'teams': [],
             'round1_marks': [],
             'round2_marks': [],
-            'round3_marks': []
+            'round3_marks': [],
+            'certificates': []
         }
 
         # Users
@@ -112,6 +113,23 @@ def save_local_backup():
                 'comments': r.comments,
                 'total_marks': r.total_marks,
                 'is_submitted': r.is_submitted
+            })
+
+        # Certificates
+        for c in Certificate.query.all():
+            data['certificates'].append({
+                'certificate_id': c.certificate_id,
+                'team_id': c.team_id,
+                'member_id': c.member_id,
+                'student_name': c.student_name,
+                'registration_number': c.registration_number,
+                'college_name': c.college_name,
+                'team_name': c.team_name,
+                'certificate_type': c.certificate_type,
+                'certificate_path': c.certificate_path,
+                'certificate_status': c.certificate_status,
+                'verification_token': c.verification_token,
+                'download_count': c.download_count or 0
             })
 
         with open(BACKUP_FILE, 'w', encoding='utf-8') as f:
@@ -283,8 +301,28 @@ def restore_local_backup(app, db):
                     r3.scalability = r_doc['scalability']
                     r3.presentation = r_doc['presentation']
                     r3.comments = r_doc.get('comments', '')
-                    r3.total_marks = r_doc['total_marks']
-                    r3.is_submitted = r_doc.get('is_submitted', True)
+            # Restore Certificates
+            for c_doc in data.get('certificates', []):
+                existing_c = Certificate.query.filter_by(certificate_id=c_doc['certificate_id']).first()
+                if not existing_c:
+                    c_obj = Certificate(
+                        certificate_id=c_doc['certificate_id'],
+                        team_id=c_doc['team_id'],
+                        member_id=c_doc.get('member_id'),
+                        student_name=c_doc['student_name'],
+                        registration_number=c_doc.get('registration_number', 'N/A'),
+                        college_name=c_doc['college_name'],
+                        team_name=c_doc['team_name'],
+                        certificate_type=c_doc.get('certificate_type', 'Participant'),
+                        certificate_path=c_doc['certificate_path'],
+                        certificate_status=c_doc.get('certificate_status', 'RELEASED'),
+                        verification_token=c_doc.get('verification_token', ''),
+                        download_count=c_doc.get('download_count', 0)
+                    )
+                    db.session.add(c_obj)
+                else:
+                    existing_c.certificate_status = c_doc.get('certificate_status', existing_c.certificate_status)
+                    existing_c.download_count = c_doc.get('download_count', existing_c.download_count)
 
             db.session.commit()
 

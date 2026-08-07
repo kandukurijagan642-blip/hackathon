@@ -53,22 +53,47 @@ def root_quick_edit(team_id):
 
 @app.route('/certificates/preview/<cert_id>')
 def preview_certificate(cert_id):
-    from flask import render_template
+    from flask import render_template, current_app, abort
     from flask_login import current_user
-    cert = Certificate.query.get_or_404(cert_id)
     
-    # Check if certificate system is enabled and cert is released
+    clean_id = cert_id.strip().upper()
+    cert = Certificate.query.filter(
+        (db.func.upper(Certificate.certificate_id) == clean_id) |
+        (Certificate.verification_token == cert_id.strip())
+    ).first()
+    
+    if not cert:
+        try:
+            from persistent_backup import restore_local_backup
+            restore_local_backup(current_app, db)
+            cert = Certificate.query.filter(
+                (db.func.upper(Certificate.certificate_id) == clean_id) |
+                (Certificate.verification_token == cert_id.strip())
+            ).first()
+        except Exception as ex:
+            print(f"Restore lookup notice: {ex}")
+            
+    if not cert:
+        # Fallback check if clean_id is a team ID (e.g. HT2026016)
+        team = Team.query.filter(db.func.upper(Team.team_id) == clean_id).first()
+        if team:
+            from routes.leader import ensure_certificates_ready
+            from utils import get_actual_host_url
+            ensure_certificates_ready(team, get_actual_host_url())
+            cert = Certificate.query.filter_by(team_id=team.team_id).first()
+
+    if not cert:
+        abort(404)
+        
     certificates_active = (
         FinalResult.query.count() > 0 or 
         SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
     )
     is_released = (cert.certificate_status == 'RELEASED') and certificates_active
     
-    # Admins & Organizers can preview locked certs for inspection
     if current_user.is_authenticated and current_user.role in ['Admin', 'Organizer']:
         return render_template('certificate_preview.html', cert=cert)
         
-    # If certificates are locked or system disabled, display locked notice
     if not is_released:
         return render_template('certificate_locked.html', cert=cert)
         
