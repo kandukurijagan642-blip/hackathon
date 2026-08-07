@@ -73,7 +73,7 @@ class ProblemSubmission(db.Model):
     problem_statement = db.Column(db.Text, nullable=False)
     domain = db.Column(db.String(100), nullable=False)
     abstract = db.Column(db.Text, nullable=False)
-    technology_stack = db.Column(db.Text, nullable=False)
+    technology_stack = db.Column(db.Text, nullable=True, default='N/A')
     submission_time = db.Column(db.DateTime, default=datetime.utcnow)
     is_locked = db.Column(db.Boolean, default=True, nullable=False)
 
