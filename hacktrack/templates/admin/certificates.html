@@ -205,6 +205,9 @@
                                                 <a href="{{ url_for('admin.download_team_certificates_zip', team_id=team.team_id) }}" class="btn btn-sm btn-outline-primary">
                                                     <i class="bi bi-file-zip"></i> ZIP
                                                 </a>
+                                                <button type="button" class="btn btn-sm btn-warning fw-bold text-dark" onclick="shareTeamZipFile('{{ team.team_id }}', '{{ team.team_name }}')" title="Share PDF Certificates Archive">
+                                                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> Share PDF
+                                                </button>
                                                 {% set mail_subject = "Hackathon Certificates - Team " ~ team.team_name %}
                                                 {% set ns = namespace(body="Dear " ~ team.leader.name ~ ",\n\nYour team's hackathon certificates for '" ~ team.team_name ~ "' have been officially released!\n\nTeam ID: " ~ team.team_id ~ "\nCollege: " ~ team.college ~ "\n\nDirect links to preview/download PDF certificates:\n") %}
                                                 {% for cert in team_certs %}
@@ -594,6 +597,41 @@ async function shareActualPdfFile(certId, studentName, teamName) {
     } catch (err) {
         console.error('Error sharing PDF file:', err);
         alert('Could not prepare PDF file for sharing.');
+    } finally {
+        if (btn) btn.innerHTML = origHtml;
+    }
+}
+
+async function shareTeamZipFile(teamId, teamName) {
+    const btn = event ? event.currentTarget : null;
+    const origHtml = btn ? btn.innerHTML : '';
+    if (btn) btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i> Fetching ZIP...';
+    try {
+        const response = await fetch('/leader/certificates/public-download-all/' + teamId);
+        if (!response.ok) throw new Error('ZIP download failed');
+        const blob = await response.blob();
+        const cleanTeam = teamName.replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = cleanTeam + '_Certificates.zip';
+        const zipFile = new File([blob], fileName, { type: 'application/zip' });
+        
+        if (navigator.canShare && navigator.canShare({ files: [zipFile] })) {
+            await navigator.share({
+                title: teamName + ' Certificates ZIP Archive',
+                text: 'Attached are all official PDF certificates for Team ' + teamName + '.',
+                files: [zipFile]
+            });
+        } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('ZIP archive "' + fileName + '" containing all team PDF certificates has been downloaded directly to your device so you can share/attach it!');
+        }
+    } catch (err) {
+        console.error('Error sharing ZIP file:', err);
+        alert('Could not prepare ZIP file for sharing.');
     } finally {
         if (btn) btn.innerHTML = origHtml;
     }
