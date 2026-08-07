@@ -222,6 +222,16 @@
                                                                 </button>
                                                             </form>
                                                         </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item text-warning" data-bs-toggle="modal" data-bs-target="#customEmailModal-{{ team.team_id }}" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
+                                                                <i class="bi bi-pencil-square text-warning" style="margin-right: 8px;"></i> Send to Custom / Corrected Email...
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item text-info" onclick="triggerWebShare('Team {{ team.team_name }} Certificates', 'Official Hackathon Certificates for Team {{ team.team_name }}', '{{ request.url_root.rstrip('/') ~ url_for('leader.public_download_all_certificates', team_id=team.team_id) }}')" style="font-size: 13px; font-weight: 500; padding: 8px 16px; border: 0; background: none; width: 100%; text-align: left;">
+                                                                <i class="bi bi-share-fill text-primary" style="margin-right: 8px;"></i> Share via OS App Picker (WhatsApp, Mail, etc.)
+                                                            </button>
+                                                        </li>
                                                         <li><hr class="dropdown-divider" style="border-color: #334155;"></li>
                                                         <li>
                                                             <a class="dropdown-item text-light" href="https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to={{ compose_to|urlencode }}&su={{ mail_subject|urlencode }}&body={{ mail_body|urlencode }}" target="_blank" rel="noopener noreferrer" style="font-size: 13px; font-weight: 500; padding: 8px 16px; display: block; width: 100%; text-align: left;">
@@ -439,6 +449,42 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Custom Email Dispatch Modal for Team -->
+        <div class="modal fade" id="customEmailModal-{{ team.team_id }}" tabindex="-1" aria-labelledby="customEmailModalLabel-{{ team.team_id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered text-start">
+                <div class="modal-content" style="background-color: #1e293b !important; color: #ffffff !important; border: 1px solid #334155; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);">
+                    <form action="{{ url_for('admin.send_team_certificates_email', team_id=team.team_id) }}" method="POST">
+                        <div class="modal-header" style="background-color: #0f172a !important; border-bottom: 1px solid #334155; padding: 18px 24px;">
+                            <h5 class="modal-title" id="customEmailModalLabel-{{ team.team_id }}" style="color: #38bdf8 !important; font-weight: 700; margin: 0; font-size: 16px;">
+                                <i class="bi bi-envelope-check-fill me-2"></i> Share / Send Certificates to Custom Email
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4" style="background-color: #1e293b !important;">
+                            <p class="text-light small mb-3">
+                                If the registered Team Leader email is incorrect or bounced, type the correct recipient email address below. All certificates for <strong>{{ team.team_name }}</strong> will be delivered to this address.
+                            </p>
+                            <div class="mb-3">
+                                <label class="form-label text-light fw-bold small">Recipient Email Address</label>
+                                <input type="email" name="recipient_email" id="custom_recipient_email_{{ team.team_id }}" class="form-control text-light border-secondary" style="background-color: #0f172a !important; border-radius: 8px; padding: 10px 14px;" value="{{ team.leader.email }}" placeholder="e.g. correct.email@gmail.com" required>
+                            </div>
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-success fw-bold py-2" style="border-radius: 8px; background-color: #10b981; border: 0;">
+                                    <i class="bi bi-send-fill me-2"></i> Send Immediately (Attach PDFs to this Email)
+                                </button>
+                                <button type="button" class="btn btn-outline-danger fw-bold py-2" style="border-radius: 8px;" onclick="openCustomGmail('{{ team.team_id }}', '{{ mail_subject|urlencode }}', '{{ mail_body|urlencode }}')">
+                                    <i class="bi bi-google me-2"></i> Open in Gmail Web Compose with this Email
+                                </button>
+                                <button type="button" class="btn btn-outline-info fw-bold py-2" style="border-radius: 8px;" onclick="triggerWebShare('Team {{ team.team_name }} Certificates', 'Official Hackathon Certificates for Team {{ team.team_name }}', '{{ request.url_root.rstrip('/') ~ url_for('leader.public_download_all_certificates', team_id=team.team_id) }}')">
+                                    <i class="bi bi-share-fill me-2"></i> Open OS App Picker / WhatsApp / Telegram
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
         {% endif %}
     {% endfor %}
 {% endblock %}
@@ -448,18 +494,45 @@
 function copyToClipboard(text, elementId) {
     navigator.clipboard.writeText(text).then(function() {
         const btn = document.getElementById(elementId);
-        const originalContent = btn.innerHTML;
-        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
-        btn.classList.remove('btn-outline-secondary');
-        btn.classList.add('btn-success');
-        setTimeout(function() {
-            btn.innerHTML = originalContent;
-            btn.classList.remove('btn-success');
-            btn.classList.add('btn-outline-secondary');
-        }, 2000);
+        if (btn) {
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-success');
+            setTimeout(function() {
+                btn.innerHTML = originalContent;
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-secondary');
+            }, 2000);
+        }
     }, function(err) {
         console.error('Could not copy text: ', err);
     });
+}
+
+function triggerWebShare(title, text, url) {
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: text,
+            url: url
+        }).catch(err => console.log('Share canceled or failed:', err));
+    } else {
+        navigator.clipboard.writeText(url).then(function() {
+            alert('Certificates Link copied to clipboard:\n\n' + url + '\n\nYou can now paste and share this in any app!');
+        });
+    }
+}
+
+function openCustomGmail(teamId, subjectEncoded, bodyEncoded) {
+    const input = document.getElementById('custom_recipient_email_' + teamId);
+    let target = input ? input.value.trim() : '';
+    if (!target) {
+        alert('Please enter a valid recipient email address.');
+        return;
+    }
+    const url = 'https://mail.google.com/mail/u/0/?view=cm&fs=1&tf=1&to=' + encodeURIComponent(target) + '&su=' + subjectEncoded + '&body=' + bodyEncoded;
+    window.open(url, '_blank');
 }
 </script>
 {% endblock %}

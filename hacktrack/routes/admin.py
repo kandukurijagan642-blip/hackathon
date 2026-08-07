@@ -785,12 +785,18 @@ def release_all_certificates():
 def send_team_certificates_email(team_id):
     if not check_admin(): return redirect(url_for('auth.login'))
     team = Team.query.filter_by(team_id=team_id).first_or_404()
+    custom_email = request.form.get('recipient_email', '').strip()
+    target_email = custom_email if custom_email else (team.leader.email if team.leader else None)
+    
+    if not target_email:
+        flash('No recipient email address specified.', 'danger')
+        return redirect(url_for('admin.certificates'))
+
     certs = Certificate.query.filter_by(team_id=team_id).all()
     if not certs:
-        # If no certs exist, let's auto-generate them now
         from certificate_automation import auto_generate_team_certificates
         auto_generate_team_certificates(team)
-        certs = Certificate.query.filter_by(team_id=team_id).all()
+        certs = Certificate.query.filter_by(team_id=team.team_id).all()
         
     attachments = []
     clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
@@ -826,9 +832,9 @@ def send_team_certificates_email(team_id):
                 attachments.append((att_filename, f.read()))
                 
     if attachments:
-        email_body = f"""Dear Team Leader {team.leader.name},
+        email_body = f"""Dear Team Leader / Participant,
 
-Congratulations! The certificates for your team '{team.team_name}' have been generated and released.
+Congratulations! The certificates for team '{team.team_name}' have been generated and released.
 
 Please find all team members' participation certificates attached in PDF format.
 
@@ -838,7 +844,7 @@ HackTrack Organizing Committee"""
         try:
             from utils import send_mock_email_with_attachments
             send_mock_email_with_attachments(
-                to_email=team.leader.email,
+                to_email=target_email,
                 subject=f"Hackathon Certificates - Team {team.team_name}",
                 body_text=email_body,
                 attachments=attachments
@@ -850,8 +856,8 @@ HackTrack Organizing Committee"""
             cert.email_sent = True
         db.session.commit()
         
-        log_admin_activity("Send Certificates Email", f"Manually emailed certificates to leader of team {team_id}")
-        flash(f"Certificates successfully emailed to {team.leader.email} for team {team.team_name}!", "success")
+        log_admin_activity("Send Certificates Email", f"Manually emailed certificates to {target_email} for team {team_id}")
+        flash(f"Certificates successfully emailed to {target_email} for team {team.team_name}!", "success")
     else:
         flash('No certificate PDF files found on disk to email.', 'danger')
         
