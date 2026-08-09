@@ -75,7 +75,7 @@ class ProblemSubmission(db.Model):
     abstract = db.Column(db.Text, nullable=False)
     technology_stack = db.Column(db.Text, nullable=True, default='N/A')
     submission_time = db.Column(db.DateTime, default=datetime.utcnow)
-    is_locked = db.Column(db.Boolean, default=True, nullable=False)
+    is_locked = db.Column(db.Boolean, default=False, nullable=False)
 
 
 class JudgeProfile(db.Model):
@@ -172,18 +172,14 @@ class SystemSetting(db.Model):
     setting_key = db.Column(db.String(50), unique=True, nullable=False)
     setting_value = db.Column(db.String(255), nullable=False)
     
-    _cache = {}  # In-memory cache to avoid repeated DB queries
-    
+    _cache = {}  # In-memory cache (kept for interface compat but not used for reads)
+
     @classmethod
     def get_setting(cls, key, default=None):
-        if key in cls._cache:
-            return cls._cache[key]
+        # Always read from DB — avoids stale cache issues on multi-worker hosts (Render)
         try:
             setting = cls.query.filter_by(setting_key=key).first()
-            val = setting.setting_value if setting else default
-            if val is not None:
-                cls._cache[key] = val
-            return val
+            return setting.setting_value if setting else default
         except Exception:
             return default
 
@@ -197,7 +193,7 @@ class SystemSetting(db.Model):
             else:
                 setting.setting_value = str(value)
             db.session.commit()
-            cls._cache[key] = str(value)  # Update cache
+            cls._cache[key] = str(value)  # Keep cache in sync (single-worker compat)
         except Exception as e:
             print(f"SystemSetting set error: {e}")
 

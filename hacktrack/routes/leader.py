@@ -510,7 +510,7 @@ def quick_edit(team_id):
             submission.project_title = project_title
             submission.problem_statement = problem_statement
             submission.domain = domain
-            submission.is_locked = True
+            # Do NOT auto-lock — only admin/organizer can lock
         else:
             submission = ProblemSubmission(
                 team_id=team.team_id,
@@ -519,7 +519,7 @@ def quick_edit(team_id):
                 domain=domain,
                 abstract='Abstract Details (Pending)',
                 technology_stack='Tech Stack (Pending)',
-                is_locked=True
+                is_locked=False  # Unlocked by default; admin/organizer can lock
             )
             db.session.add(submission)
         db.session.commit()
