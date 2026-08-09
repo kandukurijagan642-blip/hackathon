@@ -31,21 +31,23 @@ class Config:
     
     DATABASE_URL = os.environ.get('DATABASE_URL')
     
-    # Render or other hosting detection: check RENDER, RENDER_SERVICE_ID, or if PORT is defined without a custom MYSQL_HOST
-    is_on_render = (
+    # Render, Railway, or other hosting detection: check RENDER, RAILWAY, or if PORT is defined without a custom MYSQL_HOST
+    is_on_hosting = (
         os.environ.get('RENDER') is not None or 
         os.environ.get('RENDER_SERVICE_ID') is not None or 
+        os.environ.get('RAILWAY_ENVIRONMENT') is not None or
+        os.environ.get('RAILWAY_STATIC_URL') is not None or
         (os.environ.get('PORT') is not None and os.environ.get('MYSQL_HOST') is None)
     )
     
     if DATABASE_URL:
-        # Render PostgreSQL or any external database
+        # Render/Railway PostgreSQL or any external database
         if DATABASE_URL.startswith("postgres://"):
             SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace("postgres://", "postgresql://", 1)
         else:
             SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    elif is_on_render:
-        # On Render/hosting without DATABASE_URL and without external MySQL - use SQLite
+    elif is_on_hosting:
+        # On hosting without DATABASE_URL and without external MySQL - use SQLite
         SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'hacktrack.db')
     else:
         # Local development — use MySQL
