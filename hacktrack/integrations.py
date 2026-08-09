@@ -7,11 +7,18 @@ import datetime
 
 
 def _get_setting(key, default=''):
+    # 1. Check environment variable first (Render env vars / .env file)
+    env_val = os.environ.get(key.upper(), '').strip()
+    if env_val:
+        return env_val
+    # 2. Fall back to DB (Admin UI settings)
     try:
         from models import SystemSetting
-        return SystemSetting.get_setting(key, default) or default
+        db_val = SystemSetting.get_setting(key, default)
+        return db_val if db_val else default
     except Exception:
-        return os.environ.get(key.upper(), default)
+        return default
+
 
 
 # TELEGRAM
