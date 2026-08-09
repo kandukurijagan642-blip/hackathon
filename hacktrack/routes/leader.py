@@ -22,142 +22,43 @@ def log_leader_activity(action, details=None):
         print(f"Error logging leader activity: {e}")
 
 def ensure_certificates_ready(team, host_url):
-    from datetime import datetime
-    
-    # Check if certificates module is active (results published or enabled by admin)
-    certificates_active = (
-        FinalResult.query.count() > 0 or 
-        SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
-    )
-
-    # Fetch existing
+    """
+    Disk-only helper: regenerates missing PDF files for certificates that already
+    exist in the database. Does NOT create new Certificate rows — that is
+    exclusively the responsibility of auto_generate_team_certificates() called
+    at registration time.
+    """
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
-    
-    # If certs already exist, check if any is RELEASED or if module is active
-    if certs:
-        sig_path = SystemSetting.get_setting('organizer_signature_path')
-        logo_path = SystemSetting.get_setting('college_logo_path')
-        submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
-        
-        for cert in certs:
-            # Check if PDF file on disk exists; if missing (e.g. ephemeral server restart), regenerate it on-the-fly
-            full_pdf_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
-            if not os.path.exists(full_pdf_path):
-                os.makedirs(os.path.dirname(full_pdf_path), exist_ok=True)
-                verification_url = f"{host_url.rstrip('/')}/verify-certificate/{cert.verification_token}"
-                try:
-                    generate_pdf_certificate(
-                        cert_id=cert.certificate_id,
-                        student_name=cert.student_name,
-                        team_name=team.team_name,
-                        project_title=submission.project_title if submission else "Hackathon Project",
-                        cert_type=cert.certificate_type or "Participant",
-                        verification_url=verification_url,
-                        output_path=full_pdf_path,
-                        signature_path=sig_path,
-                        logo_path=logo_path
-                    )
-                except Exception as e:
-                    print(f"Error regenerating missing PDF for {cert.certificate_id}: {e}")
-        return True
-
-    if not certificates_active:
+    if not certs:
+        # No cert rows exist yet — nothing to do here. Creation happens at
+        # registration via auto_generate_team_certificates().
         return False
 
-    # Auto-generate with status RELEASED
-    cert_type = "Participant"
-    final_res = FinalResult.query.filter_by(team_id=team.team_id).first()
-    if final_res:
-        if final_res.rank == 1:
-            cert_type = "Winner"
-        else:
-            cert_type = "Finalist"
-            
     sig_path = SystemSetting.get_setting('organizer_signature_path')
     logo_path = SystemSetting.get_setting('college_logo_path')
-    
-    # Leader
-    leader_user = User.query.get(team.leader_id)
-    leader_name = leader_user.name if leader_user else "Team Leader"
-    cert_count = Certificate.query.count()
-    new_cert_num = cert_count + 1
-    leader_cert_id = f"HC2026-{new_cert_num:06d}"
-    leader_token = secrets.token_urlsafe(16)
-    leader_pdf_filename = f"{leader_cert_id}.pdf"
-    leader_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', leader_pdf_filename)
-    
-    os.makedirs(os.path.dirname(leader_pdf_path), exist_ok=True)
-    verification_url = f"{host_url.rstrip('/')}/verify-certificate/{leader_token}"
-    
     submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
-    generate_pdf_certificate(
-        cert_id=leader_cert_id,
-        student_name=leader_name,
-        team_name=team.team_name,
-        project_title=submission.project_title if submission else "Hackathon Project",
-        cert_type=cert_type,
-        verification_url=verification_url,
-        output_path=leader_pdf_path,
-        signature_path=sig_path,
-        logo_path=logo_path
-    )
-    
-    leader_cert = Certificate(
-        certificate_id=leader_cert_id,
-        team_id=team.team_id,
-        member_id=None,
-        student_name=leader_name,
-        registration_number=f"{team.team_id}-LDR",
-        college_name=team.college,
-        team_name=team.team_name,
-        certificate_type=cert_type,
-        certificate_path=f"certificates/{leader_pdf_filename}",
-        certificate_status='LOCKED',
-        released_time=None,
-        verification_token=leader_token
-    )
-    db.session.add(leader_cert)
-    
-    # Members
-    for member in team.members:
-        cert_count = Certificate.query.count()
-        new_cert_num = cert_count + 1
-        m_cert_id = f"HC2026-{new_cert_num:06d}"
-        m_token = secrets.token_urlsafe(16)
-        m_pdf_filename = f"{m_cert_id}.pdf"
-        m_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', m_pdf_filename)
-        
-        m_verification_url = f"{host_url.rstrip('/')}/verify-certificate/{m_token}"
-        
-        generate_pdf_certificate(
-            cert_id=m_cert_id,
-            student_name=member.student_name,
-            team_name=team.team_name,
-            project_title=submission.project_title if submission else "Hackathon Project",
-            cert_type=cert_type,
-            verification_url=m_verification_url,
-            output_path=m_pdf_path,
-            signature_path=sig_path,
-            logo_path=logo_path
-        )
-        
-        m_cert = Certificate(
-            certificate_id=m_cert_id,
-            team_id=team.team_id,
-            member_id=member.member_id,
-            student_name=member.student_name,
-            registration_number=member.registration_number,
-            college_name=team.college,
-            team_name=team.team_name,
-            certificate_type=cert_type,
-            certificate_path=f"certificates/{m_pdf_filename}",
-            certificate_status='LOCKED',
-            released_time=None,
-            verification_token=m_token
-        )
-        db.session.add(m_cert)
-    
-    db.session.commit()
+
+    for cert in certs:
+        # Regenerate PDF on disk if missing (e.g. after ephemeral server restart).
+        # Status in DB is never changed here.
+        full_pdf_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
+        if not os.path.exists(full_pdf_path):
+            os.makedirs(os.path.dirname(full_pdf_path), exist_ok=True)
+            verification_url = f"{host_url.rstrip('/')}/verify-certificate/{cert.verification_token}"
+            try:
+                generate_pdf_certificate(
+                    cert_id=cert.certificate_id,
+                    student_name=cert.student_name,
+                    team_name=team.team_name,
+                    project_title=submission.project_title if submission else "Hackathon Project",
+                    cert_type=cert.certificate_type or "Participant",
+                    verification_url=verification_url,
+                    output_path=full_pdf_path,
+                    signature_path=sig_path,
+                    logo_path=logo_path
+                )
+            except Exception as e:
+                print(f"Error regenerating missing PDF for {cert.certificate_id}: {e}")
     return True
 
 @leader_bp.route('/dashboard')
@@ -289,61 +190,12 @@ def submit_problem():
         
     return render_template('leader/submit_problem.html', team=team, submission=submission)
 
-@leader_bp.route('/download-certificate/<type>/<id>')
-@login_required
-def download_certificate(type, id):
-    if current_user.role != 'Leader':
-        flash('Unauthorized access!', 'danger')
-        return redirect(url_for('auth.login'))
-        
-    team = Team.query.filter_by(leader_id=current_user.id).first()
-    if not team:
-        flash('Team not found.', 'danger')
-        return redirect(url_for('leader.dashboard'))
-        
-    # Check attendance
-    att = Attendance.query.filter_by(team_id=team.team_id).first()
-    if not att or att.status != 'Present':
-        flash('Attendance check-in is required before downloading certificates.', 'warning')
-        return redirect(url_for('leader.dashboard'))
-        
-    final_res = FinalResult.query.filter_by(team_id=team.team_id).first()
-    rank_text = None
-    if final_res and final_res.rank in [1, 2, 3]:
-        ranks = {1: '1st Place Winner', 2: '2nd Place Runner-Up', 3: '3rd Place Second Runner-Up'}
-        rank_text = ranks[final_res.rank]
-        
-    recipient_name = ""
-    # Ensure team_id strings compare correctly or integer conversion occurs
-    if type == 'leader':
-        if str(current_user.id) != str(id):
-            flash('Access denied.', 'danger')
-            return redirect(url_for('leader.dashboard'))
-        recipient_name = current_user.name
-    elif type == 'member':
-        member = TeamMember.query.filter_by(member_id=int(id), team_id=team.team_id).first_or_404()
-        recipient_name = member.student_name
-    else:
-        flash('Invalid certificate request.', 'danger')
-        return redirect(url_for('leader.dashboard'))
-        
-    filename = f"cert_{recipient_name.lower().replace(' ', '_')}.pdf"
-    filepath = os.path.join(current_app.config['EXPORT_FOLDER'], filename)
-    
-    # Load project title from submission if available, fallback to team metadata
-    sub = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
-    proj_title = sub.project_title if sub else 'HackTrack Project'
-    
-    generate_member_certificate(
-        team_name=team.team_name,
-        project_title=proj_title,
-        student_name=recipient_name,
-        rank_text=rank_text,
-        filepath=filepath
-    )
-    
-    log_leader_activity("Download Certificate", f"Downloaded certificate for {recipient_name}")
-    return send_file(filepath, as_attachment=True, download_name=f"{recipient_name}_Certificate.pdf")
+# NOTE: The old /download-certificate/<type>/<id> route has been removed.
+# It bypassed certificate_status checks by calling generate_member_certificate()
+# directly, allowing download of LOCKED certificates.
+# The authoritative download routes are:
+#   /leader/certificates/download/<cert_id>        (authenticated leader)
+#   /leader/certificates/public-download/<cert_id> (public, RELEASED only)
 
 
 @leader_bp.route('/quick-edit/<team_id>', methods=['GET', 'POST'])
@@ -376,115 +228,10 @@ def quick_edit(team_id):
     if request.method == 'POST':
         action = request.form.get('action')
         
-        # Public QR Generation trigger
-        if action == 'generate_certs' and certificates_active:
-            existing = Certificate.query.filter_by(team_id=team.team_id).first()
-            if not existing:
-                cert_type = "Participant"
-                final_res = FinalResult.query.filter_by(team_id=team.team_id).first()
-                if final_res:
-                    if final_res.rank == 1:
-                        cert_type = "Winner"
-                    else:
-                        cert_type = "Finalist"
-                        
-                sig_path = SystemSetting.get_setting('organizer_signature_path')
-                logo_path = SystemSetting.get_setting('college_logo_path')
-                
-                # Create for Leader
-                leader_user = User.query.get(team.leader_id)
-                leader_name = leader_user.name if leader_user else "Team Leader"
-                cert_count = Certificate.query.count()
-                new_cert_num = cert_count + 1
-                leader_cert_id = f"HC2026-{new_cert_num:06d}"
-                leader_token = secrets.token_urlsafe(16)
-                leader_pdf_filename = f"{leader_cert_id}.pdf"
-                leader_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', leader_pdf_filename)
-                
-                verification_url = f"{request.host_url.rstrip('/')}/verify-certificate/{leader_token}"
-                
-                generate_pdf_certificate(
-                    cert_id=leader_cert_id,
-                    student_name=leader_name,
-                    team_name=team.team_name,
-                    project_title=submission.project_title if submission else "Hackathon Project",
-                    cert_type=cert_type,
-                    verification_url=verification_url,
-                    output_path=leader_pdf_path,
-                    signature_path=sig_path,
-                    logo_path=logo_path
-                )
-                
-                leader_cert = Certificate(
-                    certificate_id=leader_cert_id,
-                    team_id=team.team_id,
-                    member_id=None,
-                    student_name=leader_name,
-                    registration_number=f"{team.team_id}-LDR",
-                    college_name=team.college,
-                    team_name=team.team_name,
-                    certificate_type=cert_type,
-                    certificate_path=f"certificates/{leader_pdf_filename}",
-                    certificate_status='LOCKED',
-                    verification_token=leader_token
-                )
-                db.session.add(leader_cert)
-                db.session.commit()
-                
-                # Create for members
-                for member in team.members:
-                    cert_count = Certificate.query.count()
-                    new_cert_num = cert_count + 1
-                    m_cert_id = f"HC2026-{new_cert_num:06d}"
-                    m_token = secrets.token_urlsafe(16)
-                    m_pdf_filename = f"{m_cert_id}.pdf"
-                    m_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', m_pdf_filename)
-                    
-                    m_verification_url = f"{request.host_url.rstrip('/')}/verify-certificate/{m_token}"
-                    
-                    generate_pdf_certificate(
-                        cert_id=m_cert_id,
-                        student_name=member.student_name,
-                        team_name=team.team_name,
-                        project_title=submission.project_title if submission else "Hackathon Project",
-                        cert_type=cert_type,
-                        verification_url=m_verification_url,
-                        output_path=m_pdf_path,
-                        signature_path=sig_path,
-                        logo_path=logo_path
-                    )
-                    
-                    m_cert = Certificate(
-                        certificate_id=m_cert_id,
-                        team_id=team.team_id,
-                        member_id=member.member_id,
-                        student_name=member.student_name,
-                        registration_number=member.registration_number,
-                        college_name=team.college,
-                        team_name=team.team_name,
-                        certificate_type=cert_type,
-                        certificate_path=f"certificates/{m_pdf_filename}",
-                        certificate_status='LOCKED',
-                        verification_token=m_token
-                    )
-                    db.session.add(m_cert)
-                    db.session.commit()
-                    
-                try:
-                    log = ActivityLog(
-                        user_id=current_user.id,
-                        action="Generate Certificates (QR Link)",
-                        ip_address=request.remote_addr,
-                        details=f"Generated certificates for team {team.team_id} via QR link by user: {current_user.email} (Role: {current_user.role})."
-                    )
-                    db.session.add(log)
-                    db.session.commit()
-                except:
-                    pass
-                
-                flash('Team certificates generated successfully!', 'success')
-            return redirect(url_for('leader.quick_edit', team_id=team.team_id))
-            
+        # NOTE: 'generate_certs' action has been removed.
+        # Certificate rows are created exclusively at registration time via
+        # auto_generate_team_certificates(). Only Admin can release them.
+        
         if not problem_released:
             flash('The problem statement submission phase is not active yet.', 'danger')
             return redirect(url_for('leader.quick_edit', team_id=team.team_id))

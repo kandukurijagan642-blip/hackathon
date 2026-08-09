@@ -118,7 +118,7 @@ def register_team():
                 role='Leader'
             )
             db.session.add(leader_user)
-            db.session.commit()
+            db.session.flush()    # Get leader_user.id without committing
         
         # 2. Auto-generate guaranteed unique Team ID
         from utils import generate_unique_team_id
@@ -133,22 +133,12 @@ def register_team():
             leader_id=leader_user.id
         )
         db.session.add(new_team)
-        db.session.commit()
         
         # 4. Create initial Attendance record (Absent by default)
-        att = Attendance(team_id=new_team.team_id, status='Absent')
+        att = Attendance(team_id=team_id, status='Absent')
         db.session.add(att)
-        db.session.commit()
         
-        # 5. Generate QR Code containing: Team ID | Team Name | Leader Name
-        qr_path = generate_team_qr(
-            team_id=new_team.team_id,
-            team_name=new_team.team_name,
-            leader_name=leader_user.name,
-            host_url=request.host_url.rstrip('/')
-        )
-        
-        # 6. Add Members
+        # 5. Add Members
         member_names = request.form.getlist('member_name[]')
         member_regs = request.form.getlist('member_reg[]') if 'member_reg[]' in request.form else []
         member_emails = request.form.getlist('member_email[]')
@@ -156,19 +146,40 @@ def register_team():
         
         for idx, (name, email, phone) in enumerate(zip(member_names, member_emails, member_phones)):
             if name.strip():
-                reg_val = member_regs[idx].strip() if idx < len(member_regs) and member_regs[idx].strip() else f"{new_team.team_id}-M{idx+1}"
+                reg_val = member_regs[idx].strip() if idx < len(member_regs) and member_regs[idx].strip() else f"{team_id}-M{idx+1}"
                 m = TeamMember(
-                    team_id=new_team.team_id,
+                    team_id=team_id,
                     student_name=name.strip(),
                     registration_number=reg_val,
                     email=email.strip(),
                     phone=phone.strip()
                 )
                 db.session.add(m)
-                
+        
+        # --- Single atomic commit for all core records ---
         db.session.commit()
 
-        # Sync to Local Backup & MongoDB Atlas for permanent persistence
+        # --- Side effects after commit (failures here are non-fatal) ---
+
+        # 6. Generate QR Code
+        try:
+            generate_team_qr(
+                team_id=new_team.team_id,
+                team_name=new_team.team_name,
+                leader_name=leader_user.name,
+                host_url=request.host_url.rstrip('/')
+            )
+        except Exception as e:
+            print(f"QR generation error: {e}")
+
+        # 7. Auto-generate LOCKED certificates
+        try:
+            from certificate_automation import auto_generate_team_certificates
+            auto_generate_team_certificates(new_team)
+        except Exception as e:
+            print(f"Certificate generation error: {e}")
+
+        # 8. Sync to Local Backup & MongoDB Atlas
         try:
             from persistent_backup import save_local_backup
             save_local_backup()
@@ -181,10 +192,7 @@ def register_team():
         except Exception as e:
             print(f"MongoDB sync error: {e}")
 
-        # Auto generate LOCKED certificates in the background immediately
-        from certificate_automation import auto_generate_team_certificates
-        auto_generate_team_certificates(new_team)
-        
+        # 9. Send welcome email
         email_body = f"""Hello {leader_name},
 
 Your team '{team_name}' has been registered for the HackTrack Hackathon!
@@ -306,6 +314,7 @@ def csv_import():
                 
             leader_email = str(row['leader_email']).strip()
             leader_user = User.query.filter_by(email=leader_email).first()
+            default_pwd = None
             if not leader_user:
                 from utils import generate_random_password
                 default_pwd = generate_random_password()
@@ -317,7 +326,7 @@ def csv_import():
                     role='Leader'
                 )
                 db.session.add(leader_user)
-                db.session.commit()
+                db.session.flush()    # Get leader_user.id without committing
             
             from utils import generate_unique_team_id
             team_id = generate_unique_team_id()
@@ -330,23 +339,32 @@ def csv_import():
                 leader_id=leader_user.id
             )
             db.session.add(new_team)
-            db.session.commit()
             
-            att = Attendance(team_id=new_team.team_id, status='Absent')
+            att = Attendance(team_id=team_id, status='Absent')
             db.session.add(att)
+            
+            # Single commit per row for all core records
             db.session.commit()
             
-            generate_team_qr(
-                team_id=new_team.team_id,
-                team_name=new_team.team_name,
-                leader_name=leader_user.name,
-                host_url=request.host_url.rstrip('/')
-            )
-            from certificate_automation import auto_generate_team_certificates
-            auto_generate_team_certificates(new_team)
+            # Side effects (non-fatal)
+            try:
+                generate_team_qr(
+                    team_id=new_team.team_id,
+                    team_name=new_team.team_name,
+                    leader_name=leader_user.name,
+                    host_url=request.host_url.rstrip('/')
+                )
+            except Exception as e:
+                print(f"QR generation error for CSV row: {e}")
+            
+            try:
+                from certificate_automation import auto_generate_team_certificates
+                auto_generate_team_certificates(new_team)
+            except Exception as e:
+                print(f"Certificate generation error for CSV row: {e}")
+            
             imported_count += 1
             
-        db.session.commit()
         log_organizer_activity("CSV Import", f"Imported {imported_count} teams from CSV")
         flash(f"Successfully imported {imported_count} teams from CSV file.", "success")
     except Exception as e:

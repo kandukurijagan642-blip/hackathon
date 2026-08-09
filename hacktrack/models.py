@@ -70,6 +70,9 @@ class TeamMember(db.Model):
 
 class Attendance(db.Model):
     __tablename__ = 'attendance'
+    __table_args__ = (
+        db.UniqueConstraint('team_id', name='uq_attendance_team'),
+    )
     
     attendance_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     team_id = db.Column(db.String(20), db.ForeignKey('teams.team_id', ondelete='CASCADE'), nullable=False)
@@ -101,6 +104,9 @@ class JudgeProfile(db.Model):
 
 class Round1Marks(db.Model):
     __tablename__ = 'round1_marks'
+    __table_args__ = (
+        db.UniqueConstraint('team_id', 'judge_id', name='uq_r1_team_judge'),
+    )
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     team_id = db.Column(db.String(20), db.ForeignKey('teams.team_id', ondelete='CASCADE'), nullable=False)
@@ -119,6 +125,9 @@ class Round1Marks(db.Model):
 
 class Round2Marks(db.Model):
     __tablename__ = 'round2_marks'
+    __table_args__ = (
+        db.UniqueConstraint('team_id', 'judge_id', name='uq_r2_team_judge'),
+    )
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     team_id = db.Column(db.String(20), db.ForeignKey('teams.team_id', ondelete='CASCADE'), nullable=False)
@@ -137,6 +146,9 @@ class Round2Marks(db.Model):
 
 class Round3Marks(db.Model):
     __tablename__ = 'round3_marks'
+    __table_args__ = (
+        db.UniqueConstraint('team_id', 'judge_id', name='uq_r3_team_judge'),
+    )
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     team_id = db.Column(db.String(20), db.ForeignKey('teams.team_id', ondelete='CASCADE'), nullable=False)
