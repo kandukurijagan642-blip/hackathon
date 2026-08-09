@@ -30,7 +30,13 @@ class Config:
     MYSQL_DB = os.environ.get('MYSQL_DB', 'hacktrack_db')
     
     DATABASE_URL = os.environ.get('DATABASE_URL')
-    RENDER = os.environ.get('RENDER', False)  # Render sets this automatically
+    
+    # Render or other hosting detection: check RENDER, RENDER_SERVICE_ID, or if PORT is defined without a custom MYSQL_HOST
+    is_on_render = (
+        os.environ.get('RENDER') is not None or 
+        os.environ.get('RENDER_SERVICE_ID') is not None or 
+        (os.environ.get('PORT') is not None and os.environ.get('MYSQL_HOST') is None)
+    )
     
     if DATABASE_URL:
         # Render PostgreSQL or any external database
@@ -38,8 +44,8 @@ class Config:
             SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace("postgres://", "postgresql://", 1)
         else:
             SQLALCHEMY_DATABASE_URI = DATABASE_URL
-    elif RENDER:
-        # On Render without DATABASE_URL — use SQLite
+    elif is_on_render:
+        # On Render/hosting without DATABASE_URL and without external MySQL - use SQLite
         SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'hacktrack.db')
     else:
         # Local development — use MySQL
