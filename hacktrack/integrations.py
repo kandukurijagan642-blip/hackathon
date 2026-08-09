@@ -118,9 +118,9 @@ def collect_summary_data():
         rows_teams.append([team.team_id, team.team_name, team.college, team.department,
                            leader_name, leader_email, member_count, att_status, project_title, domain])
 
-        r1_avg = _safe_avg(Round1Marks.query.filter_by(team_id=team.team_id).all(), 'total_marks')
-        r2_avg = _safe_avg(Round2Marks.query.filter_by(team_id=team.team_id).all(), 'total_marks')
-        r3_avg = _safe_avg(Round3Marks.query.filter_by(team_id=team.team_id).all(), 'total_marks')
+        r1_avg = _safe_avg(Round1Marks.query.filter_by(team_id=team.team_id, is_submitted=True).all(), 'total_marks')
+        r2_avg = _safe_avg(Round2Marks.query.filter_by(team_id=team.team_id, is_submitted=True).all(), 'total_marks')
+        r3_avg = _safe_avg(Round3Marks.query.filter_by(team_id=team.team_id, is_submitted=True).all(), 'total_marks')
         grand = round(r1_avg + r2_avg + r3_avg, 2)
         final = FinalResult.query.filter_by(team_id=team.team_id).first()
         rank = final.rank if final else 'N/A'

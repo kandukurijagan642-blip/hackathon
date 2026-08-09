@@ -95,7 +95,8 @@ def register_team():
                 return render_template('organizer/register_team.html')
             
         # Get existing leader user or create a new leader account
-        default_pwd = f"{team_name.replace(' ', '')}@12309"
+        from utils import generate_random_password
+        default_pwd = generate_random_password()
         leader_user = User.query.filter_by(email=leader_email).first()
         if not leader_user:
             hashed_pwd = generate_password_hash(default_pwd)
@@ -295,7 +296,8 @@ def csv_import():
             leader_email = str(row['leader_email']).strip()
             leader_user = User.query.filter_by(email=leader_email).first()
             if not leader_user:
-                default_pwd = f"{team_name.replace(' ', '')}@12309"
+                from utils import generate_random_password
+                default_pwd = generate_random_password()
                 hashed_pwd = generate_password_hash(default_pwd)
                 leader_user = User(
                     name=leader_name,

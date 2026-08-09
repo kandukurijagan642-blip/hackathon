@@ -330,9 +330,9 @@ def restore_local_backup(app, db):
             all_teams = Team.query.all()
             leaderboard_data = []
             for t_item in all_teams:
-                r1_avg = db.session.query(db.func.avg(Round1Marks.total_marks)).filter(Round1Marks.team_id == t_item.team_id).scalar() or 0.0
-                r2_avg = db.session.query(db.func.avg(Round2Marks.total_marks)).filter(Round2Marks.team_id == t_item.team_id).scalar() or 0.0
-                r3_avg = db.session.query(db.func.avg(Round3Marks.total_marks)).filter(Round3Marks.team_id == t_item.team_id).scalar() or 0.0
+                r1_avg = db.session.query(db.func.avg(Round1Marks.total_marks)).filter(Round1Marks.team_id == t_item.team_id, Round1Marks.is_submitted == True).scalar() or 0.0
+                r2_avg = db.session.query(db.func.avg(Round2Marks.total_marks)).filter(Round2Marks.team_id == t_item.team_id, Round2Marks.is_submitted == True).scalar() or 0.0
+                r3_avg = db.session.query(db.func.avg(Round3Marks.total_marks)).filter(Round3Marks.team_id == t_item.team_id, Round3Marks.is_submitted == True).scalar() or 0.0
                 grand_total = r1_avg + r2_avg + r3_avg
                 leaderboard_data.append({'team_id': t_item.team_id, 'r1': r1_avg, 'r2': r2_avg, 'r3': r3_avg, 'grand': grand_total})
                 

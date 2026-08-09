@@ -402,3 +402,14 @@ SUBJECT: {subject}
     except Exception as e:
         print(f"Failed to write mock email: {e}")
 
+
+def generate_random_password(length=12):
+    """
+    Generates a secure, random alphanumeric password.
+    """
+    import secrets
+    import string
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for _ in range(length))
+
+

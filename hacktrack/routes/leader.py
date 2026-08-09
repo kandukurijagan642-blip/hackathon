@@ -184,9 +184,9 @@ def dashboard():
     submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
     
     # Marks / Evaluation Feedback (average scores across all evaluations)
-    r1_marks = Round1Marks.query.filter_by(team_id=team.team_id).all()
-    r2_marks = Round2Marks.query.filter_by(team_id=team.team_id).all()
-    r3_marks = Round3Marks.query.filter_by(team_id=team.team_id).all()
+    r1_marks = Round1Marks.query.filter_by(team_id=team.team_id, is_submitted=True).all()
+    r2_marks = Round2Marks.query.filter_by(team_id=team.team_id, is_submitted=True).all()
+    r3_marks = Round3Marks.query.filter_by(team_id=team.team_id, is_submitted=True).all()
     
     # Compute averages
     r1_avg = sum(m.total_marks for m in r1_marks) / len(r1_marks) if r1_marks else 0.0
@@ -347,6 +347,7 @@ def download_certificate(type, id):
 
 
 @leader_bp.route('/quick-edit/<team_id>', methods=['GET', 'POST'])
+@login_required
 def quick_edit(team_id):
     clean_id = team_id.strip().upper()
     team = Team.query.filter_by(team_id=clean_id).first()
@@ -355,8 +356,13 @@ def quick_edit(team_id):
     if not team:
         return render_template('team_not_found.html', team_id=team_id), 404
         
+    # Security check: Only Admin, Organizer, or the actual Leader of this specific team can view/edit
+    if current_user.role not in ['Admin', 'Organizer']:
+        if team.leader_id != current_user.id:
+            flash('Unauthorized access! You can only view or edit your own team.', 'danger')
+            return redirect(url_for('leader.dashboard'))
+            
     submission = ProblemSubmission.query.filter_by(team_id=team.team_id).first()
-    
     ensure_certificates_ready(team, request.host_url)
     
     problem_released = SystemSetting.get_setting('problem_released', 'False') == 'True'
@@ -466,10 +472,10 @@ def quick_edit(team_id):
                     
                 try:
                     log = ActivityLog(
-                        user_id=None,
+                        user_id=current_user.id,
                         action="Generate Certificates (QR Link)",
                         ip_address=request.remote_addr,
-                        details=f"Generated certificates for team {team.team_id} anonymously via QR code access."
+                        details=f"Generated certificates for team {team.team_id} via QR link by user: {current_user.email} (Role: {current_user.role})."
                     )
                     db.session.add(log)
                     db.session.commit()
@@ -526,10 +532,10 @@ def quick_edit(team_id):
         
         try:
             log = ActivityLog(
-                user_id=None,
+                user_id=current_user.id,
                 action="Quick Edit Team",
                 ip_address=request.remote_addr,
-                details=f"Anonymous update of team {team.team_id} details via QR shortcut."
+                details=f"Update of team {team.team_id} details via QR shortcut by user: {current_user.email} (Role: {current_user.role})."
             )
             db.session.add(log)
             db.session.commit()

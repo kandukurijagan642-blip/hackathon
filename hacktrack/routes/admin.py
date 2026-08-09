@@ -276,9 +276,9 @@ def leaderboard():
     leaderboard_data = []
     
     for team in teams:
-        r1_avg = db.session.query(db.func.avg(Round1Marks.total_marks)).filter(Round1Marks.team_id == team.team_id).scalar() or 0.0
-        r2_avg = db.session.query(db.func.avg(Round2Marks.total_marks)).filter(Round2Marks.team_id == team.team_id).scalar() or 0.0
-        r3_avg = db.session.query(db.func.avg(Round3Marks.total_marks)).filter(Round3Marks.team_id == team.team_id).scalar() or 0.0
+        r1_avg = db.session.query(db.func.avg(Round1Marks.total_marks)).filter(Round1Marks.team_id == team.team_id, Round1Marks.is_submitted == True).scalar() or 0.0
+        r2_avg = db.session.query(db.func.avg(Round2Marks.total_marks)).filter(Round2Marks.team_id == team.team_id, Round2Marks.is_submitted == True).scalar() or 0.0
+        r3_avg = db.session.query(db.func.avg(Round3Marks.total_marks)).filter(Round3Marks.team_id == team.team_id, Round3Marks.is_submitted == True).scalar() or 0.0
         
         grand_total = r1_avg + r2_avg + r3_avg
         leader = User.query.get(team.leader_id)
@@ -308,9 +308,9 @@ def declare_winners():
     leaderboard_data = []
     
     for team in teams:
-        r1_avg = db.session.query(db.func.avg(Round1Marks.total_marks)).filter(Round1Marks.team_id == team.team_id).scalar() or 0.0
-        r2_avg = db.session.query(db.func.avg(Round2Marks.total_marks)).filter(Round2Marks.team_id == team.team_id).scalar() or 0.0
-        r3_avg = db.session.query(db.func.avg(Round3Marks.total_marks)).filter(Round3Marks.team_id == team.team_id).scalar() or 0.0
+        r1_avg = db.session.query(db.func.avg(Round1Marks.total_marks)).filter(Round1Marks.team_id == team.team_id, Round1Marks.is_submitted == True).scalar() or 0.0
+        r2_avg = db.session.query(db.func.avg(Round2Marks.total_marks)).filter(Round2Marks.team_id == team.team_id, Round2Marks.is_submitted == True).scalar() or 0.0
+        r3_avg = db.session.query(db.func.avg(Round3Marks.total_marks)).filter(Round3Marks.team_id == team.team_id, Round3Marks.is_submitted == True).scalar() or 0.0
         grand_total = r1_avg + r2_avg + r3_avg
         
         leaderboard_data.append({
@@ -619,12 +619,17 @@ def check_team_workflow_eligibility(team):
     if not (sub and sub.project_title and sub.problem_statement):
         missing.append('Problem Statement Submission')
         
-    # 3. Jury Evaluation Marks Check
+    # 3. Jury Evaluation Marks Check (All three rounds must be evaluated and submitted)
     r1 = Round1Marks.query.filter_by(team_id=team.team_id, is_submitted=True).count()
     r2 = Round2Marks.query.filter_by(team_id=team.team_id, is_submitted=True).count()
     r3 = Round3Marks.query.filter_by(team_id=team.team_id, is_submitted=True).count()
-    if (r1 + r2 + r3) == 0:
-        missing.append('Jury Evaluation Marks')
+    
+    if r1 == 0:
+        missing.append('Round 1 Evaluation')
+    if r2 == 0:
+        missing.append('Round 2 Evaluation')
+    if r3 == 0:
+        missing.append('Round 3 Evaluation')
         
     return (len(missing) == 0), missing
 

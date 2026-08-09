@@ -56,7 +56,8 @@ def register():
                 return render_template('public/register_team.html')
             
         # Get existing leader user or create a new leader account
-        default_pwd = f"{team_name.replace(' ', '')}@12309"
+        from utils import generate_random_password
+        default_pwd = generate_random_password()
         leader_user = User.query.filter_by(email=leader_email).first()
         if not leader_user:
             hashed_pwd = generate_password_hash(default_pwd)
