@@ -89,7 +89,8 @@ def preview_certificate(cert_id):
         FinalResult.query.count() > 0 or 
         SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
     )
-    is_released = (cert.certificate_status == 'RELEASED') and certificates_active
+    # Once a cert is RELEASED in DB it stays released \u2014 system toggle only affects unreleased certs
+    is_released = (cert.certificate_status == 'RELEASED')
     
     if current_user.is_authenticated and current_user.role in ['Admin', 'Organizer']:
         return render_template('certificate_preview.html', cert=cert)

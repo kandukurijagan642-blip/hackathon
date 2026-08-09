@@ -545,7 +545,8 @@ def quick_edit(team_id):
     
     # A team's certificates are ONLY released if Admin explicitly approved & released them!
     is_admin_released = (len(certs) > 0 and certs[0].certificate_status == 'RELEASED')
-    released = is_admin_released and certificates_active
+    # Once released in DB, stay released — don't re-lock based on system-wide toggle
+    released = is_admin_released
     effective_active = certificates_active
         
     return render_template(
@@ -587,7 +588,7 @@ def certificates():
     
     released = False
     if leader_cert and leader_cert.certificate_status == 'RELEASED':
-        released = True
+        released = True  # Once released in DB, always accessible to the leader
         
     return render_template(
         'leader/certificates.html',
