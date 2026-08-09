@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .then(data => {
                 this.disabled = false;
                 if (data.success) {
+                    showToast('Setting updated successfully!', true);
                     // Flash visual confirmation card pulse
                     const container = this.closest('.bg-dark-card') || this.closest('.d-flex') || this.parentElement;
                     if (container) {
@@ -113,18 +114,74 @@ document.addEventListener('DOMContentLoaded', function () {
                         }, 500);
                     }
                 } else {
-                    alert('Error toggling setting.');
+                    showToast('Failed to update setting.', false);
                     this.checked = !this.checked;
                 }
             })
             .catch(err => {
                 this.disabled = false;
-                alert('Connection error occurred.');
+                showToast('Connection error occurred.', false);
                 this.checked = !this.checked;
             });
         });
     });
+    
+    // Add Toast container placeholder to the body
+    const toastContainer = document.createElement('div');
+    toastContainer.id = 'custom-toast-container';
+    toastContainer.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px;';
+    document.body.appendChild(toastContainer);
 });
+
+// 5. Custom Premium Toast Notification System
+function showToast(message, isSuccess = true) {
+    const container = document.getElementById('custom-toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'fade-in-up';
+    
+    // Sleek glassmorphism styles matching the dark/light premium dashboard
+    const bg = isSuccess ? 'rgba(16, 185, 129, 0.95)' : 'rgba(239, 68, 68, 0.95)';
+    const icon = isSuccess ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+    
+    toast.style.cssText = `
+        background: ${bg};
+        color: #ffffff;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        min-width: 250px;
+        backdrop-filter: blur(4px);
+        transition: all 0.3s ease;
+        opacity: 0;
+        transform: translateY(10px);
+    `;
+
+    toast.innerHTML = `<i class="bi ${icon}"></i> <span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Trigger animate-in
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+    }, 10);
+
+    // Auto-destruct after 3.5s
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, 3500);
+}
 
 function setupEvaluationCalculators() {
     // Round 1 inputs
@@ -134,7 +191,7 @@ function setupEvaluationCalculators() {
         document.getElementById('feasibility'),
         document.getElementById('presentation'),
         document.getElementById('confidence')
-    ];
+    ].filter(el => el !== null);
     
     // Round 2 inputs
     const r2Inputs = [
@@ -142,15 +199,15 @@ function setupEvaluationCalculators() {
         document.getElementById('technical_implementation'),
         document.getElementById('uiux'),
         document.getElementById('question_answer')
-    ];
+    ].filter(el => el !== null);
     
     // Round 3 inputs
     const r3Inputs = [
         document.getElementById('working_demo'),
         document.getElementById('business_model'),
         document.getElementById('scalability'),
-        document.getElementById('presentation_r3') // name presentation is common in r1, so r3 has presentation_r3
-    ];
+        document.getElementById('presentation_r3')
+    ].filter(el => el !== null);
     
     const displayVal = document.getElementById('total-marks-display');
     const inputVal = document.getElementById('total-marks-input');
@@ -171,40 +228,28 @@ function setupEvaluationCalculators() {
         if (inputVal) inputVal.value = sum;
     }
     
-    // Check which round we are currently evaluating and attach listeners
-    if (r1Inputs.some(el => el !== null)) {
+    // Set up listeners for each round independently (fully decoupled)
+    if (r1Inputs.length > 0) {
         r1Inputs.forEach(input => {
-            if (input) {
-                input.addEventListener('input', () => {
-                    const total = calculateSum(r1Inputs);
-                    updateDisplay(total);
-                });
-            }
+            input.addEventListener('input', () => {
+                updateDisplay(calculateSum(r1Inputs));
+            });
         });
-    } else if (r2Inputs.some(el => el !== null)) {
+    }
+    
+    if (r2Inputs.length > 0) {
         r2Inputs.forEach(input => {
-            if (input) {
-                input.addEventListener('input', () => {
-                    const total = calculateSum(r2Inputs);
-                    updateDisplay(total);
-                });
-            }
+            input.addEventListener('input', () => {
+                updateDisplay(calculateSum(r2Inputs));
+            });
         });
-    } else if (r3Inputs.some(el => el !== null)) {
+    }
+    
+    if (r3Inputs.length > 0) {
         r3Inputs.forEach(input => {
-            if (input) {
-                input.addEventListener('input', () => {
-                    // Quick patch: in Round 3 form we have working_demo, business_model, scalability, presentation_r3
-                    // Let's also check if standard presentation name is reused
-                    const r3_p = document.getElementById('presentation');
-                    const activeR3Inputs = [...r3Inputs];
-                    if (r3_p && !activeR3Inputs.includes(r3_p)) {
-                        activeR3Inputs.push(r3_p);
-                    }
-                    const total = calculateSum(activeR3Inputs);
-                    updateDisplay(total);
-                });
-            }
+            input.addEventListener('input', () => {
+                updateDisplay(calculateSum(r3Inputs));
+            });
         });
     }
 }
