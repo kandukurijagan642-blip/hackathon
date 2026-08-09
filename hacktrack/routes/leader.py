@@ -891,11 +891,8 @@ def public_download_certificate(cert_id):
         FinalResult.query.count() > 0 or 
         SystemSetting.get_setting('certificates_enabled', 'False') == 'True'
     )
-    if cert.certificate_status != 'RELEASED':
-        cert.certificate_status = 'RELEASED'
-        if not cert.released_time:
-            cert.released_time = datetime.utcnow()
-        db.session.commit()
+    if not certificates_active or cert.certificate_status != 'RELEASED':
+        abort(403)
         
     preview = request.args.get('preview', '0') == '1'
     if not preview:
@@ -943,24 +940,15 @@ def public_download_all_certificates(team_id):
     clean_id = team_id.strip().upper()
     team = Team.query.filter(db.func.upper(Team.team_id) == clean_id).first_or_404()
     certs = Certificate.query.filter_by(team_id=team.team_id).all()
-    if not certs:
-        from certificate_automation import auto_generate_team_certificates
-        auto_generate_team_certificates(team)
-        certs = Certificate.query.filter_by(team_id=team.team_id).all()
         
-    if not certs:
-        abort(404)
-
-    for c in certs:
-        if c.certificate_status != 'RELEASED':
-            c.certificate_status = 'RELEASED'
-            if not c.released_time:
-                c.released_time = datetime.utcnow()
-    db.session.commit()
+    # Filter only released certificates
+    released_certs = [c for c in certs if c.certificate_status == 'RELEASED']
+    if not released_certs:
+        abort(403)
         
     # If team has 1 cert, return PDF directly instead of zip
-    if len(certs) == 1:
-        cert = certs[0]
+    if len(released_certs) == 1:
+        cert = released_certs[0]
         full_path = os.path.normpath(os.path.join(current_app.root_path, 'static', cert.certificate_path))
         if not os.path.exists(full_path):
             os.makedirs(os.path.dirname(full_path), exist_ok=True)
@@ -1001,7 +989,7 @@ def public_download_all_certificates(team_id):
     clean_team = "".join(c for c in team.team_name if c.isalnum() or c in (' ', '_')).strip().replace(' ', '_')
     memory_file = io.BytesIO()
     with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for cert in certs:
+        for cert in released_certs:
             full_path = os.path.join(current_app.root_path, 'static', cert.certificate_path)
             if not os.path.exists(full_path):
                 os.makedirs(os.path.dirname(full_path), exist_ok=True)

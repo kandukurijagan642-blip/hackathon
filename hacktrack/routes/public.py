@@ -92,12 +92,24 @@ def register():
         leader_email = request.form.get('leader_email', '').strip()
         leader_phone = request.form.get('leader_phone', '').strip()
         
-        # Check if team name and leader name already exist (case-insensitive)
-        existing_teams = Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).all()
-        for t in existing_teams:
-            l_user = User.query.get(t.leader_id)
-            if l_user and l_user.name.lower().strip() == leader_name.lower().strip():
-                flash(f'Team "{team_name}" led by leader "{leader_name}" already exists!', 'danger')
+        # Check if team name already exists (case-insensitive)
+        existing_team = Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first()
+        if existing_team:
+            flash(f'Team name "{team_name}" is already taken! Please choose a unique name.', 'danger')
+            return render_template('public/register_team.html')
+            
+        # Validate leader email uniqueness/role
+        leader_user = User.query.filter_by(email=leader_email).first()
+        if leader_user:
+            # If the user is already leading a team
+            already_leading = Team.query.filter_by(leader_id=leader_user.id).first()
+            if already_leading:
+                flash(f'The email "{leader_email}" is already registered as the leader of team "{already_leading.team_name}". Each team must have a unique leader email.', 'danger')
+                return render_template('public/register_team.html')
+            
+            # If the user exists but has a different role
+            if leader_user.role != 'Leader':
+                flash(f'The email "{leader_email}" is registered with the role "{leader_user.role}" and cannot be used as a team leader.', 'danger')
                 return render_template('public/register_team.html')
             
         # Get existing leader user or create a new leader account
@@ -267,7 +279,7 @@ def team_qr(team_id):
         abort(404)
         
     actual_host = get_actual_host_url()
-    payload = f"{actual_host}/leader/quick-edit/{team.team_id}"
+    payload = team.get_qr_url(actual_host)
     
     qr = qrcode.QRCode(
         version=1,
@@ -284,3 +296,46 @@ def team_qr(team_id):
     buf.seek(0)
     
     return send_file(buf, mimetype="image/png")
+
+
+@public_bp.route('/qr-access/<token>')
+def qr_access(token):
+    from itsdangerous import URLSafeSerializer
+    from flask import current_app, redirect, url_for, flash, request, abort
+    from flask_login import current_user
+    from models import Team, Attendance
+    from datetime import datetime
+    
+    serializer = URLSafeSerializer(current_app.config['SECRET_KEY'], salt='qr-access-salt')
+    try:
+        team_id = serializer.loads(token)
+    except Exception:
+        flash("Invalid or expired secure QR code token.", "danger")
+        abort(403)
+        
+    team = Team.query.get_or_404(team_id)
+    
+    if not current_user.is_authenticated:
+        flash("Please log in as an Organizer or Admin to process this QR code check-in.", "info")
+        return redirect(url_for('auth.login', next=request.full_path))
+        
+    if current_user.role in ['Admin', 'Organizer']:
+        att = Attendance.query.filter_by(team_id=team.team_id).first()
+        if not att:
+            att = Attendance(team_id=team.team_id)
+            db.session.add(att)
+        att.status = 'Present'
+        if not att.checkin_time:
+            att.checkin_time = datetime.utcnow()
+        db.session.commit()
+        
+        flash(f"✅ Check-in success! {team.team_name} has been marked as Present.", "success")
+        return redirect(url_for('leader.quick_edit', team_id=team.team_id))
+    elif current_user.role == 'Leader':
+        if team.leader_id == current_user.id:
+            return redirect(url_for('leader.quick_edit', team_id=team.team_id))
+        else:
+            flash("Unauthorized access! You can only scan/edit your own team's details.", "danger")
+            return redirect(url_for('leader.dashboard'))
+    else:
+        abort(403)

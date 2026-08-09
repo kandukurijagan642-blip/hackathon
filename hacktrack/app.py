@@ -344,7 +344,7 @@ def seed_database():
                 leader_user = User(
                     name=t_info["leader"],
                     email=t_info["email"],
-                    password=generate_password_hash('192472374' if t_info["email"] == 'jane.doe@mit.edu' else f"{t_info['name'].replace(' ', '')}@12309"),
+                    password=generate_password_hash('192472374' if t_info["email"] == 'jane.doe@mit.edu' else 'HackTrackLeader2026!'),
                     role='Leader'
                 )
                 db.session.add(leader_user)

@@ -43,6 +43,19 @@ class Team(db.Model):
     round3_marks = db.relationship('Round3Marks', backref='team', cascade="all, delete-orphan")
     final_result = db.relationship('FinalResult', backref='team', uselist=False, cascade="all, delete-orphan")
 
+    def get_qr_url(self, host_url):
+        from itsdangerous import URLSafeSerializer
+        from flask import current_app
+        try:
+            secret_key = current_app.config['SECRET_KEY']
+        except Exception:
+            from config import Config
+            secret_key = Config.SECRET_KEY
+        serializer = URLSafeSerializer(secret_key, salt='qr-access-salt')
+        token = serializer.dumps(self.team_id)
+        actual_host = host_url.rstrip('/')
+        return f"{actual_host}/qr-access/{token}"
+
 
 class TeamMember(db.Model):
     __tablename__ = 'team_members'

@@ -67,13 +67,13 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#qrModal-{{ team.team_id }}" title="Click to enlarge QR Code">
-                                    <img class="qr-dynamic border rounded bg-white p-1" data-team-id="{{ team.team_id }}" alt="QR Code" width="75" height="75" style="cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
+                                    <img class="qr-dynamic border rounded bg-white p-1" data-team-id="{{ team.team_id }}" data-qr-url="{{ team.get_qr_url(request.host_url) }}" alt="QR Code" width="75" height="75" style="cursor:pointer; transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'">
                                 </a>
                                 <div class="d-flex flex-column gap-1">
                                     <button type="button" class="btn btn-sm btn-outline-info p-1 px-2" style="font-size:11px;" data-bs-toggle="modal" data-bs-target="#qrModal-{{ team.team_id }}">
                                         <i class="bi bi-zoom-in"></i> Enlarge
                                     </button>
-                                    <a href="#" download="team_{{ team.team_id }}_qr.png" class="qr-download-btn btn btn-sm btn-outline-secondary p-1 px-2" data-team-id="{{ team.team_id }}" style="font-size:11px;">
+                                    <a href="#" download="team_{{ team.team_id }}_qr.png" class="qr-download-btn btn btn-sm btn-outline-secondary p-1 px-2" data-team-id="{{ team.team_id }}" data-qr-url="{{ team.get_qr_url(request.host_url) }}" style="font-size:11px;">
                                         <i class="bi bi-download"></i> Save
                                     </a>
                                 </div>
@@ -142,7 +142,7 @@
                     </div>
                     <!-- QR thumbnail -->
                     <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#qrModal-{{ team.team_id }}">
-                        <img class="qr-dynamic border rounded bg-white p-1" data-team-id="{{ team.team_id }}" alt="QR" width="60" height="60">
+                        <img class="qr-dynamic border rounded bg-white p-1" data-team-id="{{ team.team_id }}" data-qr-url="{{ team.get_qr_url(request.host_url) }}" alt="QR" width="60" height="60">
                     </a>
                 </div>
 
@@ -220,10 +220,10 @@
                     </div>
                     <div class="modal-body p-3">
                         <div class="bg-white p-2 d-inline-block rounded shadow mb-3">
-                            <img class="qr-dynamic" data-team-id="{{ team.team_id }}" alt="QR Code" style="width:220px; height:220px; display:block;">
+                            <img class="qr-dynamic" data-team-id="{{ team.team_id }}" data-qr-url="{{ team.get_qr_url(request.host_url) }}" alt="QR Code" style="width:220px; height:220px; display:block;">
                         </div>
                         <div class="text-secondary small mb-3">ID: <code class="text-info">{{ team.team_id }}</code> &bull; {{ team.leader.name if team.leader else 'N/A' }}</div>
-                        <a href="#" download="team_{{ team.team_id }}_qr.png" class="qr-download-btn btn btn-primary btn-sm px-4" data-team-id="{{ team.team_id }}">
+                        <a href="#" download="team_{{ team.team_id }}_qr.png" class="qr-download-btn btn btn-primary btn-sm px-4" data-team-id="{{ team.team_id }}" data-qr-url="{{ team.get_qr_url(request.host_url) }}">
                             <i class="bi bi-download me-1"></i> Save QR
                         </a>
                     </div>
@@ -344,8 +344,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.qr-dynamic').forEach(function(img) {
-            const teamId = img.getAttribute('data-team-id');
-            const qrValue = window.location.origin + '/leader/quick-edit/' + teamId;
+            const qrValue = img.getAttribute('data-qr-url');
             const qr = new QRious({
                 value: qrValue,
                 size: 220
@@ -354,8 +353,7 @@
         });
         
         document.querySelectorAll('.qr-download-btn').forEach(function(btn) {
-            const teamId = btn.getAttribute('data-team-id');
-            const qrValue = window.location.origin + '/leader/quick-edit/' + teamId;
+            const qrValue = btn.getAttribute('data-qr-url');
             const qr = new QRious({
                 value: qrValue,
                 size: 300

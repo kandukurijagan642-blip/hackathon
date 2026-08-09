@@ -53,6 +53,15 @@
             html5QrcodeScanner.clear().then(_ => {
                 resultMsg.innerHTML = '<div class="alert alert-info">Processing check-in...</div>';
                 
+                // If it is a secure signed QR access URL, redirect directly
+                if (decodedText.indexOf('/qr-access/') !== -1) {
+                    resultMsg.innerHTML = '<div class="alert alert-success"><i class="bi bi-shield-check"></i> Secure QR code detected! Checking in...</div>';
+                    setTimeout(() => {
+                        window.location.href = decodedText;
+                    }, 1000);
+                    return;
+                }
+
                 // Extract Team ID supporting both direct URLs and legacy format
                 let teamId = decodedText.trim();
                 if (decodedText.indexOf('quick-edit/') !== -1) {

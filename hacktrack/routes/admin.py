@@ -63,9 +63,9 @@ def dashboard():
     total_present = Attendance.query.filter_by(status='Present').count()
     attendance_rate = round((total_present / total_expected * 100), 2) if total_expected > 0 else 0.0
     
-    r1_graded = db.session.query(Round1Marks.team_id).distinct().count()
-    r2_graded = db.session.query(Round2Marks.team_id).distinct().count()
-    r3_graded = db.session.query(Round3Marks.team_id).distinct().count()
+    r1_graded = db.session.query(Round1Marks.team_id).filter(Round1Marks.is_submitted == True).distinct().count()
+    r2_graded = db.session.query(Round2Marks.team_id).filter(Round2Marks.is_submitted == True).distinct().count()
+    r3_graded = db.session.query(Round3Marks.team_id).filter(Round3Marks.is_submitted == True).distinct().count()
     
     recent_logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).limit(8).all()
     
@@ -369,7 +369,7 @@ def export_reports(format_type, report_type):
         
         if round_num == '1':
             headers = ["Team ID", "Team Name", "Judge", "Innovation (25)", "Presentation (25)", "Feasibility (25)", "Confidence (25)", "Total (100)", "Comments"]
-            marks = Round1Marks.query.all()
+            marks = Round1Marks.query.filter_by(is_submitted=True).all()
             for m in marks:
                 j = User.query.get(m.judge_id)
                 t = Team.query.filter_by(team_id=m.team_id).first()
@@ -377,7 +377,7 @@ def export_reports(format_type, report_type):
                     data.append([t.team_id, t.team_name, j.name if j else 'N/A', m.innovation, m.presentation, m.feasibility, m.confidence, m.total_marks, m.comments or ''])
         elif round_num == '2':
             headers = ["Team ID", "Team Name", "Judge", "Prototype (30)", "Tech Imp (30)", "UI/UX (20)", "Q&A (20)", "Total (100)", "Comments"]
-            marks = Round2Marks.query.all()
+            marks = Round2Marks.query.filter_by(is_submitted=True).all()
             for m in marks:
                 j = User.query.get(m.judge_id)
                 t = Team.query.filter_by(team_id=m.team_id).first()
@@ -385,7 +385,7 @@ def export_reports(format_type, report_type):
                     data.append([t.team_id, t.team_name, j.name if j else 'N/A', m.prototype, m.technical_implementation, m.uiux, m.question_answer, m.total_marks, m.comments or ''])
         elif round_num == '3':
             headers = ["Team ID", "Team Name", "Judge", "Demo (40)", "Business (20)", "Scalability (20)", "Presentation (20)", "Total (100)", "Comments"]
-            marks = Round3Marks.query.all()
+            marks = Round3Marks.query.filter_by(is_submitted=True).all()
             for m in marks:
                 j = User.query.get(m.judge_id)
                 t = Team.query.filter_by(team_id=m.team_id).first()
@@ -604,7 +604,7 @@ def check_team_workflow_eligibility(team):
     Validates mandatory sequential workflow requirements before certificate release:
     1. Attendance: Status must be 'Present'.
     2. Problem Details: ProblemSubmission must exist with project_title and problem_statement.
-    3. Jury Marks: At least one jury evaluation (Round 1, 2, or 3) submitted (is_submitted=True).
+    3. Jury Marks: All three jury evaluations (Round 1, 2, and 3) must be submitted (is_submitted=True).
     Returns (is_eligible, missing_steps_list)
     """
     missing = []

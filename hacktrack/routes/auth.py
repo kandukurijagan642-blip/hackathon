@@ -39,6 +39,11 @@ def login():
         log_activity(user.id, "User Login", f"Successful login from IP: {request.remote_addr}")
         
         flash(f'Welcome back, {user.name}!', 'success')
+        
+        next_page = request.args.get('next') or request.form.get('next')
+        if next_page and next_page.startswith('/') and not next_page.startswith('//'):
+            return redirect(next_page)
+            
         return redirect_by_role(user.role)
         
     return render_template('auth/login.html')
