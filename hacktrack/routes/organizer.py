@@ -86,18 +86,29 @@ def register_team():
         leader_email = request.form.get('leader_email', '').strip()
         leader_phone = request.form.get('leader_phone', '').strip()
         
-        # Check if team name and leader name already exist (case-insensitive)
-        existing_teams = Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).all()
-        for t in existing_teams:
-            l_user = User.query.get(t.leader_id)
-            if l_user and l_user.name.lower().strip() == leader_name.lower().strip():
-                flash(f'Team "{team_name}" led by leader "{leader_name}" already exists!', 'danger')
+        # Check if team name already exists (case-insensitive)
+        existing_team = Team.query.filter(db.func.lower(Team.team_name) == team_name.lower().strip()).first()
+        if existing_team:
+            flash(f'Team name "{team_name}" is already taken! Please choose a unique name.', 'danger')
+            return render_template('organizer/register_team.html')
+            
+        # Validate leader email uniqueness/role
+        leader_user = User.query.filter_by(email=leader_email).first()
+        if leader_user:
+            # If the user is already leading a team
+            already_leading = Team.query.filter_by(leader_id=leader_user.id).first()
+            if already_leading:
+                flash(f'The email "{leader_email}" is already registered as the leader of team "{already_leading.team_name}". Each team must have a unique leader email.', 'danger')
+                return render_template('organizer/register_team.html')
+            
+            # If the user exists but has a different role
+            if leader_user.role != 'Leader':
+                flash(f'The email "{leader_email}" is registered with the role "{leader_user.role}" and cannot be used as a team leader.', 'danger')
                 return render_template('organizer/register_team.html')
             
         # Get existing leader user or create a new leader account
         from utils import generate_random_password
         default_pwd = generate_random_password()
-        leader_user = User.query.filter_by(email=leader_email).first()
         if not leader_user:
             hashed_pwd = generate_password_hash(default_pwd)
             leader_user = User(
