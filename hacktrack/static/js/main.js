@@ -253,3 +253,31 @@ function setupEvaluationCalculators() {
         });
     }
 }
+
+// 6. Connected System Health Check Polling
+document.addEventListener('DOMContentLoaded', function() {
+    const indicator = document.getElementById('system-health-indicator');
+    if (!indicator) return;
+
+    function checkSystemHealth() {
+        fetch('/api/health-check')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'healthy') {
+                    indicator.classList.remove('offline');
+                    indicator.setAttribute('title', 'All Systems Operational');
+                } else {
+                    indicator.classList.add('offline');
+                    indicator.setAttribute('title', 'System Issue Detected');
+                }
+            })
+            .catch(() => {
+                indicator.classList.add('offline');
+                indicator.setAttribute('title', 'Server Connection Interrupted');
+            });
+    }
+
+    // Run health check initially and then every 30 seconds
+    checkSystemHealth();
+    setInterval(checkSystemHealth, 30000);
+});

@@ -64,89 +64,64 @@
 {% block flash_messages %}{% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <div class="row g-4 justify-content-center align-items-stretch">
-        <!-- Column 1: Login Form -->
-        <div class="col-lg-6 col-md-6">
-            <div class="login-card fade-in-up">
-                <div class="login-logo">
-                    <i class="bi bi-cpu-fill text-primary"></i> Hack<span>Track</span>
-                </div>
-                
-                <!-- FLASH MESSAGES INLINE -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show mb-4 small" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
-                
-                <form action="{{ url_for('auth.login') }}" method="POST">
-                    <div class="mb-3">
-                        <label for="email" class="form-label font-weight-500">Email Address</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
-                            <input type="email" class="form-control border-start-0 ps-0" id="email" name="email" placeholder="name@example.com" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between mb-2">
-                            <label for="password" class="form-label mb-0">Password</label>
-                            <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none small">Forgot Password?</a>
-                        </div>
-                        <div class="input-group">
-                            <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" placeholder="••••••••" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label text-secondary small" for="remember">Keep me logged in</label>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary w-100 btn-primary-custom py-2.5">
-                        Sign In
-                    </button>
-                </form>
-            </div>
+<div class="login-container" style="max-width: 450px;">
+    <div class="login-card fade-in-up">
+        <div class="login-logo">
+            <i class="bi bi-cpu-fill text-primary"></i> Hack<span>Track</span>
         </div>
-
-        <!-- Column 2: Public Registration Card -->
-        <div class="col-lg-6 col-md-6">
-            <div class="login-card fade-in-up d-flex flex-column justify-content-center align-items-center text-center">
-                <h5 class="text-white fw-bold mb-2"><i class="bi bi-qr-code text-primary me-1"></i> Scan to Register</h5>
-                <p class="text-secondary small mb-4 px-md-3">Scan this QR code to quickly register your hackathon team and generate your custom team QR code instantly.</p>
-                
-                <div class="p-2 bg-white rounded mb-4" style="box-shadow: 0 10px 25px rgba(0,0,0,0.4);">
-                    <canvas id="reg-qr" style="width: 170px; height: 170px; display: block;"></canvas>
-                </div>
-                
-                <div class="w-100 px-md-3">
-                    <a href="{{ url_for('public.register') }}" class="btn btn-outline-primary w-100 py-2.5 fw-semibold d-flex align-items-center justify-content-center gap-2">
-                        <i class="bi bi-person-plus-fill"></i> Register Team Online
-                    </a>
+        
+        <!-- FLASH MESSAGES INLINE -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show mb-4 small" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form action="{{ url_for('auth.login') }}" method="POST">
+            <div class="mb-3">
+                <label for="email" class="form-label font-weight-500">Email Address</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                    <input type="email" class="form-control border-start-0 ps-0" id="email" name="email" placeholder="name@example.com" required>
                 </div>
             </div>
-        </div>
+            
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-2">
+                    <label for="password" class="form-label mb-0">Password</label>
+                    <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none small">Forgot Password?</a>
+                </div>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="bi bi-lock"></i></span>
+                    <input type="password" class="form-control border-start-0 ps-0" id="password" name="password" placeholder="••••••••" required>
+                </div>
+            </div>
+            
+            <div class="mb-4 form-check">
+                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                <label class="form-check-label text-secondary small" for="remember">Keep me logged in</label>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 btn-primary-custom py-2.5 mb-3">
+                Sign In
+            </button>
+            
+            <div class="text-center mt-3 pt-3 border-top border-secondary border-opacity-25">
+                <span class="text-secondary small">New team?</span>
+                <a href="{{ url_for('public.register') }}" class="text-decoration-none small fw-bold ms-1">Register Your Team</a>
+            </div>
+            
+            <div class="text-center mt-2">
+                <a href="{{ url_for('public.index') }}" class="text-decoration-none small text-muted"><i class="bi bi-arrow-left"></i> Return Home</a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
 
-{% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        new QRious({
-            element: document.getElementById('reg-qr'),
-            value: window.location.origin + '/register',
-            size: 170
-        });
-    });
-</script>
-{% endblock %}
+{% block scripts %}{% endblock %}

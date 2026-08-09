@@ -132,6 +132,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .sidebar-menu li { margin-bottom: 4px; }
+.sidebar-menu .menu-header {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #94a3b8;
+    opacity: 0.6;
+    letter-spacing: 0.8px;
+    padding: 14px 14px 4px 14px;
+    user-select: none;
+}
 
 .sidebar-menu a {
     display: flex;
@@ -539,6 +549,27 @@ body.dark-mode .glass-panel {
     animation: pulse 1.6s infinite;
 }
 
+.pulse-indicator.offline {
+    background-color: var(--danger) !important;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    animation: pulse-red 1.6s infinite;
+}
+
+@keyframes pulse-red {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
 @keyframes pulse {
     0% {
         transform: scale(0.95);
@@ -680,6 +711,60 @@ body.dark-mode .stat-card {
         font-size: 12px;
         padding: 4px 8px;
         max-width: 90px;
+    }
+
+    /* Force tables to stack vertically as cards on mobile devices */
+    .table-responsive-stack table,
+    .table-responsive-stack thead,
+    .table-responsive-stack tbody,
+    .table-responsive-stack th,
+    .table-responsive-stack td,
+    .table-responsive-stack tr {
+        display: block !important;
+        width: 100% !important;
+    }
+    
+    .table-responsive-stack thead tr {
+        position: absolute !important;
+        top: -9999px !important;
+        left: -9999px !important;
+    }
+    
+    .table-responsive-stack tr {
+        margin-bottom: 12px !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 12px !important;
+        background-color: var(--bg-secondary) !important;
+        padding: 8px !important;
+        box-shadow: var(--card-shadow) !important;
+    }
+    
+    .table-responsive-stack td {
+        border: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        position: relative !important;
+        padding-left: 45% !important;
+        text-align: right !important;
+        font-size: 13px !important;
+        min-height: 38px !important;
+    }
+    
+    .table-responsive-stack td:last-child {
+        border-bottom: 0 !important;
+    }
+    
+    .table-responsive-stack td:before {
+        position: absolute !important;
+        top: 50% !important;
+        left: 12px !important;
+        width: 40% !important;
+        padding-right: 10px !important;
+        white-space: nowrap !important;
+        text-align: left !important;
+        font-weight: 700 !important;
+        transform: translateY(-50%) !important;
+        color: var(--text-secondary) !important;
+        content: attr(data-label) !important;
     }
 
     /* On mobile, hide table and show card layout for teams */

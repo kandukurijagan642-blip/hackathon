@@ -1,12 +1,57 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, jsonify
 from werkzeug.security import generate_password_hash
 import os
 import secrets
 from database import db
-from models import User, Team, TeamMember, Attendance, ProblemSubmission, SystemSetting, Certificate
+from models import User, Team, TeamMember, Attendance, ProblemSubmission, SystemSetting, Certificate, Round1Marks, Round2Marks, Round3Marks, FinalResult
 from utils import generate_team_qr, send_mock_email
 
 public_bp = Blueprint('public', __name__)
+
+@public_bp.route('/')
+def index():
+    return render_template('public/landing.html')
+
+@public_bp.route('/api/health-check')
+def health_check():
+    try:
+        # Simple query to verify DB is online
+        db.session.execute(db.text("SELECT 1"))
+        return jsonify({"status": "healthy", "database": "connected"})
+    except Exception as e:
+        return jsonify({"status": "unhealthy", "error": str(e)}), 500
+
+@public_bp.route('/api/team-status/<team_id>')
+def api_team_status(team_id):
+    clean_id = team_id.strip().upper()
+    team = Team.query.filter_by(team_id=clean_id).first()
+    if not team:
+        team = Team.query.filter(db.func.upper(Team.team_id) == clean_id).first()
+    if not team:
+        return jsonify({"success": False, "message": "Team not found. Please verify your Team ID."})
+        
+    att = Attendance.query.filter_by(team_id=team.team_id).first()
+    sub = team.problem_submission
+    r1 = Round1Marks.query.filter_by(team_id=team.team_id, is_submitted=True).first()
+    r2 = Round2Marks.query.filter_by(team_id=team.team_id, is_submitted=True).first()
+    r3 = Round3Marks.query.filter_by(team_id=team.team_id, is_submitted=True).first()
+    cert = Certificate.query.filter_by(team_id=team.team_id).first()
+    
+    return jsonify({
+        "success": True,
+        "team_name": team.team_name,
+        "college": team.college,
+        "status": {
+            "registration": "completed",
+            "attendance": "completed" if (att and att.status == 'Present') else "pending",
+            "project_submission": "completed" if (sub and sub.project_title) else "pending",
+            "round1": "completed" if r1 else "pending",
+            "round2": "completed" if r2 else "pending",
+            "round3": "completed" if r3 else "pending",
+            "certificates": "released" if (cert and cert.certificate_status == 'RELEASED') else ("generated" if cert else "pending")
+        }
+    })
+
 
 @public_bp.route('/verify-certificate', methods=['GET', 'POST'])
 @public_bp.route('/verify-certificate/<search_term>', methods=['GET'])

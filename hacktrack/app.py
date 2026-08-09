@@ -47,7 +47,7 @@ app.register_blueprint(integrations_bp)
 # Root route redirection
 @app.route('/')
 def index():
-    return redirect(url_for('auth.login'))
+    return redirect(url_for('public.index'))
 
 @app.route('/quick-edit/<team_id>', methods=['GET', 'POST'])
 def root_quick_edit(team_id):

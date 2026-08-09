@@ -102,7 +102,7 @@
     <!-- Leaderboard Table -->
     <div class="card border-0 shadow-sm p-4 bg-secondary">
         <h5 class="mb-3 text-primary"><i class="bi bi-list-ol"></i> Full Event Rankings</h5>
-        <div class="table-responsive-custom">
+        <div class="table-responsive-custom table-responsive-stack">
             <table class="table table-hover align-middle mb-0 text-light" id="leaderboardTable">
                 <thead>
                     <tr class="text-secondary border-bottom">
@@ -119,7 +119,7 @@
                 <tbody>
                     {% for item in leaderboard %}
                         <tr class="align-middle border-bottom border-secondary border-opacity-25" style="{% if item.rank == 1 %}background-color: rgba(234, 179, 8, 0.08) !important;{% elif item.rank == 2 %}background-color: rgba(148, 163, 184, 0.08) !important;{% elif item.rank == 3 %}background-color: rgba(205, 127, 50, 0.08) !important;{% endif %}">
-                            <td class="text-center fw-bold">
+                            <td data-label="Rank" class="text-center fw-bold">
                                 {% if item.rank == 1 %}
                                     <span class="badge bg-warning text-dark fs-6 px-3 py-2"><i class="bi bi-trophy-fill me-1"></i> 1</span>
                                 {% elif item.rank == 2 %}
@@ -130,16 +130,16 @@
                                     <span class="badge bg-dark border border-secondary text-secondary fs-6 px-3 py-1">#{{ item.rank }}</span>
                                 {% endif %}
                             </td>
-                            <td>
+                            <td data-label="Team Name">
                                 <strong class="text-white fs-6">{{ item.team.team_name }}</strong>
                                 <div class="text-muted small" style="font-size: 11px;">ID: <code>{{ item.team.team_id }}</code></div>
                             </td>
-                            <td>{{ item.leader_name }}</td>
-                            <td>{{ item.team.college }}</td>
-                            <td class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round1 }}</span></td>
-                            <td class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round2 }}</span></td>
-                            <td class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round3 }}</span></td>
-                            <td class="text-center">
+                            <td data-label="Leader">{{ item.leader_name }}</td>
+                            <td data-label="College">{{ item.team.college }}</td>
+                            <td data-label="Round 1" class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round1 }}</span></td>
+                            <td data-label="Round 2" class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round2 }}</span></td>
+                            <td data-label="Round 3" class="text-center"><span class="badge bg-dark text-info border border-info border-opacity-25 py-1.5 px-2 font-monospace">{{ item.round3 }}</span></td>
+                            <td data-label="Grand Total" class="text-center">
                                 <span class="badge bg-primary fs-6 px-3 py-2 fw-bold text-white shadow-sm">
                                     <i class="bi bi-calculator me-1"></i>{{ item.grand_total }} / 300
                                 </span>

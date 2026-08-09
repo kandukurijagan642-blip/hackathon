@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block page_title %}Home - HackTrack 2026{% endblock %}
+
+{% block head %}
+<style>
+    /* Hide sidebar and adjust wrapper for full-width landing page layout */
+    .sidebar {
+        display: none !important;
+    }
+    .main-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    .top-navbar {
+        display: none !important;
+    }
+    .content-body {
+        padding: 0 !important;
+    }
+    
+    /* Hero section styling */
+    .hero-section {
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(37, 99, 235, 0.08) 100%);
+        border-bottom: 1px solid var(--border-color);
+        padding: 80px 20px;
+        text-align: center;
+        position: relative;
+    }
+    .hero-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 3.5rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 15px;
+    }
+    .hero-title span {
+        color: var(--primary);
+    }
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto 30px auto;
+    }
+    
+    /* Progress Tracker Steps */
+    .tracker-step {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin-bottom: 10px;
+        transition: all 0.3s ease;
+    }
+    .tracker-step.completed {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+    .tracker-step.pending {
+        opacity: 0.65;
+    }
+    .tracker-icon {
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .tracker-step.completed .tracker-icon {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+    
+    /* Segment Sections */
+    .landing-section {
+        padding: 60px 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- HERO BANNER -->
+<section class="hero-section">
+    <div class="container" style="max-width: 1000px;">
+        <span class="badge bg-primary px-3 py-2 text-uppercase tracking-wider font-monospace mb-3">Hackathon Portal</span>
+        <h1 class="hero-title">Hack<span>Track</span> 2026</h1>
+        <p class="hero-subtitle">Build. Innovate. Compete. The ultimate portal to register teams, track live progress, and manage jury evaluations.</p>
+        
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="{{ url_for('public.register') }}" class="btn btn-primary btn-lg px-4 py-3 fw-bold shadow">
+                <i class="bi bi-person-plus-fill me-1"></i> Register Your Team
+            </a>
+            <a href="#tracker" class="btn btn-outline-info btn-lg px-4 py-3 fw-bold">
+                <i class="bi bi-search me-1"></i> Track Team Status
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Portal Sign In
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- LIVE STATUS TRACKER -->
+<section id="tracker" class="landing-section bg-secondary border-bottom border-secondary border-opacity-10">
+    <div class="container" style="max-width: 700px;">
+        <div class="text-center mb-4">
+            <h3 class="text-white fw-bold"><i class="bi bi-compass-fill text-info me-1"></i> Live Team Tracker</h3>
+            <p class="text-secondary small">Enter your Team ID to inspect your live checklist from check-in to grading status.</p>
+        </div>
+        
+        <div class="card border-0 shadow p-4 bg-dark-card rounded-4">
+            <div class="input-group mb-3">
+                <span class="input-group-text bg-secondary border-0 text-secondary"><i class="bi bi-search"></i></span>
+                <input type="text" id="status-team-id" class="form-control bg-secondary border-0 text-white font-monospace" placeholder="Enter Team ID (e.g. HT2026001)" required style="height: 48px;">
+                <button class="btn btn-info text-dark fw-bold px-4" id="btn-check-status">Check Status</button>
+            </div>
+            
+            <!-- Result Output Box -->
+            <div id="tracker-result" style="display: none;" class="mt-4">
+                <div class="d-flex align-items-center justify-content-between mb-4 pb-2 border-bottom border-secondary border-opacity-25">
+                    <div>
+                        <h5 class="text-white fw-bold mb-0" id="res-team-name">Team Name</h5>
+                        <span class="text-muted small" id="res-college">College Institution</span>
+                    </div>
+                    <span class="badge bg-info text-dark font-monospace px-3 py-1.5" id="res-team-id">ID</span>
+                </div>
+                
+                <div class="tracker-list">
+                    <!-- Step 1 -->
+                    <div class="tracker-step" id="step-reg">
+                        <div class="tracker-icon"><i class="bi bi-check-lg"></i></div>
+                        <div>
+                            <div class="fw-bold text-white" style="font-size:14px;">Registered</div>
+                            <span class="text-muted small">Roster details verified</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="tracker-step" id="step-att">
+                        <div class="tracker-icon"><i class="bi bi-calendar-check"></i></div>
+                        <div>
+                            <div class="fw-bold text-white" id="step-att-title" style="font-size:14px;">Attendance Scan</div>
+                            <span class="text-muted small" id="step-att-desc">Marked Present at checking</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="tracker-step" id="step-sub">
+                        <div class="tracker-icon"><i class="bi bi-file-code"></i></div>
+                        <div>
+                            <div class="fw-bold text-white" id="step-sub-title" style="font-size:14px;">Project Details</div>
+                            <span class="text-muted small" id="step-sub-desc">Problem statement and domain details</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 4 -->
+                    <div class="tracker-step" id="step-r1">
+                        <div class="tracker-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div>
+                            <div class="fw-bold text-white" id="step-r1-title" style="font-size:14px;">Jury Round 1 Evaluation</div>
+                            <span class="text-muted small" id="step-r1-desc">Innovation &amp; Pitching</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 5 -->
+                    <div class="tracker-step" id="step-r2">
+                        <div class="tracker-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div>
+                            <div class="fw-bold text-white" id="step-r2-title" style="font-size:14px;">Jury Round 2 Evaluation</div>
+                            <span class="text-muted small" id="step-r2-desc">Prototype &amp; Implementation</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 6 -->
+                    <div class="tracker-step" id="step-r3">
+                        <div class="tracker-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div>
+                            <div class="fw-bold text-white" id="step-r3-title" style="font-size:14px;">Jury Round 3 Evaluation</div>
+                            <span class="text-muted small" id="step-r3-desc">Working Demo &amp; Scalability</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 7 -->
+                    <div class="tracker-step" id="step-cert">
+                        <div class="tracker-icon"><i class="bi bi-patch-check"></i></div>
+                        <div>
+                            <div class="fw-bold text-white" id="step-cert-title" style="font-size:14px;">Completion Certificate</div>
+                            <span class="text-muted small" id="step-cert-desc">Issued and downloadable</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HACKATHON INFO & TRACKS -->
+<section class="landing-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h3 class="text-white fw-bold">Hackathon Categories &amp; Timeline</h3>
+            <p class="text-secondary">Pitch your project in one of the core domains and follow key schedule milestones.</p>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 p-4 bg-secondary">
+                    <h5 class="text-primary mb-3"><i class="bi bi-cpu-fill me-1"></i> AI &amp; Intelligent Systems</h5>
+                    <p class="text-secondary small mb-0">Harness Machine Learning, Natural Language Processing, and Computer Vision models to optimize industrial or healthcare workflows.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 p-4 bg-secondary">
+                    <h5 class="text-success mb-3"><i class="bi bi-shield-lock-fill me-1"></i> Web3 &amp; Cyber Security</h5>
+                    <p class="text-secondary small mb-0">Implement smart contracts, secure cryptographic keys, zero-knowledge proofs, or anti-phishing protection frameworks.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 p-4 bg-secondary">
+                    <h5 class="text-warning mb-3"><i class="bi bi-tree-fill me-1"></i> Sustainable Technology</h5>
+                    <p class="text-secondary small mb-0">Smart grids, IoT weather-monitoring systems, carbon footprint indexers, and sustainable farming assistants.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Timeline Table -->
+        <div class="card border-0 p-4 bg-secondary">
+            <h5 class="text-white fw-bold mb-4"><i class="bi bi-calendar-event me-2"></i>Official Event Milestones</h5>
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle mb-0" style="--bs-table-bg: transparent; --bs-table-color: var(--text-primary);">
+                    <thead>
+                        <tr class="text-secondary border-bottom border-secondary border-opacity-25 small">
+                            <th>Stage Milestone</th>
+                            <th>Time &amp; Date</th>
+                            <th>Action Type</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <tr class="border-bottom border-secondary border-opacity-10">
+                            <td class="py-3 fw-bold text-white">Registration Deadline</td>
+                            <td>August 15, 2026 — 11:59 PM</td>
+                            <td><span class="badge bg-danger">Closes Soon</span></td>
+                        </tr>
+                        <tr class="border-bottom border-secondary border-opacity-10">
+                            <td class="py-3 fw-bold text-white">Live Check-in &amp; Orientation</td>
+                            <td>August 20, 2026 — 08:30 AM</td>
+                            <td><span class="badge bg-info">Attendance Required</span></td>
+                        </tr>
+                        <tr class="border-bottom border-secondary border-opacity-10">
+                            <td class="py-3 fw-bold text-white">Pitch &amp; Jury Round 1</td>
+                            <td>August 20, 2026 — 02:00 PM</td>
+                            <td><span class="badge bg-secondary">Evaluation Start</span></td>
+                        </tr>
+                        <tr class="border-bottom border-secondary border-opacity-10">
+                            <td class="py-3 fw-bold text-white">Prototype Build &amp; Round 2</td>
+                            <td>August 21, 2026 — 10:00 AM</td>
+                            <td><span class="badge bg-secondary">Evaluation Live</span></td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 fw-bold text-white">Grand Finale &amp; Prize Distribution</td>
+                            <td>August 22, 2026 — 03:30 PM</td>
+                            <td><span class="badge bg-success">Ceremony</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="landing-section bg-secondary">
+    <div class="container" style="max-width: 800px;">
+        <div class="text-center mb-5">
+            <h3 class="text-white fw-bold">Frequently Asked Questions</h3>
+            <p class="text-secondary">Everything you need to know about team verification and evaluations.</p>
+        </div>
+        
+        <div class="accordion accordion-flush" id="faqAccordion">
+            <div class="accordion-item bg-dark-card border-0 mb-3 rounded-3 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button bg-dark-card text-white collapsed fw-bold border-0" type="button" data-bs-toggle="collapse" data-bs-target="#faq-1">
+                        How do I verify our team attendance?
+                    </button>
+                </h2>
+                <div id="faq-1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary small">
+                        Organizers will scan your customized team QR Code at your table on the morning of check-in to confirm your live attendance status.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item bg-dark-card border-0 mb-3 rounded-3 overflow-hidden">
+                <h2 class="accordion-header">
+                    <button class="accordion-button bg-dark-card text-white collapsed fw-bold border-0" type="button" data-bs-toggle="collapse" data-bs-target="#faq-2">
+                        How can I view my certificate?
+                    </button>
+                </h2>
+                <div id="faq-2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body text-secondary small">
+                        Once administrators release the certificates for your team, team leaders can download the certified PDFs from their private dashboard.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnCheck = document.getElementById('btn-check-status');
+        const inputId = document.getElementById('status-team-id');
+        const resultBox = document.getElementById('tracker-result');
+        
+        function setStep(stepId, state, descText) {
+            const step = document.getElementById(stepId);
+            const desc = document.getElementById(stepId + '-desc') || step.querySelector('.text-muted');
+            const icon = step.querySelector('.tracker-icon i');
+            
+            step.classList.remove('completed', 'pending');
+            if (state === 'completed' || state === 'released' || state === 'generated') {
+                step.classList.add('completed');
+                icon.className = 'bi bi-check-lg';
+                if (descText) desc.textContent = descText;
+            } else {
+                step.classList.add('pending');
+                icon.className = 'bi bi-dash';
+                if (descText) desc.textContent = descText;
+            }
+        }
+        
+        btnCheck.addEventListener('click', function() {
+            const teamId = inputId.value.trim();
+            if (!teamId) {
+                showToast("Please enter a valid Team ID.", false);
+                return;
+            }
+            
+            btnCheck.disabled = true;
+            btnCheck.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            
+            fetch(`/api/team-status/${teamId}`)
+                .then(res => res.json())
+                .then(data => {
+                    btnCheck.disabled = false;
+                    btnCheck.textContent = 'Check Status';
+                    
+                    if (!data.success) {
+                        showToast(data.message, false);
+                        resultBox.style.display = 'none';
+                        return;
+                    }
+                    
+                    // Show result box
+                    resultBox.style.display = 'block';
+                    document.getElementById('res-team-name').textContent = data.team_name;
+                    document.getElementById('res-college').textContent = data.college;
+                    document.getElementById('res-team-id').textContent = teamId;
+                    
+                    // Set stages
+                    setStep('step-reg', 'completed', 'Roster details verified');
+                    
+                    const att = data.status.attendance;
+                    setStep('step-att', att, att === 'completed' ? 'Checked in - Marked Present' : 'Pending - Scan QR at your table');
+                    
+                    const sub = data.status.project_submission;
+                    setStep('step-sub', sub, sub === 'completed' ? 'Project details submitted successfully' : 'Pending - Submit details in dashboard');
+                    
+                    const r1 = data.status.round1;
+                    setStep('step-r1', r1, r1 === 'completed' ? 'Round 1 Finalized' : 'Pending - Awaiting grading');
+                    
+                    const r2 = data.status.round2;
+                    setStep('step-r2', r2, r2 === 'completed' ? 'Round 2 Finalized' : 'Pending - Awaiting grading');
+                    
+                    const r3 = data.status.round3;
+                    setStep('step-r3', r3, r3 === 'completed' ? 'Round 3 Finalized' : 'Pending - Awaiting grading');
+                    
+                    const cert = data.status.certificates;
+                    let certDesc = 'Awaiting grading completion';
+                    if (cert === 'released') certDesc = 'Approved & Released - Download available';
+                    else if (cert === 'generated') certDesc = 'Generated - Pending Admin approval';
+                    
+                    setStep('step-cert', cert, certDesc);
+                    
+                    showToast("Status loaded successfully!", true);
+                    
+                    // Scroll down to result list smoothly
+                    resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                })
+                .catch(err => {
+                    btnCheck.disabled = false;
+                    btnCheck.textContent = 'Check Status';
+                    showToast("Error connecting to server.", false);
+                });
+        });
+    });
+</script>
+{% endblock %}

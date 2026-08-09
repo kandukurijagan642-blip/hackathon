@@ -27,9 +27,12 @@
             {% if current_user.is_authenticated %}
                 <!-- Common Home/Dashboard link depending on role -->
                 {% if current_user.role == 'Admin' %}
+                    <li class="menu-header">Overview</li>
                     <li class="{% if request.blueprint == 'admin' and request.endpoint.endswith('.dashboard') %}active{% endif %}">
                         <a href="{{ url_for('admin.dashboard') }}"><i class="bi bi-grid-fill"></i> Dashboard</a>
                     </li>
+                    
+                    <li class="menu-header">Management</li>
                     <li class="{% if request.endpoint == 'admin.manage_users' %}active{% endif %}">
                         <a href="{{ url_for('admin.manage_users') }}"><i class="bi bi-people-fill"></i> User Accounts</a>
                     </li>
@@ -39,25 +42,31 @@
                     <li class="{% if request.endpoint == 'admin.view_attendance' %}active{% endif %}">
                         <a href="{{ url_for('admin.view_attendance') }}"><i class="bi bi-calendar-check-fill"></i> Attendance</a>
                     </li>
+                    
+                    <li class="menu-header">Judging</li>
                     <li class="{% if request.endpoint == 'admin.leaderboard' %}active{% endif %}">
                         <a href="{{ url_for('admin.leaderboard') }}"><i class="bi bi-trophy-fill"></i> Leaderboard</a>
                     </li>
+                    
+                    <li class="menu-header">Output</li>
                     <li class="{% if request.endpoint == 'admin.certificates' %}active{% endif %}">
                         <a href="{{ url_for('admin.certificates') }}"><i class="bi bi-patch-check-fill"></i> Certificates</a>
                     </li>
+                    
+                    <li class="menu-header">System</li>
                     <li class="{% if request.endpoint == 'admin.view_logs' %}active{% endif %}">
                         <a href="{{ url_for('admin.view_logs') }}"><i class="bi bi-shield-lock-fill"></i> Activity Logs</a>
                     </li>
                     
                 {% elif current_user.role == 'Organizer' %}
+                    <li class="menu-header">Overview</li>
                     <li class="{% if request.blueprint == 'organizer' and request.endpoint.endswith('.dashboard') %}active{% endif %}">
                         <a href="{{ url_for('organizer.dashboard') }}"><i class="bi bi-grid-fill"></i> Dashboard</a>
                     </li>
+                    
+                    <li class="menu-header">Management</li>
                     <li class="{% if request.endpoint == 'organizer.view_teams' %}active{% endif %}">
                         <a href="{{ url_for('organizer.view_teams') }}"><i class="bi bi-card-list"></i> Registered Teams</a>
-                    </li>
-                    <li class="{% if request.endpoint == 'organizer.manage_rounds' %}active{% endif %}">
-                        <a href="{{ url_for('organizer.manage_rounds') }}"><i class="bi bi-shield-check"></i> Jury Rounds</a>
                     </li>
                     <li class="{% if request.endpoint == 'organizer.register_team' %}active{% endif %}">
                         <a href="{{ url_for('organizer.register_team') }}"><i class="bi bi-plus-circle-fill"></i> Register Team</a>
@@ -66,12 +75,19 @@
                         <a href="{{ url_for('organizer.scan_qr') }}"><i class="bi bi-qr-code-scan"></i> Scan Attendance</a>
                     </li>
                     
+                    <li class="menu-header">Judging</li>
+                    <li class="{% if request.endpoint == 'organizer.manage_rounds' %}active{% endif %}">
+                        <a href="{{ url_for('organizer.manage_rounds') }}"><i class="bi bi-shield-check"></i> Jury Rounds</a>
+                    </li>
+                    
                 {% elif current_user.role == 'Judge' %}
+                    <li class="menu-header">Jury Panel</li>
                     <li class="{% if request.blueprint == 'judge' and request.endpoint.endswith('.dashboard') %}active{% endif %}">
                         <a href="{{ url_for('judge.dashboard') }}"><i class="bi bi-grid-fill"></i> Dashboard</a>
                     </li>
                     
                 {% elif current_user.role == 'Leader' %}
+                    <li class="menu-header">Leader Menu</li>
                     <li class="{% if request.blueprint == 'leader' and request.endpoint.endswith('.dashboard') %}active{% endif %}">
                         <a href="{{ url_for('leader.dashboard') }}"><i class="bi bi-grid-fill"></i> Team Dashboard</a>
                     </li>
@@ -80,6 +96,7 @@
                     </li>
                 {% endif %}
             {% else %}
+                <li class="menu-header">Guest Menu</li>
                 <li class="active">
                     <a href="{{ url_for('auth.login') }}"><i class="bi bi-box-arrow-in-right"></i> Login</a>
                 </li>
@@ -104,7 +121,7 @@
                     <i class="bi bi-list"></i>
                 </div>
                 <h4 class="mb-0 d-flex align-items-center gap-2">
-                    <span class="pulse-indicator" title="System Live"></span>
+                    <span class="pulse-indicator offline" id="system-health-indicator" title="System Offline"></span>
                     {% block page_title %}HackTrack Portal{% endblock %}
                 </h4>
             </div>

@@ -126,7 +126,7 @@
                     <span class="badge bg-primary">{{ teams|length }} Teams Registered</span>
                 </div>
 
-                <div class="table-responsive-custom">
+                <div class="table-responsive-custom table-responsive-stack">
                     <table class="table table-custom align-middle">
                         <thead>
                             <tr>
@@ -144,20 +144,20 @@
                                 {% set generated = team_certs|length > 0 %}
                                 {% set is_released = generated and team_certs[0].certificate_status == 'RELEASED' %}
                                 <tr>
-                                    <td>
+                                    <td data-label="Team Name">
                                         <strong>{{ team.team_name }}</strong>
                                         <div class="small text-muted">ID: <code>{{ team.team_id }}</code></div>
                                     </td>
-                                    <td>{{ team.college }}</td>
-                                    <td class="text-center">{{ team.members|length + 1 }}</td>
-                                    <td class="text-center">
+                                    <td data-label="College">{{ team.college }}</td>
+                                    <td data-label="Members" class="text-center">{{ team.members|length + 1 }}</td>
+                                    <td data-label="Certificates" class="text-center">
                                         {% if generated %}
                                             <span class="badge bg-success"><i class="bi bi-check-circle"></i> {{ team_certs|length }} Created</span>
                                         {% else %}
                                             <span class="badge bg-warning"><i class="bi bi-hourglass"></i> Pending</span>
                                         {% endif %}
                                     </td>
-                                    <td>
+                                    <td data-label="Status">
                                         {% set orig_el = teams_eligibility.get(team.team_id) if teams_eligibility else None %}
                                         {% if is_released %}
                                             <span class="badge bg-success"><i class="bi bi-patch-check-fill me-1"></i> RELEASED</span>
@@ -172,7 +172,7 @@
                                             {% endif %}
                                         {% endif %}
                                     </td>
-                                    <td class="text-end">
+                                    <td data-label="Actions" class="text-end">
                                         <div class="d-flex justify-content-end gap-2 align-items-center">
                                             {% if generated %}
                                                 <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#certDetailsModal-{{ team.team_id }}">
