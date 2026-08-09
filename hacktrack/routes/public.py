@@ -19,7 +19,8 @@ def health_check():
         db.session.execute(db.text("SELECT 1"))
         return jsonify({"status": "healthy", "database": "connected"})
     except Exception as e:
-        return jsonify({"status": "unhealthy", "error": str(e)}), 500
+        print(f"[health-check] DB connection error: {e}")
+        return jsonify({"status": "unhealthy"}), 500
 
 @public_bp.route('/api/team-status/<team_id>')
 def api_team_status(team_id):

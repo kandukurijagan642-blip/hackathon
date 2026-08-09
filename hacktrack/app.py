@@ -14,6 +14,10 @@ create_database_if_not_exists()
 app = Flask(__name__)
 app.config.from_object(Config)
 
+# 2.5 Setup CSRF protection
+from flask_wtf.csrf import CSRFProtect
+csrf = CSRFProtect(app)
+
 # 3. Initialize SQLAlchemy database
 db.init_app(app)
 

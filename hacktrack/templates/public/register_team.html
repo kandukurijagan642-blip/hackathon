@@ -202,6 +202,7 @@
         {% endwith %}
 
         <form action="{{ url_for('public.register') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- 1. Team Profile -->
             <div class="section-header">
                 <i class="bi bi-shield-fill-check"></i> Team Profile

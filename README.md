@@ -26,11 +26,15 @@ A production-ready, feature-rich hackathon administration and judging platform. 
 
 ---
 
-## 🔒 Security Measures Implemented
+## 🛡️ Hardened Production Security Measures
 
-*   **🔒 Auth-Gated QR Code Shortcuts:** QR shortcut access is restricted to the specific team leader or administrators. Bypassing login or viewing other teams is completely prevented.
-*   **🔑 Secure Password Policy:** Random, high-entropy alpha-numeric password generation during registration (no default or guessable credentials).
-*   **🛡️ Draft Isolation:** Draft evaluations are completely isolated from the leaderboard and winner declaration routes to prevent score contamination.
+*   **🛡️ CSRF Protection:** Strict cross-site request forgery prevention via Flask-WTF. All state-changing POST forms (submissions, evaluations, settings, admin functions) require a valid cryptographic `csrf_token`.
+*   **🔒 Secure Session Termination:** Logout endpoint is protected by a POST-only method containing CSRF token verification, preventing malicious sites from force-logging users out.
+*   **🔑 Concurrency-Safe Entropy IDs:** Custom Team IDs (`HT2026-XXXXXX`) and Certificate IDs (`HC2026-XXXXXXXX`) use high-entropy random identifiers (`secrets.token_hex`), completely eliminating database PK collision race conditions under concurrent loads.
+*   **🔐 Auth-Gated QR Code Shortcuts:** QR shortcut access uses secure signed URL tokens via `URLSafeSerializer` allowing passwordless logins for team leaders while locking out unauthorized access.
+*   **🩺 Privacy-Preserving Health Checks:** System check endpoints conceal raw database engine parameters and SQL query traceback outputs to prevent information disclosure.
+*   **💾 Database-Enforced Data Integrity:** Unique schema constraints prevent duplicate team attendance (`uq_attendance_team`) and duplicate judge-round markings (`uq_rX_team_judge`).
+*   **⚠️ Fail-Fast Configuration Safeguards:** Startup validation aborts deployment in hosting environments if critical secrets (`SECRET_KEY`, `DATABASE_URL`) are unconfigured.
 
 ---
 

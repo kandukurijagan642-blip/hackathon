@@ -48,13 +48,15 @@ def login():
         
     return render_template('auth/login.html')
 
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
-    log_activity(current_user.id, "User Logout")
-    logout_user()
-    flash('You have been logged out successfully.', 'info')
-    return redirect(url_for('auth.login'))
+    if request.method == 'POST':
+        log_activity(current_user.id, "User Logout")
+        logout_user()
+        flash('You have been logged out successfully.', 'info')
+        return redirect(url_for('auth.login'))
+    return render_template('auth/logout_confirm.html')
 
 @auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
@@ -68,15 +70,13 @@ def forgot_password():
             token = serializer.dumps(user.email, salt='password-reset-salt')
             reset_url = url_for('auth.reset_password', token=token, _external=True)
             
-            # Print/Log the reset URL (since we use mock email in console for notifications)
-            print("================= PASSWORD RESET EMAIL (MOCK) =================")
-            print(f"To: {user.email}")
-            print(f"Subject: Reset Your HackTrack Password")
-            print(f"Body: Hello {user.name},\nClick the link to reset password: {reset_url}")
-            print("===============================================================")
+            # Send password reset email via mock channel
+            from utils import send_mock_email
+            email_body = f"Hello {user.name},\n\nClick the link below to reset your HackTrack password:\n{reset_url}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nHackTrack Team"
+            send_mock_email(user.email, "Reset Your HackTrack Password", email_body)
             
             log_activity(user.id, "Forgot Password Requested", f"Reset token generated for {email}")
-            flash('A password reset link has been logged/sent to your email address.', 'info')
+            flash('A password reset link has been sent to your email address.', 'info')
         else:
             flash('If that email exists in our records, a reset link has been sent.', 'info')
             

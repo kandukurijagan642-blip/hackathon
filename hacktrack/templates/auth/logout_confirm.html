@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block page_title %}Logout Confirmation - HackTrack{% endblock %}
+
+{% block head %}
+<style>
+    /* Hide sidebar and adjust margins on logout confirmation screen */
+    .sidebar {
+        display: none !important;
+    }
+    .main-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    .top-navbar {
+        display: none !important;
+    }
+    .content-body {
+        padding: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, var(--bg-primary) 0%, rgba(37, 99, 235, 0.05) 100%);
+    }
+    .logout-container {
+        width: 100%;
+        max-width: 500px;
+        padding: 20px;
+    }
+    .logout-card {
+        background-color: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        padding: 40px 30px;
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+    .logout-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, var(--primary) 0%, var(--info) 100%);
+    }
+    .logout-icon {
+        font-size: 48px;
+        color: var(--danger);
+        margin-bottom: 20px;
+    }
+    .logout-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+    }
+    .logout-desc {
+        color: var(--text-muted);
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="logout-container">
+    <div class="logout-card">
+        <div class="logout-icon">
+            <i class="bi bi-box-arrow-right"></i>
+        </div>
+        <h2 class="logout-title">Confirm Logout</h2>
+        <p class="logout-desc">Are you sure you want to end your current session and log out of HackTrack?</p>
+        
+        <form action="{{ url_for('auth.logout') }}" method="POST" class="d-flex gap-3 justify-content-center">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <a href="javascript:history.back()" class="btn btn-outline-secondary px-4 py-2" style="border-radius: 10px;">Cancel</a>
+            <button type="submit" class="btn btn-danger px-4 py-2" style="border-radius: 10px;">Yes, Logout</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
