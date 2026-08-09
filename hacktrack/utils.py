@@ -61,8 +61,28 @@ def generate_team_qr(team_id, team_name, leader_name, host_url="http://localhost
     Generates a QR code for a team containing: Team ID | Team Name | Leader Name
     and saves it as a PNG file in the static directory.
     """
+    from models import Team
+    from flask import current_app
+    
     actual_host = get_actual_host_url(host_url)
-    qr_payload = f"{actual_host}/leader/quick-edit/{team_id}"
+    
+    team = None
+    try:
+        team = Team.query.get(team_id)
+    except Exception:
+        pass
+        
+    if team:
+        qr_payload = team.get_qr_url(actual_host)
+    else:
+        from itsdangerous import URLSafeSerializer
+        try:
+            secret_key = current_app.config['SECRET_KEY']
+        except Exception:
+            secret_key = Config.SECRET_KEY
+        serializer = URLSafeSerializer(secret_key, salt='qr-access-salt')
+        token = serializer.dumps(team_id)
+        qr_payload = f"{actual_host.rstrip('/')}/qr-access/{token}"
     
     qr = qrcode.QRCode(
         version=1,

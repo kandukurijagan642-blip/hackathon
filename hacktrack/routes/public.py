@@ -23,12 +23,23 @@ def health_check():
 
 @public_bp.route('/api/team-status/<team_id>')
 def api_team_status(team_id):
+    from flask import request
+    from models import User
+    
     clean_id = team_id.strip().upper()
     team = Team.query.filter_by(team_id=clean_id).first()
     if not team:
         team = Team.query.filter(db.func.upper(Team.team_id) == clean_id).first()
     if not team:
         return jsonify({"success": False, "message": "Team not found. Please verify your Team ID."})
+        
+    email = request.args.get('email', '').strip().lower()
+    if not email:
+        return jsonify({"success": False, "message": "Leader Email address is required to check status."})
+        
+    leader = User.query.get(team.leader_id)
+    if not leader or leader.email.lower().strip() != email:
+        return jsonify({"success": False, "message": "Unauthorized. The email address does not match this Team ID."})
         
     att = Attendance.query.filter_by(team_id=team.team_id).first()
     sub = team.problem_submission
@@ -316,8 +327,14 @@ def qr_access(token):
     team = Team.query.get_or_404(team_id)
     
     if not current_user.is_authenticated:
-        flash("Please log in as an Organizer or Admin to process this QR code check-in.", "info")
-        return redirect(url_for('auth.login', next=request.full_path))
+        from flask_login import login_user
+        leader_user = User.query.get(team.leader_id)
+        if leader_user:
+            login_user(leader_user)
+            flash(f"Welcome back, {leader_user.name}! Logged in securely via QR access.", "success")
+            return redirect(url_for('leader.quick_edit', team_id=team.team_id))
+        else:
+            return redirect(url_for('auth.login'))
         
     if current_user.role in ['Admin', 'Organizer']:
         att = Attendance.query.filter_by(team_id=team.team_id).first()

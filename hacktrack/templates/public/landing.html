@@ -116,10 +116,18 @@
         </div>
         
         <div class="card border-0 shadow p-4 bg-dark-card rounded-4">
-            <div class="input-group mb-3">
-                <span class="input-group-text bg-secondary border-0 text-secondary"><i class="bi bi-search"></i></span>
-                <input type="text" id="status-team-id" class="form-control bg-secondary border-0 text-white font-monospace" placeholder="Enter Team ID (e.g. HT2026001)" required style="height: 48px;">
-                <button class="btn btn-info text-dark fw-bold px-4" id="btn-check-status">Check Status</button>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="status-team-id" class="form-label text-secondary small fw-bold mb-1">Team ID</label>
+                    <input type="text" id="status-team-id" class="form-control bg-secondary border-0 text-white font-monospace" placeholder="e.g. HT2026001" required style="height: 44px;">
+                </div>
+                <div class="col-md-6">
+                    <label for="status-email" class="form-label text-secondary small fw-bold mb-1">Leader Email Address</label>
+                    <input type="email" id="status-email" class="form-control bg-secondary border-0 text-white" placeholder="e.g. leader@mail.com" required style="height: 44px;">
+                </div>
+                <div class="col-12 mt-3">
+                    <button class="btn btn-info text-dark fw-bold w-100 py-2.5" id="btn-check-status">Check Status</button>
+                </div>
             </div>
             
             <!-- Result Output Box -->
@@ -340,15 +348,16 @@
         
         btnCheck.addEventListener('click', function() {
             const teamId = inputId.value.trim();
-            if (!teamId) {
-                showToast("Please enter a valid Team ID.", false);
+            const email = document.getElementById('status-email').value.trim();
+            if (!teamId || !email) {
+                showToast("Please enter both Team ID and Leader Email.", false);
                 return;
             }
             
             btnCheck.disabled = true;
             btnCheck.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
             
-            fetch(`/api/team-status/${teamId}`)
+            fetch(`/api/team-status/${teamId}?email=${encodeURIComponent(email)}`)
                 .then(res => res.json())
                 .then(data => {
                     btnCheck.disabled = false;

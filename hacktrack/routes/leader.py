@@ -113,7 +113,7 @@ def ensure_certificates_ready(team, host_url):
         certificate_type=cert_type,
         certificate_path=f"certificates/{leader_pdf_filename}",
         certificate_status='LOCKED',
-        released_time=datetime.utcnow(),
+        released_time=None,
         verification_token=leader_token
     )
     db.session.add(leader_cert)
@@ -152,7 +152,7 @@ def ensure_certificates_ready(team, host_url):
             certificate_type=cert_type,
             certificate_path=f"certificates/{m_pdf_filename}",
             certificate_status='LOCKED',
-            released_time=datetime.utcnow(),
+            released_time=None,
             verification_token=m_token
         )
         db.session.add(m_cert)
@@ -605,113 +605,6 @@ def certificates():
         released=released
     )
 
-
-@leader_bp.route('/certificates/generate', methods=['POST'])
-@login_required
-def generate_certificates():
-    team = Team.query.filter_by(leader_id=current_user.id).first()
-    if not team:
-        abort(403)
-        
-    # Check if already generated
-    existing = Certificate.query.filter_by(team_id=team.team_id).first()
-    if existing:
-        flash('Certificates have already been generated for your team.', 'info')
-        return redirect(url_for('leader.certificates'))
-        
-    # Determine certificate participation type based on rank
-    cert_type = "Participant"
-    final_res = FinalResult.query.filter_by(team_id=team.team_id).first()
-    if final_res:
-        if final_res.rank == 1:
-            cert_type = "Winner"
-        else:
-            cert_type = "Finalist"
-            
-    # Load signature & logo paths if configured by admin
-    sig_path = SystemSetting.get_setting('organizer_signature_path')
-    logo_path = SystemSetting.get_setting('college_logo_path')
-    
-    # 1. Generate for Team Leader
-    cert_count = Certificate.query.count()
-    new_cert_num = cert_count + 1
-    leader_cert_id = f"HC2026-{new_cert_num:06d}"
-    leader_token = secrets.token_urlsafe(16)
-    leader_pdf_filename = f"{leader_cert_id}.pdf"
-    leader_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', leader_pdf_filename)
-    
-    verification_url = f"{request.host_url.rstrip('/')}/verify-certificate/{leader_token}"
-    
-    generate_pdf_certificate(
-        cert_id=leader_cert_id,
-        student_name=current_user.name,
-        team_name=team.team_name,
-        project_title=team.problem_submission.project_title if team.problem_submission else "Hackathon Project",
-        cert_type=cert_type,
-        verification_url=verification_url,
-        output_path=leader_pdf_path,
-        signature_path=sig_path,
-        logo_path=logo_path
-    )
-    
-    leader_cert = Certificate(
-        certificate_id=leader_cert_id,
-        team_id=team.team_id,
-        member_id=None,
-        student_name=current_user.name,
-        registration_number=f"{team.team_id}-LDR",
-        college_name=team.college,
-        team_name=team.team_name,
-        certificate_type=cert_type,
-        certificate_path=f"certificates/{leader_pdf_filename}",
-        certificate_status='RELEASED',
-        verification_token=leader_token
-    )
-    db.session.add(leader_cert)
-    db.session.commit()
-    
-    # 2. Generate for each Team Member
-    for member in team.members:
-        cert_count = Certificate.query.count()
-        new_cert_num = cert_count + 1
-        m_cert_id = f"HC2026-{new_cert_num:06d}"
-        m_token = secrets.token_urlsafe(16)
-        m_pdf_filename = f"{m_cert_id}.pdf"
-        m_pdf_path = os.path.join(current_app.root_path, 'static', 'certificates', m_pdf_filename)
-        
-        m_verification_url = f"{request.host_url.rstrip('/')}/verify-certificate/{m_token}"
-        
-        generate_pdf_certificate(
-            cert_id=m_cert_id,
-            student_name=member.student_name,
-            team_name=team.team_name,
-            project_title=team.problem_submission.project_title if team.problem_submission else "Hackathon Project",
-            cert_type=cert_type,
-            verification_url=m_verification_url,
-            output_path=m_pdf_path,
-            signature_path=sig_path,
-            logo_path=logo_path
-        )
-        
-        m_cert = Certificate(
-            certificate_id=m_cert_id,
-            team_id=team.team_id,
-            member_id=member.member_id,
-            student_name=member.student_name,
-            registration_number=member.registration_number,
-            college_name=team.college,
-            team_name=team.team_name,
-            certificate_type=cert_type,
-            certificate_path=f"certificates/{m_pdf_filename}",
-            certificate_status='RELEASED',
-            verification_token=m_token
-        )
-        db.session.add(m_cert)
-        db.session.commit()
-        
-    log_leader_activity("Generate Certificates", f"Generated certificates for team {team.team_id}")
-    flash('Certificates generated successfully!', 'success')
-    return redirect(url_for('leader.certificates'))
 
 
 @leader_bp.route('/certificates/download/<cert_id>')

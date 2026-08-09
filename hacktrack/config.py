@@ -19,19 +19,6 @@ class Config:
     os.makedirs(os.path.join(BASE_DIR, 'static', 'certificates'), exist_ok=True)
     
     # Flask settings
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'default_secret_key_if_none_set')
-    DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
-    
-    # Database settings
-    # Priority: DATABASE_URL (Render PostgreSQL) > MYSQL_HOST (local MySQL) > SQLite fallback
-    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
-    MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
-    MYSQL_DB = os.environ.get('MYSQL_DB', 'hacktrack_db')
-    
-    DATABASE_URL = os.environ.get('DATABASE_URL')
-    
-    # Render, Railway, or other hosting detection: check RENDER, RAILWAY, or if PORT is defined without a custom MYSQL_HOST
     is_on_hosting = (
         os.environ.get('RENDER') is not None or 
         os.environ.get('RENDER_SERVICE_ID') is not None or 
@@ -40,15 +27,29 @@ class Config:
         (os.environ.get('PORT') is not None and os.environ.get('MYSQL_HOST') is None)
     )
     
+    SECRET_KEY = os.environ.get('SECRET_KEY')
+    if not SECRET_KEY:
+        if is_on_hosting:
+            raise RuntimeError("CRITICAL: SECRET_KEY environment variable is required in production/hosting environments! Deployment aborted.")
+        SECRET_KEY = 'development_secret_key_fallback_only'
+        
+    DEBUG = os.environ.get('FLASK_DEBUG', 'False') == 'True'
+    
+    # Database settings
+    MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
+    MYSQL_USER = os.environ.get('MYSQL_USER', 'root')
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD', '')
+    MYSQL_DB = os.environ.get('MYSQL_DB', 'hacktrack_db')
+    
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    
     if DATABASE_URL:
-        # Render/Railway PostgreSQL or any external database
         if DATABASE_URL.startswith("postgres://"):
             SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace("postgres://", "postgresql://", 1)
         else:
             SQLALCHEMY_DATABASE_URI = DATABASE_URL
     elif is_on_hosting:
-        # On hosting without DATABASE_URL and without external MySQL - use SQLite
-        SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(BASE_DIR, 'hacktrack.db')
+        raise RuntimeError("CRITICAL: DATABASE_URL environment variable is required in production/hosting environments! Deployment aborted.")
     else:
         # Local development — use MySQL
         if MYSQL_PASSWORD:
