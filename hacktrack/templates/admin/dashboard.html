@@ -178,6 +178,136 @@
             </div>
         </div>
     </div>
+
+    <!-- Integrations & Export Panel -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm p-4 bg-secondary">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 text-primary"><i class="bi bi-share-fill"></i> Integrations &amp; Export</h5>
+                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#integrationSettingsModal">
+                        <i class="bi bi-gear-fill"></i> Configure Credentials
+                    </button>
+                </div>
+                <p class="text-secondary small mb-4">Send all hackathon data to Telegram, Google Sheets, and Email. Telegram also fires automatically on certificate release and when a judge submits marks.</p>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <form action="{{ url_for('integrations.send_telegram') }}" method="POST">
+                            <button type="submit" class="btn btn-primary w-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-telegram"></i> Send to Telegram
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-3">
+                        <form action="{{ url_for('integrations.push_sheets') }}" method="POST">
+                            <button type="submit" class="btn btn-success w-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-grid-3x3-gap-fill"></i> Push to Google Sheets
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-3">
+                        <form action="{{ url_for('integrations.send_email_report') }}" method="POST">
+                            <button type="submit" class="btn btn-warning w-100 text-dark d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-envelope-fill"></i> Email Full Report
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-3">
+                        <form action="{{ url_for('integrations.send_all') }}" method="POST">
+                            <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-rocket-fill"></i> Send All
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="mt-3 p-3 rounded" style="background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.15);">
+                    <span class="small text-info"><i class="bi bi-info-circle-fill me-1"></i>
+                    <b>Auto-triggers:</b> Telegram fires automatically when any certificate is released or a judge finalizes marks.
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Integration Settings Modal -->
+<div class="modal fade" id="integrationSettingsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-secondary border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-primary"><i class="bi bi-gear-fill me-2"></i>Integration Credentials</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('integrations.save_settings') }}" method="POST">
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <!-- Telegram -->
+                        <div class="col-12">
+                            <h6 class="text-info mb-2"><i class="bi bi-telegram me-1"></i>Telegram Bot</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-secondary">Bot Token</label>
+                            <input type="text" name="telegram_bot_token" class="form-control form-control-sm"
+                                   placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                                   value="{{ get_setting('telegram_bot_token', '') }}">
+                            <div class="form-text text-muted">Get from <a href="https://t.me/BotFather" target="_blank" class="text-info">@BotFather</a></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-secondary">Channel / Group ID</label>
+                            <input type="text" name="telegram_channel_id" class="form-control form-control-sm"
+                                   placeholder="-100xxxxxxxxxx"
+                                   value="{{ get_setting('telegram_channel_id', '') }}">
+                            <div class="form-text text-muted">Add bot to channel/group as Admin, then use its ID</div>
+                        </div>
+
+                        <!-- Google Sheets -->
+                        <div class="col-12 mt-2">
+                            <h6 class="text-success mb-2"><i class="bi bi-grid-3x3-gap-fill me-1"></i>Google Sheets (Apps Script)</h6>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small text-secondary">Apps Script Web App URL</label>
+                            <input type="url" name="google_sheet_webhook_url" class="form-control form-control-sm"
+                                   placeholder="https://script.google.com/macros/s/.../exec"
+                                   value="{{ get_setting('google_sheet_webhook_url', '') }}">
+                            <div class="form-text text-muted">
+                                Setup: Open your Google Sheet → Extensions → Apps Script → paste the script below → Deploy as Web App (Anyone can access) → copy URL
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <details class="mt-1">
+                                <summary class="small text-info" style="cursor:pointer;">Show Apps Script code to paste</summary>
+                                <pre class="mt-2 p-3 rounded small" style="background:#0f172a;color:#94a3b8;overflow-x:auto;">function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(data.sheet) || ss.insertSheet(data.sheet);
+  if (data.clear) sheet.clearContents();
+  if (data.headers) sheet.appendRow(data.headers);
+  data.rows.forEach(function(row) { sheet.appendRow(row); });
+  return ContentService.createTextOutput("OK");
+}</pre>
+                            </details>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-12 mt-2">
+                            <h6 class="text-warning mb-2"><i class="bi bi-envelope-fill me-1"></i>Email Report</h6>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-secondary">Send Report To (email)</label>
+                            <input type="email" name="export_email" class="form-control form-control-sm"
+                                   placeholder="admin@yourhackathon.com"
+                                   value="{{ get_setting('export_email', '') }}">
+                            <div class="form-text text-muted">Uses your existing SMTP settings (from .env)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-save-fill me-1"></i>Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
 

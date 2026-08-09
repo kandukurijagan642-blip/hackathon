@@ -34,6 +34,7 @@ from routes.organizer import organizer_bp
 from routes.judge import judge_bp
 from routes.leader import leader_bp
 from routes.public import public_bp
+from routes.integrations_routes import integrations_bp
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(admin_bp)
@@ -41,6 +42,7 @@ app.register_blueprint(organizer_bp)
 app.register_blueprint(judge_bp)
 app.register_blueprint(leader_bp)
 app.register_blueprint(public_bp)
+app.register_blueprint(integrations_bp)
 
 # Root route redirection
 @app.route('/')

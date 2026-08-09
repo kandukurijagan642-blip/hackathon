@@ -198,6 +198,16 @@ def evaluate(round_num, team_id):
         
         status_text = "finalized and locked" if is_submitted else "saved as draft"
         flash(f"Round {round_num} marks for team {team.team_id} have been {status_text}.", "success")
+
+        # Auto-trigger Telegram notification only on final submission
+        if is_submitted:
+            try:
+                from integrations import build_marks_submitted_telegram_msg, send_telegram_message
+                tg_msg = build_marks_submitted_telegram_msg(current_user.name, team.team_name, round_num, total)
+                send_telegram_message(tg_msg)
+            except Exception as tg_err:
+                print(f"Telegram marks notify error: {tg_err}")
+
         return redirect(url_for('judge.dashboard'))
         
     return render_template('judge/evaluate.html', round_num=round_num, team=team, marks=marks)

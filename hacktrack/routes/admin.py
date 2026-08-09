@@ -690,6 +690,16 @@ HackTrack Organizing Committee"""
             db.session.commit()
 
     log_admin_activity("Release Certificates", f"Approved and released certificates for team {team_id}")
+
+    # Auto-trigger: Telegram + Email notification on cert release
+    try:
+        from integrations import build_cert_released_telegram_msg, send_telegram_message, send_export_email, build_html_report, collect_summary_data
+        member_names = [c.student_name for c in certs]
+        tg_msg = build_cert_released_telegram_msg(team.team_name, member_names)
+        send_telegram_message(tg_msg)
+    except Exception as tg_err:
+        print(f"Telegram auto-notify error: {tg_err}")
+
     flash(f"Certificates approved & released successfully for team '{team.team_name}'! Notification sent.", "success")
     return redirect(url_for('admin.certificates'))
 
